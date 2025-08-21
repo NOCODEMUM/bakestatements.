@@ -180,7 +180,6 @@ export default function LandingPage() {
         <section className="hero">
           <div className="hero__overlay"></div>
           <div className="hero__content">
-            <h1>Professional Bakery Management</h1>
             <a className="btn-primary" href="/auth">Start Free Trial</a>
           </div>
         </section>
