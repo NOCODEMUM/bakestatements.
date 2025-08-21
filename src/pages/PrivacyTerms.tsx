@@ -364,13 +364,15 @@ export default function PrivacyTerms() {
       {/* Acknowledgement of Country */}
       <section className="py-12 md:py-16 px-4 bg-white/80">
         <div className="max-w-4xl mx-auto text-center">
-          <div className="text-2xl mb-4">
-            <div>🖤</div>
-            <div>💛</div>
-            <div>❤️</div>
+          <div className="text-2xl mb-4 flex justify-center space-x-2">
+            <span>🖤</span>
+            <span>💛</span>
+            <span>❤️</span>
           </div>
           <p className="text-gray-600 leading-relaxed">
-            Developed on Dharawal Country, in Macquarie Fields, NSW. We acknowledge the Traditional Custodians of this land and pay our respects to Elders past and present.
+            Developed on Dharawal Country, in Macquarie Fields, NSW. We acknowledge the Traditional Custodians of this land
+            <br />
+            and pay our respects to Elders past and present.
           </p>
         </div>
       </section>
