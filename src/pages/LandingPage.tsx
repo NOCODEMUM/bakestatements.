@@ -181,7 +181,6 @@ export default function LandingPage() {
           <div className="hero__overlay"></div>
           <div className="hero__content">
             <h1>Professional Bakery Management</h1>
-            <p>ATO-compliant expense tracking, order management, and recipe costing in one clean platform.</p>
             <a className="btn-primary" href="/auth">Start Free Trial</a>
           </div>
         </section>
