@@ -34,6 +34,74 @@ html {
   overflow-x: hidden;
 }
 
+/* Hero Section */
+.hero {
+  width: 100%;
+  min-height: clamp(420px, 70vh, 680px);
+  position: relative;
+  overflow: hidden;
+  background-image: url('/20250821_1326_Baking Koala_remix_01k35afawhfm8tcpx1kf95gj8h.png');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  box-shadow: none;
+  border-radius: 0;
+}
+
+.hero__overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(0,0,0,0.18) 0%, rgba(0,0,0,0.00) 50%);
+  pointer-events: none;
+}
+
+.hero__content {
+  position: relative;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 4rem 1.5rem;
+  color: #1F1F1F;
+  text-align: left;
+}
+
+@media (max-width: 640px) {
+  .hero__content {
+    text-align: center;
+    padding: 3rem 1.25rem;
+  }
+}
+
+.hero__content h1 {
+  font-size: clamp(28px, 5vw, 56px);
+  line-height: 1.1;
+  font-weight: 800;
+}
+
+.hero__content p {
+  margin-top: 0.75rem;
+  font-size: clamp(16px, 2.4vw, 20px);
+  color: rgba(0,0,0,0.72);
+  max-width: 640px;
+}
+
+.btn-primary {
+  display: inline-block;
+  margin-top: 1.5rem;
+  background: #FF9F45;
+  color: #fff;
+  border-radius: 12px;
+  padding: 12px 20px;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.btn-primary:hover {
+  filter: brightness(0.95);
+}
+
 /* Ensure no fixed positioning conflicts */
 .header-fixed {
   position: fixed;

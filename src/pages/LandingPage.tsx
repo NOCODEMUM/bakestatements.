@@ -177,73 +177,12 @@ export default function LandingPage() {
 
       <main className="pt-16 md:pt-20">
         {/* Hero Section */}
-        <section className="hero-section min-h-screen flex items-center justify-center px-4 py-12 md:py-20">
-          <div className="max-w-6xl mx-auto text-center">
-            {/* Koala Image */}
-            <div className="mb-8 md:mb-12">
-              <img 
-                src="/20250820_0042_Koala Logo Design_remix_01k31cc4t3epsb1sqf7npt8hjb.png"
-                alt="BakeStatements Koala Mascot with Calculator and Whisk" 
-                className="w-48 h-48 md:w-64 md:h-64 lg:w-80 lg:h-80 mx-auto rounded-3xl shadow-xl object-cover"
-              />
-            </div>
-            
-            {/* Badge */}
-            <div className="inline-flex items-center space-x-2 bg-white/90 backdrop-blur-sm border border-teal-200 px-4 py-2 rounded-full text-sm font-semibold text-teal-600 mb-6 md:mb-8">
-              <span>🇦🇺</span>
-              <span>Built for Australian Bakers</span>
-            </div>
-            
-            {/* Headlines */}
-            <h1 className="text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-bold text-gray-800 mb-6 md:mb-8 leading-tight">
-              Turn Your Baking Passion into a{' '}
-              <span className="bg-gradient-to-r from-teal-600 to-amber-500 bg-clip-text text-transparent">
-                Thriving Business
-              </span>
-            </h1>
-            
-            <p className="text-lg md:text-xl lg:text-2xl text-gray-600 mb-8 md:mb-12 max-w-4xl mx-auto leading-relaxed">
-              Join hundreds of Australian bakers who've transformed their hobby into profit with our complete business management platform. 
-              Start your risk-free journey today – no credit card required, just pure baking success.
-            </p>
-            
-            {/* CTA Buttons */}
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-4 md:gap-6 mb-8 md:mb-12">
-              <a 
-                href="/auth" 
-                className="w-full sm:w-auto bg-amber-500 text-white px-8 py-4 md:px-12 md:py-5 rounded-full text-lg md:text-xl font-bold hover:bg-amber-600 transition-all duration-300 shadow-lg hover:shadow-xl hover:scale-105"
-              >
-                Start Your Free 7-Day Trial Now
-              </a>
-              <button 
-                onClick={() => scrollToSection('features')}
-                className="w-full sm:w-auto bg-white/80 backdrop-blur-sm text-teal-600 px-6 py-3 md:px-8 md:py-4 border-2 border-teal-600 rounded-full text-lg font-semibold hover:bg-teal-600 hover:text-white transition-all duration-300"
-              >
-                Explore Features
-              </button>
-            </div>
-
-            {/* No Credit Card Badge */}
-            <div className="inline-flex items-center space-x-2 bg-green-100 text-green-800 px-6 py-3 rounded-full font-bold text-sm md:text-base mb-8 md:mb-12 shadow-lg">
-              <span>✓</span>
-              <span>No Credit Card Required • 100% Risk-Free</span>
-            </div>
-            
-            {/* Trust Badges */}
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-4 md:gap-8">
-              <div className="flex items-center space-x-2 bg-white/80 backdrop-blur-sm px-4 py-2 rounded-full text-sm font-semibold text-gray-600 border border-gray-200">
-                <span>✓</span>
-                <span>ATO Compliant</span>
-              </div>
-              <div className="flex items-center space-x-2 bg-white/80 backdrop-blur-sm px-4 py-2 rounded-full text-sm font-semibold text-gray-600 border border-gray-200">
-                <span>✓</span>
-                <span>Made in Australia</span>
-              </div>
-              <div className="flex items-center space-x-2 bg-white/80 backdrop-blur-sm px-4 py-2 rounded-full text-sm font-semibold text-gray-600 border border-gray-200">
-                <span>✓</span>
-                <span>Instant Setup</span>
-              </div>
-            </div>
+        <section className="hero">
+          <div className="hero__overlay"></div>
+          <div className="hero__content">
+            <h1>Professional Bakery Management</h1>
+            <p>ATO-compliant expense tracking, order management, and recipe costing in one clean platform.</p>
+            <a className="btn-primary" href="/auth">Start Free Trial</a>
           </div>
         </section>
 
