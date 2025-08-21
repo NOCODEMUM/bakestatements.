@@ -1,0 +1,87 @@
+🍞 BakeStatements – Master Knowledge & PRD
+Purpose & Ethos
+
+BakeStatements is the financial co-pilot for home bakers and micro bakeries in Australia. Our mission is to simplify bookkeeping, compliance, and branding so bakers can spend less time worrying about paperwork and more time creating.
+
+We believe:
+
+Bakers deserve tools as sweet and simple as their creations.
+
+Compliance (ATO, invoices, ABN, labels) shouldn’t feel like a burden.
+
+Modern branding should be accessible, professional, and delightful even for small home-based businesses.
+
+Our mascot — the friendly koala with a whisk and calculator — symbolizes warmth, trust, and balance between creativity and numbers.
+
+Stage 1 (MVP – Launch within 24 hours)
+
+Core must-have features:
+
+Expense Tracker – simple input form with categories mapped to ATO claims.
+
+Invoice Generator – auto-brand with user’s ABN, logo, and client details.
+
+Recipe Costing Tool – input ingredients & costs → see per-unit pricing.
+
+Financial Summary for ATO – one-click report export with grouped categories.
+
+7-Day Free Trial → Subscription Paywall –
+
+$19 AUD/month or $199 AUD/year
+
+Founders Lifetime Special: $299 AUD one-time
+
+UI:
+
+Hero image: Koala holding whisk + calculator
+
+Tone: modern, soft pastel accents (blush pink, warm beige, earthy cocoa)
+
+Layout: clean cards, rounded edges, intuitive dashboards
+
+Stage 2 (Next Build Cycle – Expansion)
+
+Planned features for growth:
+
+Label Maker → upload logo, resize, generate product labels.
+
+Ingredient-less Labels → auto-create packaging labels from recipe data.
+
+Smart ABN Settings → ABN stored once, used on all invoices & reports.
+
+Client Database → store regular wholesale/catering contacts.
+
+Product Sales Tracker → link recipes → sales data → profit per product.
+
+Dashboard Analytics → simple charts on expenses, revenue, best-sellers.
+
+White-Label Mode → allow professional bakers to customize branding.
+
+Branding & UX Notes
+
+Mascot: always the Koala (hero image, favicons, playful touches).
+
+Typography: round, approachable sans-serif (similar to Nunito / Baloo).
+
+Colors: pastel pinks, creamy whites, cocoa accents.
+
+Voice: friendly, professional, and empowering — never corporate.
+
+Accessibility: mobile-first, clear contrast, alt text for all graphics.
+
+Roadmap Philosophy
+
+Stage 1 → Ship fast, prove value.
+
+Stage 2 → Add branding/label features to differentiate from BakeGenie.
+
+Stage 3 → Expand into full bakery management (orders, inventory, compliance).
+
+🔑 Instruction to Bolt / Lovable:
+Always prioritize:
+
+A friendly koala hero image in the header.
+
+Expense & invoice tools front-and-center.
+
+Simple UX that feels like a baker’s notebook, not corporate accounting.
