@@ -75,16 +75,11 @@ export default function LandingPage() {
   return (
     <div className="landing-page min-h-screen bg-gradient-to-br from-teal-50 to-amber-50">
       {/* Header */}
-      <header className="header-fixed bg-white/95 backdrop-blur-md border-b border-gray-200 shadow-sm">
+      <header className="header-fixed">
         <nav className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16 md:h-20">
-            {/* Logo */}
-            <div className="flex items-center space-x-3">
-              <div className="bg-amber-100 p-2 rounded-lg">
-                <ChefHat className="w-6 h-6 md:w-8 md:h-8 text-amber-600" />
-              </div>
-              <span className="text-lg md:text-xl font-bold text-teal-600">BakeStatements</span>
-            </div>
+            {/* Empty space for logo area */}
+            <div></div>
             
             {/* Desktop Navigation */}
             <div className="hidden md:flex items-center space-x-8">
