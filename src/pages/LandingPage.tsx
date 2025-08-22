@@ -174,15 +174,7 @@ export default function LandingPage() {
         {/* Hero Section */}
         <section className="hero">
           <div className="hero__overlay"></div>
-          <div className="hero__content text-center pt-20 pb-40">
-            <h1 className="text-4xl md:text-6xl font-extrabold text-gray-900 mb-4 leading-tight">
-              BakeStatements
-            </h1>
-            <p className="text-lg md:text-xl text-gray-700 max-w-2xl mx-auto mb-8 leading-relaxed">
-              Professional bakery management for Australian bakers
-            </p>
-            <a className="btn-primary" href="/auth">Start Free Trial</a>
-          </div>
+          <div className="hero__content"></div>
         </section>
 
         {/* Features Section */}
