@@ -7,6 +7,8 @@ import PaywallModal from './components/PaywallModal'
 import LandingPage from './pages/LandingPage'
 import AboutUs from './pages/AboutUs'
 import PrivacyTerms from './pages/PrivacyTerms'
+import ForgotPassword from './pages/ForgotPassword'
+import ResetPassword from './pages/ResetPassword'
 import Dashboard from './pages/Dashboard'
 import Orders from './pages/Orders'
 import Calendar from './pages/Calendar'
@@ -45,6 +47,10 @@ function AppContent() {
         
         {/* Enquiry Form - accessible to everyone */}
         <Route path="/enquiry" element={<EnquiryForm />} />
+        
+        {/* Password Reset Pages - accessible to everyone */}
+        <Route path="/forgot-password" element={<ForgotPassword />} />
+        <Route path="/reset-password" element={<ResetPassword />} />
         
         {/* Auth Page - for non-authenticated users */}
         <Route path="/auth" element={!user ? <Auth /> : <Navigate to="/" replace />} />

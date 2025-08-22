@@ -12,6 +12,7 @@ export type Database = {
         Row: {
           id: string
           email: string
+          full_name: string | null
           trial_end_date: string
           business_name: string | null
           phone_number: string | null
@@ -24,6 +25,7 @@ export type Database = {
         Insert: {
           id: string
           email: string
+          full_name?: string | null
           trial_end_date: string
           business_name?: string | null
           phone_number?: string | null
@@ -36,6 +38,7 @@ export type Database = {
         Update: {
           id?: string
           email?: string
+          full_name?: string | null
           trial_end_date?: string
           business_name?: string | null
           phone_number?: string | null

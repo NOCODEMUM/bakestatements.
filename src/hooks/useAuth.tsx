@@ -6,9 +6,12 @@ interface AuthContextType {
   user: User | null
   session: Session | null
   loading: boolean
-  signUp: (email: string, password: string) => Promise<any>
+  signUp: (email: string, password: string, fullName?: string) => Promise<any>
   signIn: (email: string, password: string) => Promise<any>
   signOut: () => Promise<any>
+  resetPasswordForEmail: (email: string) => Promise<any>
+  updateUserPassword: (password: string, accessToken: string, refreshToken: string) => Promise<any>
+  resendVerification: (email: string) => Promise<any>
   isTrialExpired: boolean
   hasActiveSubscription: boolean
 }
@@ -70,11 +73,29 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }
 
-  const signUp = async (email: string, password: string) => {
+  const signUp = async (email: string, password: string, fullName?: string) => {
     const result = await supabase.auth.signUp({
       email,
       password,
+      options: {
+        data: {
+          full_name: fullName
+        }
+      }
     })
+    
+    // If sign up successful and user created, update profile with full name
+    if (result.data.user && fullName) {
+      try {
+        await supabase
+          .from('profiles')
+          .update({ full_name: fullName })
+          .eq('id', result.data.user.id)
+      } catch (error) {
+        console.error('Error updating profile with full name:', error)
+      }
+    }
+    
     return result
   }
 
@@ -91,6 +112,40 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return result
   }
 
+  const resetPasswordForEmail = async (email: string) => {
+    const result = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: `${window.location.origin}/reset-password`
+    })
+    return result
+  }
+
+  const updateUserPassword = async (password: string, accessToken: string, refreshToken: string) => {
+    // Set the session with the tokens from the reset link
+    const { error: sessionError } = await supabase.auth.setSession({
+      access_token: accessToken,
+      refresh_token: refreshToken
+    })
+    
+    if (sessionError) throw sessionError
+    
+    // Update the password
+    const result = await supabase.auth.updateUser({
+      password: password
+    })
+    
+    // Sign out after password update to force fresh login
+    await supabase.auth.signOut()
+    
+    return result
+  }
+
+  const resendVerification = async (email: string) => {
+    const result = await supabase.auth.resend({
+      type: 'signup',
+      email: email
+    })
+    return result
+  }
   return (
     <AuthContext.Provider value={{
       user,
@@ -99,6 +154,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       signUp,
       signIn,
       signOut,
+      resetPasswordForEmail,
+      updateUserPassword,
+      resendVerification,
       isTrialExpired,
       hasActiveSubscription
     }}>
