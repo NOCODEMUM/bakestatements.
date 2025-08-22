@@ -469,7 +469,7 @@ export default function LandingPage() {
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 max-w-4xl mx-auto">
               <div className="flex flex-col items-center space-y-2 bg-white/10 backdrop-blur-sm px-4 py-3 rounded-lg">
                 <span className="text-2xl">📧</span>
-                <span className="font-semibold text-sm">Weekly Business Tips</span>
+                <span className="font-semibold text-sm">Join the PIX3L Crew</span>
               </div>
               <div className="flex flex-col items-center space-y-2 bg-white/10 backdrop-blur-sm px-4 py-3 rounded-lg">
                 <span className="text-2xl">🚀</span>
