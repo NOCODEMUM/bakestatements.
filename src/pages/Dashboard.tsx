@@ -16,7 +16,7 @@ interface DashboardStats {
 }
 
 export default function Dashboard() {
-  const { user } = useAuth()
+  const { user, isDemoMode } = useAuth()
   const [stats, setStats] = useState<DashboardStats>({
     totalOrders: 0,
     totalRevenue: 0,
@@ -50,11 +50,17 @@ export default function Dashboard() {
         .eq('user_id', user!.id)
 
       // Fetch enquiries
-      const { data: enquiries } = await supabase
-        .from('enquiries')
-        .select('*')
-        .eq('user_id', user!.id)
-        .eq('status', 'New')
+      let enquiries
+      if (isDemoMode) {
+        enquiries = []
+      } else {
+        const { data } = await supabase
+          .from('enquiries')
+          .select('*')
+          .eq('user_id', user!.id)
+          .eq('status', 'New')
+        enquiries = data
+      }
 
       // Calculate stats
       const totalOrders = orders?.length || 0
