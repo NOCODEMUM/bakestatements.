@@ -14,7 +14,7 @@ interface Order {
 }
 
 export default function Calendar() {
-  const { user, isDemoMode } = useAuth()
+  const { user } = useAuth()
   const [orders, setOrders] = useState<Order[]>([])
   const [loading, setLoading] = useState(true)
   const [currentDate, setCurrentDate] = useState(new Date())
@@ -26,12 +26,6 @@ export default function Calendar() {
   }, [user])
 
   const fetchOrders = async () => {
-    if (isDemoMode) {
-      setOrders([])
-      setLoading(false)
-      return
-    }
-
     try {
       const { data, error } = await supabase
         .from('orders')

@@ -14,7 +14,7 @@ interface Enquiry {
 }
 
 export default function Enquiries() {
-  const { user, isDemoMode } = useAuth()
+  const { user } = useAuth()
   const [enquiries, setEnquiries] = useState<Enquiry[]>([])
   const [loading, setLoading] = useState(true)
 
@@ -25,27 +25,15 @@ export default function Enquiries() {
   }, [user])
 
   const fetchEnquiries = async () => {
-    // Skip database query in demo mode to avoid UUID error
-    if (isDemoMode) {
-      setEnquiries([])
-      setLoading(false)
-      return
-    }
-
     try {
-      if (isDemoMode) {
-        // Set empty array for demo mode to avoid UUID error
-        setEnquiries([])
-      } else {
-        const { data, error } = await supabase
-          .from('enquiries')
-          .select('*')
-          .or(`user_id.eq.${user!.id},user_id.is.null`)
-          .order('created_at', { ascending: false })
+      const { data, error } = await supabase
+        .from('enquiries')
+        .select('*')
+        .or(`user_id.eq.${user!.id},user_id.is.null`)
+        .order('created_at', { ascending: false })
 
-        if (error) throw error
-        setEnquiries(data || [])
-      }
+      if (error) throw error
+      setEnquiries(data || [])
     } catch (error) {
       console.error('Error fetching enquiries:', error)
     } finally {
@@ -54,11 +42,6 @@ export default function Enquiries() {
   }
 
   const updateEnquiryStatus = async (enquiryId: string, newStatus: string) => {
-    if (isDemoMode) {
-      // Prevent database operations in demo mode
-      return
-    }
-    
     try {
       const { error } = await supabase
         .from('enquiries')

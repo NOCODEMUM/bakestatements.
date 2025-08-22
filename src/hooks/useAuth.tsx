@@ -9,10 +9,8 @@ interface AuthContextType {
   signUp: (email: string, password: string, options?: any) => Promise<any>
   signIn: (email: string, password: string) => Promise<any>
   signOut: () => Promise<any>
-  signInAsDemo: () => Promise<void>
   isTrialExpired: boolean
   hasActiveSubscription: boolean
-  isDemoMode: boolean
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
@@ -23,40 +21,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true)
   const [isTrialExpired, setIsTrialExpired] = useState(false)
   const [hasActiveSubscription, setHasActiveSubscription] = useState(false)
-  const [isDemoMode, setIsDemoMode] = useState(false)
 
   useEffect(() => {
-    // Check if demo mode is enabled in localStorage
-    const demoMode = localStorage.getItem('demo_mode') === 'true'
-    if (demoMode) {
-      const demoUser = {
-        id: 'demo-user-id',
-        email: 'demo@example.com',
-        user_metadata: {},
-        app_metadata: {},
-        aud: 'authenticated',
-        created_at: new Date().toISOString(),
-        role: 'authenticated',
-        updated_at: new Date().toISOString()
-      } as User
-      
-      const demoSession = {
-        access_token: 'demo-token',
-        refresh_token: 'demo-refresh',
-        expires_in: 3600,
-        token_type: 'bearer',
-        user: demoUser
-      } as Session
-      
-      setUser(demoUser)
-      setSession(demoSession)
-      setIsDemoMode(true)
-      setIsTrialExpired(false)
-      setHasActiveSubscription(true)
-      setLoading(false)
-      return
-    }
-
     // Get initial session
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session)
@@ -87,13 +53,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [])
 
   const checkTrialStatus = async (userId: string) => {
-    // Skip trial check for demo mode
-    if (userId === 'demo-user-id') {
-      setIsTrialExpired(false)
-      setHasActiveSubscription(true)
-      return
-    }
-
     const { data: profile } = await supabase
       .from('profiles')
       .select('trial_end_date, subscription_status')
@@ -111,35 +70,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }
 
-  const signInAsDemo = async () => {
-    const demoUser = {
-      id: 'demo-user-id',
-      email: 'demo@example.com',
-      user_metadata: {},
-      app_metadata: {},
-      aud: 'authenticated',
-      created_at: new Date().toISOString(),
-      role: 'authenticated',
-      updated_at: new Date().toISOString()
-    } as User
-    
-    const demoSession = {
-      access_token: 'demo-token',
-      refresh_token: 'demo-refresh',
-      expires_in: 3600,
-      token_type: 'bearer',
-      user: demoUser
-    } as Session
-    
-    setUser(demoUser)
-    setSession(demoSession)
-    setIsDemoMode(true)
-    setIsTrialExpired(false)
-    setHasActiveSubscription(true)
-    
-    // Store demo mode in localStorage
-    localStorage.setItem('demo_mode', 'true')
-  }
   const signUp = async (email: string, password: string, options?: any) => {
     const result = await supabase.auth.signUp({
       email,
@@ -158,17 +88,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }
 
   const signOut = async () => {
-    // Clear demo mode
-    if (isDemoMode) {
-      localStorage.removeItem('demo_mode')
-      setUser(null)
-      setSession(null)
-      setIsDemoMode(false)
-      setIsTrialExpired(false)
-      setHasActiveSubscription(false)
-      return { error: null }
-    }
-
     const result = await supabase.auth.signOut()
     return result
   }
@@ -181,10 +100,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       signUp,
       signIn,
       signOut,
-      signInAsDemo,
       isTrialExpired,
-      hasActiveSubscription,
-      isDemoMode
+      hasActiveSubscription
     }}>
       {children}
     </AuthContext.Provider>

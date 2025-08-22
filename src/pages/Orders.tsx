@@ -15,7 +15,7 @@ interface Order {
 }
 
 export default function Orders() {
-  const { user, isDemoMode } = useAuth()
+  const { user } = useAuth()
   const [orders, setOrders] = useState<Order[]>([])
   const [loading, setLoading] = useState(true)
   const [showForm, setShowForm] = useState(false)
@@ -35,12 +35,6 @@ export default function Orders() {
   }, [user])
 
   const fetchOrders = async () => {
-    if (isDemoMode) {
-      setOrders([])
-      setLoading(false)
-      return
-    }
-
     try {
       const { data, error } = await supabase
         .from('orders')
@@ -59,20 +53,6 @@ export default function Orders() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    
-    if (isDemoMode) {
-      // Simulate success in demo mode
-      setFormData({
-        customer_name: '',
-        order_details: '',
-        due_date: '',
-        amount: 0,
-        status: 'Inquiry'
-      })
-      setShowForm(false)
-      return
-    }
-
     try {
       const { error } = await supabase
         .from('orders')
@@ -95,10 +75,6 @@ export default function Orders() {
   }
 
   const updateOrderStatus = async (orderId: string, newStatus: string) => {
-    if (isDemoMode) {
-      return
-    }
-    
     try {
       const { error } = await supabase
         .from('orders')

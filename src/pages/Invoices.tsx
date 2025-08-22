@@ -16,7 +16,7 @@ interface Order {
 }
 
 export default function Invoices() {
-  const { user, isDemoMode } = useAuth()
+  const { user } = useAuth()
   const [orders, setOrders] = useState<Order[]>([])
   const [loading, setLoading] = useState(true)
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null)
@@ -31,12 +31,6 @@ export default function Invoices() {
   }, [user])
 
   const fetchOrders = async () => {
-    if (isDemoMode) {
-      setOrders([])
-      setLoading(false)
-      return
-    }
-
     try {
       const { data, error } = await supabase
         .from('orders')
@@ -55,15 +49,6 @@ export default function Invoices() {
   }
 
   const fetchUserProfile = async () => {
-    if (isDemoMode) {
-      setUserProfile({
-        business_name: 'Demo Bakery',
-        abn: '12 345 678 901',
-        phone_number: '+61 2 1234 5678'
-      })
-      return
-    }
-
     try {
       const { data, error } = await supabase
         .from('profiles')
@@ -79,10 +64,6 @@ export default function Invoices() {
   }
 
   const togglePaymentStatus = async (orderId: string, currentStatus: boolean) => {
-    if (isDemoMode) {
-      return
-    }
-    
     try {
       // For now, we'll use a custom field. In a real app, you'd have a separate invoices table
       const { error } = await supabase

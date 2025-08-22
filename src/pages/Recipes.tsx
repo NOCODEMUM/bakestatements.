@@ -32,7 +32,7 @@ interface RecipeIngredient {
 }
 
 export default function Recipes() {
-  const { user, isDemoMode } = useAuth()
+  const { user } = useAuth()
   const [recipes, setRecipes] = useState<Recipe[]>([])
   const [ingredients, setIngredients] = useState<Ingredient[]>([])
   const [loading, setLoading] = useState(true)
@@ -59,13 +59,6 @@ export default function Recipes() {
   }, [user])
 
   const fetchData = async () => {
-    if (isDemoMode) {
-      setIngredients([])
-      setRecipes([])
-      setLoading(false)
-      return
-    }
-
     try {
       // Fetch ingredients
       const { data: ingredientsData } = await supabase
@@ -126,14 +119,6 @@ export default function Recipes() {
 
   const handleIngredientSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    
-    if (isDemoMode) {
-      // Simulate success in demo mode
-      setIngredientForm({ name: '', cost_per_unit: 0, unit_type: 'kg' })
-      setShowIngredientForm(false)
-      return
-    }
-
     try {
       const { error } = await supabase
         .from('ingredients')
@@ -151,14 +136,6 @@ export default function Recipes() {
 
   const handleRecipeSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    
-    if (isDemoMode) {
-      // Simulate success in demo mode
-      setRecipeForm({ name: '', batch_size: 1, ingredients: [] })
-      setShowRecipeForm(false)
-      return
-    }
-
     try {
       // Insert recipe
       const { data: recipeData, error: recipeError } = await supabase
