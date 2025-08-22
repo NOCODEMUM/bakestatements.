@@ -10,7 +10,7 @@ interface ProfileData {
 }
 
 export default function Settings() {
-  const { user, isTrialExpired } = useAuth()
+  const { user, isTrialExpired, isDemoMode } = useAuth()
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [saved, setSaved] = useState(false)
@@ -27,6 +27,16 @@ export default function Settings() {
   }, [user])
 
   const fetchProfile = async () => {
+    if (isDemoMode) {
+      setProfileData({
+        business_name: 'Demo Bakery',
+        phone_number: '+61 2 1234 5678',
+        abn: '12 345 678 901'
+      })
+      setLoading(false)
+      return
+    }
+
     try {
       const { data, error } = await supabase
         .from('profiles')
@@ -53,6 +63,14 @@ export default function Settings() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setSaving(true)
+    
+    if (isDemoMode) {
+      // Simulate success in demo mode
+      setSaved(true)
+      setTimeout(() => setSaved(false), 3000)
+      setSaving(false)
+      return
+    }
 
     try {
       const { error } = await supabase

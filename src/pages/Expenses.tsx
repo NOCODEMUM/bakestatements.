@@ -25,7 +25,7 @@ const ATO_CATEGORIES = [
 ]
 
 export default function Expenses() {
-  const { user } = useAuth()
+  const { user, isDemoMode } = useAuth()
   const [expenses, setExpenses] = useState<Expense[]>([])
   const [loading, setLoading] = useState(true)
   const [showForm, setShowForm] = useState(false)
@@ -44,6 +44,12 @@ export default function Expenses() {
   }, [user])
 
   const fetchExpenses = async () => {
+    if (isDemoMode) {
+      setExpenses([])
+      setLoading(false)
+      return
+    }
+
     try {
       const { data, error } = await supabase
         .from('expenses')
@@ -62,6 +68,19 @@ export default function Expenses() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    
+    if (isDemoMode) {
+      // Simulate success in demo mode
+      setFormData({
+        date: format(new Date(), 'yyyy-MM-dd'),
+        description: '',
+        amount: 0,
+        category: 'Ingredients'
+      })
+      setShowForm(false)
+      return
+    }
+
     try {
       const { error } = await supabase
         .from('expenses')
