@@ -22,7 +22,6 @@ import {
 
 interface LayoutProps {
   children: ReactNode
-  setShowPaywall: (show: boolean) => void
 }
 
 const navigation = [
@@ -36,9 +35,9 @@ const navigation = [
   { name: 'Settings', href: '/settings', icon: Settings },
 ]
 
-export default function Layout({ children, setShowPaywall }: LayoutProps) {
+export default function Layout({ children }: LayoutProps) {
   const location = useLocation()
-  const { signOut, user, isTrialExpired, isDemoMode, hasActiveSubscription } = useAuth()
+  const { signOut, user, isTrialExpired, isDemoMode } = useAuth()
   const { theme, toggleTheme } = useTheme()
   const [isSidebarOpen, setIsSidebarOpen] = useState(false)
 
@@ -149,17 +148,6 @@ export default function Layout({ children, setShowPaywall }: LayoutProps) {
           
           {/* User Profile & Controls at Bottom */}
           <div className="mt-auto px-4 py-3 border-t border-gray-200 dark:border-gray-700 space-y-4">
-            {/* Upgrade Button - show only if not demo mode and no active subscription */}
-            {!isDemoMode && !hasActiveSubscription && (
-              <button
-                onClick={() => setShowPaywall(true)}
-                className="w-full flex items-center justify-center space-x-2 px-3 py-3 bg-gradient-to-r from-amber-500 to-amber-600 text-white rounded-lg transition-all duration-200 hover:from-amber-600 hover:to-amber-700 hover:scale-105 shadow-lg group"
-              >
-                <Crown className="w-4 h-4 group-hover:scale-110 transition-transform" />
-                <span className="font-semibold text-sm">Upgrade Now</span>
-              </button>
-            )}
-            
             {/* User Profile Section */}
             <div className="text-center">
               <div className="w-10 h-10 bg-teal-100 dark:bg-teal-900/20 rounded-full flex items-center justify-center mx-auto mb-2">

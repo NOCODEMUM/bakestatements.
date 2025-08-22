@@ -58,7 +58,7 @@ function AppContent() {
         {/* Protected Routes - for authenticated users */}
         <Route path="/*" element={
           user ? (
-            <Layout setShowPaywall={setShowPaywall}>
+            <Layout>
               <Routes>
                 <Route path="/" element={<Dashboard />} />
                 <Route path="/orders" element={<Orders />} />
