@@ -196,8 +196,31 @@ export default function Auth() {
               <span className="mr-2">🎉</span>
               <strong>7-day free trial</strong> - No credit card required
             </div>
-            <div className="mt-2 text-xs text-gray-500">
-              Demo: Use <strong>demo@example.com</strong> and password <strong>pix3l*987</strong>
+            <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+              <p className="text-sm font-medium text-blue-800 mb-2">Try Demo Mode:</p>
+              <div className="space-y-1">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setEmail('demo@example.com')
+                    setPassword('pix3l*987')
+                  }}
+                  className="block w-full text-left text-xs text-blue-700 hover:text-blue-900 font-mono bg-white px-2 py-1 rounded border border-blue-200 hover:border-blue-300 transition-colors"
+                >
+                  📧 demo@example.com
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setEmail('demo@example.com')
+                    setPassword('pix3l*987')
+                  }}
+                  className="block w-full text-left text-xs text-blue-700 hover:text-blue-900 font-mono bg-white px-2 py-1 rounded border border-blue-200 hover:border-blue-300 transition-colors"
+                >
+                  🔐 pix3l*987
+                </button>
+              </div>
+              <p className="text-xs text-blue-600 mt-2">Click either button to auto-fill demo credentials</p>
             </div>
           </div>
 
