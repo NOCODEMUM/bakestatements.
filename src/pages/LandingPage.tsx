@@ -587,11 +587,11 @@ export default function LandingPage() {
           {/* Footer Bottom */}
           <div className="flex flex-col md:flex-row items-center justify-between pt-8 border-t border-gray-700 gap-4">
             <p className="text-gray-400">
-              © 2025 BakeStatements by PIX3L. Made with ❤️ in Sydney, Australia.
+              © 2025 BakeStatements by <a href="https://www.pix3l.com.au" target="_blank" rel="noopener noreferrer" className="text-amber-400 hover:text-amber-300 font-medium transition-colors">PIX3L</a>. Made with ❤️ in Sydney, Australia.
             </p>
             <div className="flex items-center space-x-2 bg-white/10 backdrop-blur-sm px-4 py-2 rounded-full">
               <span>🇦🇺</span>
-              <span className="font-semibold">From the Creators of PIX3L</span>
+              <span className="font-semibold">From the Creators of <a href="https://www.pix3l.com.au" target="_blank" rel="noopener noreferrer" className="text-amber-300 hover:text-amber-200 transition-colors">PIX3L</a></span>
             </div>
           </div>
         </div>
