@@ -14,7 +14,7 @@ export default function Auth() {
   const [showPassword, setShowPassword] = useState(false)
   const [showResendVerification, setShowResendVerification] = useState(false)
   const [resendLoading, setResendLoading] = useState(false)
-  const { signUp, signIn } = useAuth()
+  const { signUp, signIn, signInAsDemo } = useAuth()
   const [searchParams] = useSearchParams()
 
   useEffect(() => {
@@ -67,6 +67,12 @@ export default function Auth() {
     setShowResendVerification(false)
 
     try {
+      // Check for demo mode credentials
+      if (email === 'demo@example.com' && password === 'pix3l*987') {
+        await signInAsDemo()
+        return // Exit early, user will be redirected automatically
+      }
+
       if (isSignUp) {
         const { error } = await signUp(email, password, {
           options: {
@@ -189,6 +195,9 @@ export default function Auth() {
             <div className="inline-flex items-center px-4 py-2 rounded-full text-sm bg-green-50 text-green-700 border border-green-200">
               <span className="mr-2">🎉</span>
               <strong>7-day free trial</strong> - No credit card required
+            </div>
+            <div className="mt-2 text-xs text-gray-500">
+              Demo: Use <strong>demo@example.com</strong> and password <strong>pix3l*987</strong>
             </div>
           </div>
 

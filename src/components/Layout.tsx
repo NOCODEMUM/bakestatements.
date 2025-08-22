@@ -37,7 +37,7 @@ const navigation = [
 
 export default function Layout({ children }: LayoutProps) {
   const location = useLocation()
-  const { signOut, user, isTrialExpired } = useAuth()
+  const { signOut, user, isTrialExpired, isDemoMode } = useAuth()
   const { theme, toggleTheme } = useTheme()
   const [isSidebarOpen, setIsSidebarOpen] = useState(false)
 
@@ -157,8 +157,13 @@ export default function Layout({ children }: LayoutProps) {
               </div>
               <p className="font-medium text-gray-800 dark:text-gray-100 text-xs truncate">{user?.email}</p>
               <p className="text-xs text-gray-500 dark:text-gray-400">
-                {isTrialExpired ? 'Trial Expired' : 'Free Trial Active'}
+                {isDemoMode ? 'Demo Mode' : isTrialExpired ? 'Trial Expired' : 'Free Trial Active'}
               </p>
+              {isDemoMode && (
+                <p className="text-xs text-amber-600 dark:text-amber-400 font-medium mt-1">
+                  🎭 Demo Account
+                </p>
+              )}
             </div>
             
             {/* Dark Mode Toggle */}
