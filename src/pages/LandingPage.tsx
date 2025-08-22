@@ -23,14 +23,19 @@ export default function LandingPage() {
     setLoading(priceId)
     
     try {
+      console.log('Starting subscription process for:', { priceId, mode })
+      
       // Check if user is authenticated
       const { data: { session } } = await supabase.auth.getSession()
       
       if (!session) {
+        console.log('No session found, redirecting to auth')
         // Redirect to auth page if not logged in
         window.location.href = '/auth'
         return
       }
+
+      console.log('User authenticated, creating checkout session')
 
       const { data, error } = await supabase.functions.invoke('create-checkout', {
         body: {
@@ -42,15 +47,23 @@ export default function LandingPage() {
         },
       })
 
-      if (error) throw error
+      if (error) {
+        console.error('Supabase function error:', error)
+        throw error
+      }
 
-      const stripe = await loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY)
+      console.log('Checkout response:', data)
+
+      const stripe = await loadStripe('pk_live_51HQu3YHruLrtRCwicQwk5bRfrvR38kdh5R73SmRBSQ12oKzMkkGjPVZ2ZbnSezrwiqjSX5ZHMvTKadLRio4Y4dX900XvrIf0N9')
       if (stripe && data.url) {
+        console.log('Redirecting to Stripe checkout:', data.url)
         window.location.href = data.url
+      } else {
+        throw new Error('Failed to get checkout URL from Stripe')
       }
     } catch (error) {
       console.error('Error:', error)
-      alert('Something went wrong. Please try again.')
+      alert(`Something went wrong: ${error.message}. Please try again.`)
     } finally {
       setLoading(null)
     }
@@ -319,27 +332,14 @@ export default function LandingPage() {
                 </div>
                 
                 <ul className="space-y-3 mb-8">
-                  {[
-                    'Unlimited orders & recipes',
-                    'ATO expense tracking',
-                    'Professional invoicing',
-                    'Customer enquiry forms',
-                    'Calendar view',
-                    'CSV/PDF exports'
-                  ].map((feature) => (
-                    <li key={feature} className="flex items-center space-x-3">
-                      <Check className="w-5 h-5 text-green-500 flex-shrink-0" />
-                      <span className="text-gray-600">{feature}</span>
-                    </li>
-                  ))}
                 </ul>
                 
                 <button
-                  onClick={() => handleSubscribe(STRIPE_PRICES.monthly, 'subscription')}
+                  onClick={() => handleSubscribe('price_1RyA4CHruLrtRCwiXi8uqRWn', 'subscription')}
                   disabled={loading === STRIPE_PRICES.monthly}
                   className="w-full bg-amber-500 text-white py-3 md:py-4 rounded-lg font-bold text-lg hover:bg-amber-600 transition-colors disabled:opacity-50"
                 >
-                  {loading === STRIPE_PRICES.monthly ? (
+                  {loading === 'price_1RyA4CHruLrtRCwiXi8uqRWn' ? (
                     <div className="flex items-center justify-center space-x-2">
                       <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
                       <span>Processing...</span>
@@ -365,26 +365,14 @@ export default function LandingPage() {
                 </div>
                 
                 <ul className="space-y-3 mb-8">
-                  {[
-                    'Everything in Monthly',
-                    'Priority email support',
-                    'Advanced reporting',
-                    'Custom branding options',
-                    'Early access to new features'
-                  ].map((feature) => (
-                    <li key={feature} className="flex items-center space-x-3">
-                      <Check className="w-5 h-5 text-green-500 flex-shrink-0" />
-                      <span className="text-gray-600">{feature}</span>
-                    </li>
-                  ))}
                 </ul>
                 
                 <button
-                  onClick={() => handleSubscribe(STRIPE_PRICES.annual, 'subscription')}
+                  onClick={() => handleSubscribe('price_1RyA4CHruLrtRCwiZJlqpEt1', 'subscription')}
                   disabled={loading === STRIPE_PRICES.annual}
                   className="w-full bg-teal-600 text-white py-3 md:py-4 rounded-lg font-bold text-lg hover:bg-teal-700 transition-colors disabled:opacity-50"
                 >
-                  {loading === STRIPE_PRICES.annual ? (
+                  {loading === 'price_1RyA4CHruLrtRCwiZJlqpEt1' ? (
                     <div className="flex items-center justify-center space-x-2">
                       <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
                       <span>Processing...</span>
@@ -406,26 +394,14 @@ export default function LandingPage() {
                 </div>
                 
                 <ul className="space-y-3 mb-8">
-                  {[
-                    'Everything in Annual',
-                    'Lifetime access',
-                    'Founder\'s community access',
-                    'Direct feature input',
-                    'No recurring fees ever'
-                  ].map((feature) => (
-                    <li key={feature} className="flex items-center space-x-3">
-                      <Check className="w-5 h-5 text-green-500 flex-shrink-0" />
-                      <span className="text-gray-600">{feature}</span>
-                    </li>
-                  ))}
                 </ul>
                 
                 <button
-                  onClick={() => handleSubscribe(STRIPE_PRICES.lifetime, 'payment')}
+                  onClick={() => handleSubscribe('price_1RyA4CHruLrtRCwi7inxZ3l2', 'payment')}
                   disabled={loading === STRIPE_PRICES.lifetime}
                   className="w-full bg-pink-600 text-white py-3 md:py-4 rounded-lg font-bold text-lg hover:bg-pink-700 transition-colors disabled:opacity-50"
                 >
-                  {loading === STRIPE_PRICES.lifetime ? (
+                  {loading === 'price_1RyA4CHruLrtRCwi7inxZ3l2' ? (
                     <div className="flex items-center justify-center space-x-2">
                       <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
                       <span>Processing...</span>
@@ -441,7 +417,7 @@ export default function LandingPage() {
             <div className="text-center mt-12 md:mt-20">
               <div className="bg-white/80 backdrop-blur-sm border border-gray-200 rounded-2xl p-8 md:p-12 max-w-4xl mx-auto shadow-xl">
                 <h3 className="text-2xl md:text-3xl font-bold text-gray-800 mb-6">
-                  Join 500+ Australian Bakers Who've Gone Pro
+                  Join Australian Bakers Who've Gone Pro
                 </h3>
                 
                 <div className="flex flex-col sm:flex-row items-center justify-center gap-4 md:gap-6 mb-6">
@@ -506,7 +482,7 @@ export default function LandingPage() {
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 max-w-4xl mx-auto">
               <div className="flex flex-col items-center space-y-2 bg-white/10 backdrop-blur-sm px-4 py-3 rounded-lg">
                 <span className="text-2xl">📧</span>
-                <span className="font-semibold text-sm">Weekly Business Tips</span>
+                <span className="font-semibold text-sm">Join the PIX3L Crew</span>
               </div>
               <div className="flex flex-col items-center space-y-2 bg-white/10 backdrop-blur-sm px-4 py-3 rounded-lg">
                 <span className="text-2xl">🚀</span>
@@ -624,11 +600,11 @@ export default function LandingPage() {
           {/* Footer Bottom */}
           <div className="flex flex-col md:flex-row items-center justify-between pt-8 border-t border-gray-700 gap-4">
             <p className="text-gray-400">
-              © 2025 BakeStatements by PIX3L. Made with ❤️ in Sydney, Australia.
+              © 2025 BakeStatements by <a href="https://www.pix3l.com.au" target="_blank" rel="noopener noreferrer" className="text-amber-400 hover:text-amber-300 font-medium transition-colors">PIX3L</a>. Made with ❤️ in Sydney, Australia.
             </p>
             <div className="flex items-center space-x-2 bg-white/10 backdrop-blur-sm px-4 py-2 rounded-full">
               <span>🇦🇺</span>
-              <span className="font-semibold">From the Creators of PIX3L</span>
+              <span className="font-semibold">From the Creators of <a href="https://www.pix3l.com.au" target="_blank" rel="noopener noreferrer" className="text-amber-300 hover:text-amber-200 transition-colors">PIX3L</a></span>
             </div>
           </div>
         </div>

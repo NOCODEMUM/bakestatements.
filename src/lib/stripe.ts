@@ -5,7 +5,7 @@ const stripePromise = loadStripe('pk_live_51HQu3YHruLrtRCwicQwk5bRfrvR38kdh5R73S
 export { stripePromise }
 
 export const STRIPE_PRICES = {
-  monthly: 'price_monthly_plan_id', // Replace with actual Monthly Plan Price ID from Stripe Dashboard
-  annual: 'price_annual_plan_id',   // Replace with actual Annual Plan Price ID from Stripe Dashboard  
-  lifetime: 'price_lifetime_plan_id' // Replace with actual Lifetime Plan Price ID from Stripe Dashboard
+  monthly: 'price_1RyA4CHruLrtRCwiXi8uqRWn',
+  annual: 'price_1RyA4CHruLrtRCwiZJlqpEt1',
+  lifetime: 'price_1RyA4CHruLrtRCwi7inxZ3l2'
 }

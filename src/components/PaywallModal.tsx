@@ -19,25 +19,43 @@ export default function PaywallModal({ isOpen, onClose }: PaywallModalProps) {
     setLoading(priceId)
     
     try {
+      console.log('Starting subscription process for:', { priceId, mode })
+      
+      const { data: session } = await supabase.auth.getSession()
+      
+      if (!session.session) {
+        console.error('No active session found')
+        alert('Please sign in to continue')
+        return
+      }
+
       const { data, error } = await supabase.functions.invoke('create-checkout', {
         body: {
           priceId: priceId,
           mode: mode
         },
         headers: {
-          Authorization: `Bearer ${(await supabase.auth.getSession()).data.session?.access_token}`,
+          Authorization: `Bearer ${session.session.access_token}`,
         },
       })
 
-      if (error) throw error
+      if (error) {
+        console.error('Supabase function error:', error)
+        throw error
+      }
+
+      console.log('Checkout response:', data)
 
       const stripe = await stripePromise
       if (stripe && data.url) {
+        console.log('Redirecting to Stripe checkout:', data.url)
         window.location.href = data.url
+      } else {
+        throw new Error('Failed to get checkout URL')
       }
     } catch (error) {
       console.error('Error:', error)
-      alert('Something went wrong. Please try again.')
+      alert(`Something went wrong: ${error.message}. Please try again.`)
     } finally {
       setLoading(null)
     }
@@ -88,8 +106,12 @@ export default function PaywallModal({ isOpen, onClose }: PaywallModalProps) {
                 </li>
               ))}
             </ul>
-            <button className="w-full bg-amber-500 text-white py-2 px-4 rounded-lg hover:bg-amber-600 transition-colors mt-4 font-medium">
-              {loading === 'monthly' ? (
+            <button 
+              onClick={() => handleSubscribe('price_1RyA4CHruLrtRCwiXi8uqRWn', 'subscription')}
+              disabled={loading === 'price_1RyA4CHruLrtRCwiXi8uqRWn'}
+              className="w-full bg-amber-500 text-white py-2 px-4 rounded-lg hover:bg-amber-600 transition-colors mt-4 font-medium disabled:opacity-50"
+            >
+              {loading === 'price_1RyA4CHruLrtRCwiXi8uqRWn' ? (
                 <div className="flex items-center justify-center space-x-2">
                   <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
                   <span>Processing...</span>
@@ -112,8 +134,12 @@ export default function PaywallModal({ isOpen, onClose }: PaywallModalProps) {
               </div>
             </div>
             <p className="text-sm text-gray-600 mb-3">AUD per year (Save $48!)</p>
-            <button className="w-full bg-emerald-600 text-white py-2 px-4 rounded-lg hover:bg-emerald-700 transition-colors font-medium">
-              {loading === 'annual' ? (
+            <button 
+              onClick={() => handleSubscribe('price_1RyA4CHruLrtRCwiZJlqpEt1', 'subscription')}
+              disabled={loading === 'price_1RyA4CHruLrtRCwiZJlqpEt1'}
+              className="w-full bg-emerald-600 text-white py-2 px-4 rounded-lg hover:bg-emerald-700 transition-colors font-medium disabled:opacity-50"
+            >
+              {loading === 'price_1RyA4CHruLrtRCwiZJlqpEt1' ? (
                 <div className="flex items-center justify-center space-x-2">
                   <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
                   <span>Processing...</span>
@@ -133,8 +159,12 @@ export default function PaywallModal({ isOpen, onClose }: PaywallModalProps) {
               </div>
             </div>
             <p className="text-sm text-gray-600 mb-3">One-time payment • First 50 users only</p>
-            <button className="w-full bg-purple-500 text-white py-2 px-4 rounded-lg hover:bg-purple-600 transition-colors font-medium">
-              {loading === 'lifetime' ? (
+            <button 
+              onClick={() => handleSubscribe('price_1RyA4CHruLrtRCwi7inxZ3l2', 'payment')}
+              disabled={loading === 'price_1RyA4CHruLrtRCwi7inxZ3l2'}
+              className="w-full bg-purple-500 text-white py-2 px-4 rounded-lg hover:bg-purple-600 transition-colors font-medium disabled:opacity-50"
+            >
+              {loading === 'price_1RyA4CHruLrtRCwi7inxZ3l2' ? (
                 <div className="flex items-center justify-center space-x-2">
                   <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
                   <span>Processing...</span>

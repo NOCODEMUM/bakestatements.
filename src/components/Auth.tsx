@@ -123,7 +123,7 @@ export default function Auth() {
           {/* Koala Logo */}
           <div className="text-center mb-8">
             <img 
-              src="/20250820_0042_Koala Logo Design_remix_01k31cc4t3epsb1sqf7npt8hjb.png"
+              src="/ChatGPT Image Aug 19, 2025, 11_27_18 AM copy copy copy copy copy copy copy copy copy copy copy.png"
               alt="BakeStatements Koala Logo"
               className="w-24 h-24 mx-auto mb-6"
             />
@@ -175,12 +175,24 @@ export default function Auth() {
               </div>
             </div>
 
+            {/* Forgot Password Link - only show in sign-in mode */}
+            {!isSignUp && (
+              <div className="text-right">
+                <Link
+                  to="/forgot-password"
+                  className="text-sm text-gray-600 hover:text-gray-800 transition-colors"
+                >
+                  Forgot your password?
+                </Link>
+              </div>
+            )}
+
             <button
               type="submit"
               disabled={loading}
               className="w-full bg-gray-800 text-white py-3 px-4 rounded-lg hover:bg-gray-900 focus:ring-4 focus:ring-gray-300 font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {loading ? 'Loading...' : 'Start Free Trial'}
+             {loading ? 'Loading...' : (isSignUp ? 'Start Free Trial' : 'Login')}
             </button>
           </form>
 
