@@ -394,7 +394,7 @@ export default function LandingPage() {
             <div className="text-center mt-12 md:mt-20">
               <div className="bg-white/80 backdrop-blur-sm border border-gray-200 rounded-2xl p-8 md:p-12 max-w-4xl mx-auto shadow-xl">
                 <h3 className="text-2xl md:text-3xl font-bold text-gray-800 mb-6">
-                  Join 500+ Australian Bakers Who've Gone Pro
+                  Join Australian Bakers Who've Gone Pro
                 </h3>
                 
                 <div className="flex flex-col sm:flex-row items-center justify-center gap-4 md:gap-6 mb-6">
