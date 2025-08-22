@@ -123,7 +123,7 @@ export default function Auth() {
           {/* Koala Logo */}
           <div className="text-center mb-8">
             <img 
-              src="/20250820_0042_Koala Logo Design_remix_01k31cc4t3epsb1sqf7npt8hjb.png"
+              src="/ChatGPT Image Aug 19, 2025, 11_27_18 AM copy copy copy copy copy copy copy copy copy copy copy.png"
               alt="BakeStatements Koala Logo"
               className="w-24 h-24 mx-auto mb-6"
             />
