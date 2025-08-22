@@ -1,6 +1,5 @@
-import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
-import Stripe from 'https://esm.sh/stripe@14.5.0'
+import { createClient } from 'npm:@supabase/supabase-js@2'
+import Stripe from 'npm:stripe@14.25.0'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -8,7 +7,7 @@ const corsHeaders = {
   'Access-Control-Allow-Methods': 'POST, OPTIONS',
 }
 
-serve(async (req) => {
+Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders })
   }
@@ -33,6 +32,12 @@ serve(async (req) => {
 
     const { priceId, mode = 'subscription' } = await req.json()
 
+    if (!priceId) {
+      throw new Error('Price ID is required')
+    }
+
+    console.log('Creating checkout session for:', { priceId, mode, userId: user.user.id })
+
     const session = await stripe.checkout.sessions.create({
       customer_email: user.user.email,
       billing_address_collection: 'required',
@@ -50,6 +55,8 @@ serve(async (req) => {
       },
     })
 
+    console.log('Checkout session created:', session.id)
+
     return new Response(
       JSON.stringify({ url: session.url }),
       {
@@ -58,7 +65,7 @@ serve(async (req) => {
       },
     )
   } catch (error) {
-    console.error('Error:', error)
+    console.error('Error creating checkout session:', error)
     return new Response(
       JSON.stringify({ error: error.message }),
       {

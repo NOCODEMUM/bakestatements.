@@ -23,14 +23,19 @@ export default function LandingPage() {
     setLoading(priceId)
     
     try {
+      console.log('Starting subscription process for:', { priceId, mode })
+      
       // Check if user is authenticated
       const { data: { session } } = await supabase.auth.getSession()
       
       if (!session) {
+        console.log('No session found, redirecting to auth')
         // Redirect to auth page if not logged in
         window.location.href = '/auth'
         return
       }
+
+      console.log('User authenticated, creating checkout session')
 
       const { data, error } = await supabase.functions.invoke('create-checkout', {
         body: {
@@ -42,15 +47,23 @@ export default function LandingPage() {
         },
       })
 
-      if (error) throw error
+      if (error) {
+        console.error('Supabase function error:', error)
+        throw error
+      }
 
-      const stripe = await loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY)
+      console.log('Checkout response:', data)
+
+      const stripe = await loadStripe('pk_live_51HQu3YHruLrtRCwicQwk5bRfrvR38kdh5R73SmRBSQ12oKzMkkGjPVZ2ZbnSezrwiqjSX5ZHMvTKadLRio4Y4dX900XvrIf0N9')
       if (stripe && data.url) {
+        console.log('Redirecting to Stripe checkout:', data.url)
         window.location.href = data.url
+      } else {
+        throw new Error('Failed to get checkout URL from Stripe')
       }
     } catch (error) {
       console.error('Error:', error)
-      alert('Something went wrong. Please try again.')
+      alert(`Something went wrong: ${error.message}. Please try again.`)
     } finally {
       setLoading(null)
     }
@@ -322,11 +335,11 @@ export default function LandingPage() {
                 </ul>
                 
                 <button
-                  onClick={() => handleSubscribe(STRIPE_PRICES.monthly, 'subscription')}
+                  onClick={() => handleSubscribe('price_1RyA4CHruLrtRCwiXi8uqRWn', 'subscription')}
                   disabled={loading === STRIPE_PRICES.monthly}
                   className="w-full bg-amber-500 text-white py-3 md:py-4 rounded-lg font-bold text-lg hover:bg-amber-600 transition-colors disabled:opacity-50"
                 >
-                  {loading === STRIPE_PRICES.monthly ? (
+                  {loading === 'price_1RyA4CHruLrtRCwiXi8uqRWn' ? (
                     <div className="flex items-center justify-center space-x-2">
                       <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
                       <span>Processing...</span>
@@ -355,11 +368,11 @@ export default function LandingPage() {
                 </ul>
                 
                 <button
-                  onClick={() => handleSubscribe(STRIPE_PRICES.annual, 'subscription')}
+                  onClick={() => handleSubscribe('price_1RyA4CHruLrtRCwiZJlqpEt1', 'subscription')}
                   disabled={loading === STRIPE_PRICES.annual}
                   className="w-full bg-teal-600 text-white py-3 md:py-4 rounded-lg font-bold text-lg hover:bg-teal-700 transition-colors disabled:opacity-50"
                 >
-                  {loading === STRIPE_PRICES.annual ? (
+                  {loading === 'price_1RyA4CHruLrtRCwiZJlqpEt1' ? (
                     <div className="flex items-center justify-center space-x-2">
                       <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
                       <span>Processing...</span>
@@ -384,11 +397,11 @@ export default function LandingPage() {
                 </ul>
                 
                 <button
-                  onClick={() => handleSubscribe(STRIPE_PRICES.lifetime, 'payment')}
+                  onClick={() => handleSubscribe('price_1RyA4CHruLrtRCwi7inxZ3l2', 'payment')}
                   disabled={loading === STRIPE_PRICES.lifetime}
                   className="w-full bg-pink-600 text-white py-3 md:py-4 rounded-lg font-bold text-lg hover:bg-pink-700 transition-colors disabled:opacity-50"
                 >
-                  {loading === STRIPE_PRICES.lifetime ? (
+                  {loading === 'price_1RyA4CHruLrtRCwi7inxZ3l2' ? (
                     <div className="flex items-center justify-center space-x-2">
                       <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
                       <span>Processing...</span>
