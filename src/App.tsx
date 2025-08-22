@@ -16,6 +16,8 @@ import Expenses from './pages/Expenses'
 import Settings from './pages/Settings'
 import Enquiries from './pages/Enquiries'
 import EnquiryForm from './pages/EnquiryForm'
+import ForgotPassword from './pages/ForgotPassword'
+import ResetPassword from './pages/ResetPassword'
 import { useState } from 'react'
 
 function AppContent() {
@@ -45,6 +47,10 @@ function AppContent() {
         
         {/* Enquiry Form - accessible to everyone */}
         <Route path="/enquiry" element={<EnquiryForm />} />
+        
+        {/* Password Reset Flow - accessible to everyone */}
+        <Route path="/forgot-password" element={<ForgotPassword />} />
+        <Route path="/reset-password" element={<ResetPassword />} />
         
         {/* Auth Page - for non-authenticated users */}
         <Route path="/auth" element={!user ? <Auth /> : <Navigate to="/" replace />} />

@@ -109,7 +109,7 @@ export default function LandingPage() {
             {/* Desktop CTA */}
             <div className="hidden md:flex items-center space-x-4">
               <a href="/auth" className="text-gray-600 hover:text-teal-600 font-medium transition-colors">
-                Login
+                Sign In
               </a>
               <a 
                 href="/auth" 
@@ -145,7 +145,7 @@ export default function LandingPage() {
                   Pricing
                 </button>
                 <a href="/about-us" className="block py-2 text-gray-600 hover:text-teal-600 font-medium">
-                  About
+                  Sign In
                 </a>
                 <button 
                   onClick={() => scrollToSection('contact')}
@@ -571,7 +571,7 @@ export default function LandingPage() {
                 </li>
                 <li>
                   <a href="/auth" className="text-gray-300 hover:text-white transition-colors">
-                    Free Trial
+                    Sign Up
                   </a>
                 </li>
                 <li>

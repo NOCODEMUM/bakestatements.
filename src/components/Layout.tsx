@@ -42,7 +42,13 @@ export default function Layout({ children }: LayoutProps) {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false)
 
   const handleSignOut = async () => {
-    await signOut()
+    try {
+      await signOut()
+      // Redirect to landing page after sign out
+      window.location.href = '/landing'
+    } catch (error) {
+      console.error('Error signing out:', error)
+    }
   }
 
   const closeSidebar = () => {
