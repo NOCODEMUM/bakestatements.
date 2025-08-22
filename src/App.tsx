@@ -18,6 +18,7 @@ import Enquiries from './pages/Enquiries'
 import EnquiryForm from './pages/EnquiryForm'
 import ForgotPassword from './pages/ForgotPassword'
 import ResetPassword from './pages/ResetPassword'
+import Pricing from './pages/Pricing'
 import { useState } from 'react'
 
 function AppContent() {
@@ -47,6 +48,9 @@ function AppContent() {
         
         {/* Enquiry Form - accessible to everyone */}
         <Route path="/enquiry" element={<EnquiryForm />} />
+        
+        {/* Pricing Page - accessible to everyone */}
+        <Route path="/pricing" element={<Pricing />} />
         
         {/* Password Reset Flow - accessible to everyone */}
         <Route path="/forgot-password" element={<ForgotPassword />} />

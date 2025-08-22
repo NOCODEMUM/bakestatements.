@@ -68,11 +68,7 @@ export default function Auth() {
 
     try {
       if (isSignUp) {
-        const { error } = await signUp(email, password, {
-          options: {
-            emailRedirectTo: `${window.location.origin}/auth?message=email_verified`
-          }
-        })
+        const { error } = await signUp(email, password)
 
         if (error) {
           if (error.message.includes('already registered')) {
@@ -81,8 +77,9 @@ export default function Auth() {
             setMessage(error.message)
           }
         } else {
-          setMessage('Success! Check your email for the confirmation link.')
+          setMessage('Account created successfully! You can now sign in.')
           setIsSuccess(true)
+          setIsSignUp(false) // Switch to sign in mode
         }
       } else {
         const { error } = await signIn(email, password)

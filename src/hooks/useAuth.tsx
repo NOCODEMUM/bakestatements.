@@ -74,7 +74,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const result = await supabase.auth.signUp({
       email,
       password,
-      ...options
+      options: {
+        emailRedirectTo: `${window.location.origin}/auth?message=email_verified`
+      }
     })
     return result
   }

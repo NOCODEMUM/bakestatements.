@@ -13,20 +13,28 @@ Deno.serve(async (req) => {
   }
 
   try {
+    // Initialize Stripe with secret key
     const stripe = new Stripe(Deno.env.get('STRIPE_SECRET_KEY') || '', {
-      apiVersion: '2023-10-16',
+      apiVersion: '2024-06-20',
     })
 
+    // Initialize Supabase client
     const supabase = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_ANON_KEY') ?? '',
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '',
     )
 
-    const authHeader = req.headers.get('Authorization')!
-    const token = authHeader.replace('Bearer ', '')
-    const { data: user } = await supabase.auth.getUser(token)
+    // Get user from auth header
+    const authHeader = req.headers.get('Authorization')
+    if (!authHeader) {
+      throw new Error('No authorization header')
+    }
 
-    if (!user.user) {
+    const token = authHeader.replace('Bearer ', '')
+    const { data: userData, error: userError } = await supabase.auth.getUser(token)
+
+    if (userError || !userData.user) {
+      console.error('User authentication error:', userError)
       throw new Error('User not authenticated')
     }
 
@@ -36,10 +44,45 @@ Deno.serve(async (req) => {
       throw new Error('Price ID is required')
     }
 
-    console.log('Creating checkout session for:', { priceId, mode, userId: user.user.id })
+    console.log('Creating checkout session for:', { 
+      priceId, 
+      mode, 
+      userId: userData.user.id,
+      email: userData.user.email 
+    })
 
+    // Get or create Stripe customer
+    let customerId = null
+    
+    // Check if user already has a Stripe customer ID
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('stripe_customer_id')
+      .eq('id', userData.user.id)
+      .single()
+
+    if (profile?.stripe_customer_id) {
+      customerId = profile.stripe_customer_id
+    } else {
+      // Create new Stripe customer
+      const customer = await stripe.customers.create({
+        email: userData.user.email,
+        metadata: {
+          supabase_user_id: userData.user.id,
+        },
+      })
+      customerId = customer.id
+
+      // Save customer ID to profile
+      await supabase
+        .from('profiles')
+        .update({ stripe_customer_id: customerId })
+        .eq('id', userData.user.id)
+    }
+
+    // Create checkout session
     const session = await stripe.checkout.sessions.create({
-      customer_email: user.user.email,
+      customer: customerId,
       billing_address_collection: 'required',
       line_items: [
         {
@@ -51,14 +94,18 @@ Deno.serve(async (req) => {
       success_url: `${req.headers.get('origin')}/dashboard?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${req.headers.get('origin')}/dashboard`,
       metadata: {
-        user_id: user.user.id,
+        user_id: userData.user.id,
       },
+      allow_promotion_codes: true,
     })
 
-    console.log('Checkout session created:', session.id)
+    console.log('Checkout session created successfully:', session.id)
 
     return new Response(
-      JSON.stringify({ url: session.url }),
+      JSON.stringify({ 
+        url: session.url,
+        sessionId: session.id 
+      }),
       {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         status: 200,
@@ -67,7 +114,10 @@ Deno.serve(async (req) => {
   } catch (error) {
     console.error('Error creating checkout session:', error)
     return new Response(
-      JSON.stringify({ error: error.message }),
+      JSON.stringify({ 
+        error: error.message,
+        details: 'Failed to create checkout session'
+      }),
       {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         status: 400,

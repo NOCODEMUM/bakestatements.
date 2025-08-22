@@ -1,15 +1,13 @@
 import React, { useState } from 'react'
-import { loadStripe } from '@stripe/stripe-js'
-import { supabase } from '../lib/supabase'
-import { STRIPE_PRICES } from '../lib/stripe'
+import StripeCheckout from '../components/StripeCheckout'
 import { Menu, X, Check, ChefHat } from 'lucide-react'
 import './LandingPage.css'
 
 export default function LandingPage() {
-  const [loading, setLoading] = useState<string | null>(null)
   const [mailingEmail, setMailingEmail] = useState('')
   const [mailingSubmitted, setMailingSubmitted] = useState(false)
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+  const [showCheckout, setShowCheckout] = useState(false)
 
   const scrollToSection = (sectionId: string) => {
     const element = document.getElementById(sectionId)
@@ -19,55 +17,6 @@ export default function LandingPage() {
     setMobileMenuOpen(false) // Close mobile menu after navigation
   }
 
-  const handleSubscribe = async (priceId: string, mode: string = 'subscription') => {
-    setLoading(priceId)
-    
-    try {
-      console.log('Starting subscription process for:', { priceId, mode })
-      
-      // Check if user is authenticated
-      const { data: { session } } = await supabase.auth.getSession()
-      
-      if (!session) {
-        console.log('No session found, redirecting to auth')
-        // Redirect to auth page if not logged in
-        window.location.href = '/auth'
-        return
-      }
-
-      console.log('User authenticated, creating checkout session')
-
-      const { data, error } = await supabase.functions.invoke('create-checkout', {
-        body: {
-          priceId: priceId,
-          mode: mode
-        },
-        headers: {
-          Authorization: `Bearer ${session.access_token}`,
-        },
-      })
-
-      if (error) {
-        console.error('Supabase function error:', error)
-        throw error
-      }
-
-      console.log('Checkout response:', data)
-
-      const stripe = await loadStripe('pk_live_51HQu3YHruLrtRCwicQwk5bRfrvR38kdh5R73SmRBSQ12oKzMkkGjPVZ2ZbnSezrwiqjSX5ZHMvTKadLRio4Y4dX900XvrIf0N9')
-      if (stripe && data.url) {
-        console.log('Redirecting to Stripe checkout:', data.url)
-        window.location.href = data.url
-      } else {
-        throw new Error('Failed to get checkout URL from Stripe')
-      }
-    } catch (error) {
-      console.error('Error:', error)
-      alert(`Something went wrong: ${error.message}. Please try again.`)
-    } finally {
-      setLoading(null)
-    }
-  }
 
   const handleMailingSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -332,21 +281,27 @@ export default function LandingPage() {
                 </div>
                 
                 <ul className="space-y-3 mb-8">
+                  {[
+                    'Unlimited orders & recipes',
+                    'ATO-compliant expense tracking',
+                    'Professional invoicing',
+                    'Recipe costing calculator',
+                    'Customer enquiry forms',
+                    'CSV/PDF exports',
+                    'Email support'
+                  ].map((feature) => (
+                    <li key={feature} className="flex items-center space-x-2">
+                      <Check className="w-4 h-4 text-green-500 flex-shrink-0" />
+                      <span className="text-sm text-gray-700">{feature}</span>
+                    </li>
+                  ))}
                 </ul>
                 
                 <button
-                  onClick={() => handleSubscribe('price_1RyA4CHruLrtRCwiXi8uqRWn', 'subscription')}
-                  disabled={loading === STRIPE_PRICES.monthly}
+                  onClick={() => setShowCheckout(true)}
                   className="w-full bg-amber-500 text-white py-3 md:py-4 rounded-lg font-bold text-lg hover:bg-amber-600 transition-colors disabled:opacity-50"
                 >
-                  {loading === 'price_1RyA4CHruLrtRCwiXi8uqRWn' ? (
-                    <div className="flex items-center justify-center space-x-2">
-                      <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
-                      <span>Processing...</span>
-                    </div>
-                  ) : (
-                    'Start Monthly Plan'
-                  )}
+                  Start Monthly Plan
                 </button>
               </div>
               
@@ -365,21 +320,27 @@ export default function LandingPage() {
                 </div>
                 
                 <ul className="space-y-3 mb-8">
+                  {[
+                    'Unlimited orders & recipes',
+                    'ATO-compliant expense tracking',
+                    'Professional invoicing',
+                    'Recipe costing calculator',
+                    'Customer enquiry forms',
+                    'CSV/PDF exports',
+                    'Priority email support'
+                  ].map((feature) => (
+                    <li key={feature} className="flex items-center space-x-2">
+                      <Check className="w-4 h-4 text-green-500 flex-shrink-0" />
+                      <span className="text-sm text-gray-700">{feature}</span>
+                    </li>
+                  ))}
                 </ul>
                 
                 <button
-                  onClick={() => handleSubscribe('price_1RyA4CHruLrtRCwiZJlqpEt1', 'subscription')}
-                  disabled={loading === STRIPE_PRICES.annual}
+                  onClick={() => setShowCheckout(true)}
                   className="w-full bg-teal-600 text-white py-3 md:py-4 rounded-lg font-bold text-lg hover:bg-teal-700 transition-colors disabled:opacity-50"
                 >
-                  {loading === 'price_1RyA4CHruLrtRCwiZJlqpEt1' ? (
-                    <div className="flex items-center justify-center space-x-2">
-                      <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
-                      <span>Processing...</span>
-                    </div>
-                  ) : (
-                    'Start Annual Plan'
-                  )}
+                  Start Annual Plan
                 </button>
               </div>
               
@@ -394,21 +355,27 @@ export default function LandingPage() {
                 </div>
                 
                 <ul className="space-y-3 mb-8">
+                  {[
+                    'Everything in Annual plan',
+                    'Lifetime access - no recurring fees',
+                    'All future features included',
+                    'Priority support for life',
+                    'Founder badge & recognition',
+                    'Early access to new tools',
+                    'Community access'
+                  ].map((feature) => (
+                    <li key={feature} className="flex items-center space-x-2">
+                      <Check className="w-4 h-4 text-green-500 flex-shrink-0" />
+                      <span className="text-sm text-gray-700">{feature}</span>
+                    </li>
+                  ))}
                 </ul>
                 
                 <button
-                  onClick={() => handleSubscribe('price_1RyA4CHruLrtRCwi7inxZ3l2', 'payment')}
-                  disabled={loading === STRIPE_PRICES.lifetime}
+                  onClick={() => setShowCheckout(true)}
                   className="w-full bg-pink-600 text-white py-3 md:py-4 rounded-lg font-bold text-lg hover:bg-pink-700 transition-colors disabled:opacity-50"
                 >
-                  {loading === 'price_1RyA4CHruLrtRCwi7inxZ3l2' ? (
-                    <div className="flex items-center justify-center space-x-2">
-                      <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
-                      <span>Processing...</span>
-                    </div>
-                  ) : (
-                    'Get Lifetime Access'
-                  )}
+                  Get Lifetime Access
                 </button>
               </div>
             </div>
@@ -609,6 +576,24 @@ export default function LandingPage() {
           </div>
         </div>
       </footer>
+
+      {/* Checkout Modal */}
+      {showCheckout && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 overflow-y-auto">
+          <div className="bg-white rounded-2xl shadow-xl max-w-4xl w-full my-8 p-6">
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-2xl font-bold text-gray-800">Choose Your Plan</h2>
+              <button
+                onClick={() => setShowCheckout(false)}
+                className="p-2 text-gray-400 hover:text-gray-600"
+              >
+                <X className="w-6 h-6" />
+              </button>
+            </div>
+            <StripeCheckout onClose={() => setShowCheckout(false)} />
+          </div>
+        </div>
+      )}
     </div>
   )
 }
