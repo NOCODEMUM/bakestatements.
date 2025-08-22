@@ -192,7 +192,7 @@ export default function Auth() {
               disabled={loading}
               className="w-full bg-gray-800 text-white py-3 px-4 rounded-lg hover:bg-gray-900 focus:ring-4 focus:ring-gray-300 font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {loading ? 'Loading...' : 'Start Free Trial'}
+             {loading ? 'Loading...' : (isSignUp ? 'Start Free Trial' : 'Login')}
             </button>
           </form>
 
