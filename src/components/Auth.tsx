@@ -2,20 +2,16 @@ import { useState, useEffect } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import { useAuth } from '../hooks/useAuth'
 import { ChefHat, Eye, EyeOff, Mail } from 'lucide-react'
+import { supabase } from '../lib/supabase'
 
 export default function Auth() {
   const [loading, setLoading] = useState(false)
   const [isSignUp, setIsSignUp] = useState(true)
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
-  const [confirmPassword, setConfirmPassword] = useState('')
-  const [fullName, setFullName] = useState('')
   const [message, setMessage] = useState('')
   const [isSuccess, setIsSuccess] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false)
-  const [agreeToTerms, setAgreeToTerms] = useState(false)
-  const [rememberMe, setRememberMe] = useState(false)
   const [showResendVerification, setShowResendVerification] = useState(false)
   const [resendLoading, setResendLoading] = useState(false)
   const { signUp, signIn } = useAuth()
@@ -27,24 +23,13 @@ export default function Auth() {
     if (urlMessage === 'password_updated') {
       setMessage('Password updated successfully! You can now sign in with your new password.')
       setIsSuccess(true)
+      setIsSignUp(false) // Switch to sign in mode
     } else if (urlMessage === 'email_verified') {
       setMessage('Email verified successfully! You can now sign in to your account.')
       setIsSuccess(true)
+      setIsSignUp(false) // Switch to sign in mode
     }
   }, [searchParams])
-
-  const validatePassword = (password: string) => {
-    if (password.length < 8) {
-      return 'Password must be at least 8 characters long'
-    }
-    if (!/[A-Za-z]/.test(password)) {
-      return 'Password must include letters'
-    }
-    if (!/[0-9]/.test(password)) {
-      return 'Password must include numbers'
-    }
-    return null
-  }
 
   const handleResendVerification = async () => {
     if (!email) {
@@ -83,32 +68,7 @@ export default function Auth() {
 
     try {
       if (isSignUp) {
-        // Validate password
-        const passwordError = validatePassword(password)
-        if (passwordError) {
-          setMessage(passwordError)
-          setLoading(false)
-          return
-        }
-
-        // Check password confirmation
-        if (password !== confirmPassword) {
-          setMessage('Passwords do not match')
-          setLoading(false)
-          return
-        }
-
-        // Check terms agreement
-        if (!agreeToTerms) {
-          setMessage('Please agree to the Terms & Privacy Policy to continue')
-          setLoading(false)
-          return
-        }
-
         const { error } = await signUp(email, password, {
-          data: {
-            full_name: fullName
-          },
           options: {
             emailRedirectTo: `${window.location.origin}/auth?message=email_verified`
           }
@@ -145,68 +105,48 @@ export default function Auth() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-teal-50 to-amber-50 flex flex-col">
-      {/* Header with Logo */}
+    <div className="min-h-screen bg-gray-50 flex flex-col">
+      {/* Header */}
       <div className="flex items-center justify-between p-6">
         <div className="flex items-center space-x-2">
-          <ChefHat className="w-6 h-6 text-amber-500" />
-          <span className="font-semibold text-gray-800">BakeStatements</span>
+          <ChefHat className="w-6 h-6 text-gray-700" />
+          <span className="text-lg font-semibold text-gray-800">BakeStatements</span>
         </div>
-        <div className="text-sm text-gray-600">
-          <Link to="/landing" className="hover:text-gray-800 transition-colors">
-            Back to Home
-          </Link>
+        <div className="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center">
+          <span className="text-white font-bold text-lg">?</span>
         </div>
       </div>
 
       {/* Main Content */}
       <div className="flex-1 flex items-center justify-center px-4">
         <div className="w-full max-w-md">
-          {/* Koala Mascot */}
+          {/* Koala Logo */}
           <div className="text-center mb-8">
-            <div className="w-24 h-24 bg-amber-100 rounded-2xl flex items-center justify-center mx-auto mb-6">
-              <ChefHat className="w-12 h-12 text-amber-600" />
-            </div>
+            <img 
+              src="/20250820_0042_Koala Logo Design_remix_01k31cc4t3epsb1sqf7npt8hjb.png"
+              alt="BakeStatements Koala Logo"
+              className="w-24 h-24 mx-auto mb-6"
+            />
             
-            <h1 className="text-2xl md:text-3xl font-bold text-gray-800 mb-2">
-              {isSignUp ? 'Start Your Baking Journey' : 'Welcome Back, Baker!'}
+            <h1 className="text-2xl font-bold text-gray-800 mb-2">
+              Welcome to BakeStatements
             </h1>
             <p className="text-gray-600 text-sm">
-              {isSignUp ? 
-                'Join hundreds of Australian bakers managing their business with BakeStatements' :
-                'Sign in to continue managing your bakery'
-              }
+              Professional bakery management for Australian bakers
             </p>
           </div>
 
           {/* Auth Form */}
           <form onSubmit={handleSubmit} className="space-y-4">
-            {/* Full Name - Sign Up Only */}
-            {isSignUp && (
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Full Name
-                </label>
-                <input
-                  type="text"
-                  value={fullName}
-                  onChange={(e) => setFullName(e.target.value)}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500 outline-none transition-colors"
-                  placeholder="Your full name"
-                  required
-                />
-              </div>
-            )}
-
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Email Address
+                Email
               </label>
               <input
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500 outline-none transition-colors"
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-colors"
                 placeholder="your@email.com"
                 required
               />
@@ -221,7 +161,7 @@ export default function Auth() {
                   type={showPassword ? 'text' : 'password'}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="w-full px-4 py-3 pr-12 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500 outline-none transition-colors"
+                  className="w-full px-4 py-3 pr-12 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-colors"
                   placeholder="Enter your password"
                   required
                 />
@@ -233,98 +173,24 @@ export default function Auth() {
                   {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                 </button>
               </div>
-              {isSignUp && (
-                <p className="text-xs text-gray-500 mt-1">
-                  At least 8 characters with letters and numbers
-                </p>
-              )}
             </div>
-
-            {/* Confirm Password - Sign Up Only */}
-            {isSignUp && (
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Confirm Password
-                </label>
-                <div className="relative">
-                  <input
-                    type={showConfirmPassword ? 'text' : 'password'}
-                    value={confirmPassword}
-                    onChange={(e) => setConfirmPassword(e.target.value)}
-                    className="w-full px-4 py-3 pr-12 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500 outline-none transition-colors"
-                    placeholder="Confirm your password"
-                    required
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
-                  >
-                    {showConfirmPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
-                  </button>
-                </div>
-              </div>
-            )}
-
-            {/* Terms Checkbox - Sign Up Only */}
-            {isSignUp && (
-              <div className="flex items-start space-x-3">
-                <input
-                  type="checkbox"
-                  id="terms"
-                  checked={agreeToTerms}
-                  onChange={(e) => setAgreeToTerms(e.target.checked)}
-                  className="mt-1 w-4 h-4 text-amber-600 border-gray-300 rounded focus:ring-amber-500 focus:ring-2"
-                  required
-                />
-                <label htmlFor="terms" className="text-sm text-gray-600">
-                  I agree to the{' '}
-                  <Link to="/privacy-terms" className="text-amber-600 hover:text-amber-700 font-medium">
-                    Terms & Privacy Policy
-                  </Link>
-                </label>
-              </div>
-            )}
-
-            {/* Remember Me - Sign In Only */}
-            {!isSignUp && (
-              <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-2">
-                  <input
-                    type="checkbox"
-                    id="remember"
-                    checked={rememberMe}
-                    onChange={(e) => setRememberMe(e.target.checked)}
-                    className="w-4 h-4 text-amber-600 border-gray-300 rounded focus:ring-amber-500 focus:ring-2"
-                  />
-                  <label htmlFor="remember" className="text-sm text-gray-600">
-                    Remember me (7 days)
-                  </label>
-                </div>
-                <Link to="/forgot-password" className="text-sm text-amber-600 hover:text-amber-700 font-medium">
-                  Forgot Password?
-                </Link>
-              </div>
-            )}
 
             <button
               type="submit"
               disabled={loading}
               className="w-full bg-gray-800 text-white py-3 px-4 rounded-lg hover:bg-gray-900 focus:ring-4 focus:ring-gray-300 font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {loading ? 'Loading...' : (isSignUp ? 'Start Free Trial' : 'Sign In')}
+              {loading ? 'Loading...' : 'Start Free Trial'}
             </button>
           </form>
 
           {/* Trial Badge */}
-          {isSignUp && (
-            <div className="mt-6 text-center">
-              <div className="inline-flex items-center px-4 py-2 rounded-full text-sm bg-green-50 text-green-700 border border-green-200">
-                <span className="mr-2">🎉</span>
-                <strong>7-day free trial</strong> - No credit card required
-              </div>
+          <div className="mt-6 text-center">
+            <div className="inline-flex items-center px-4 py-2 rounded-full text-sm bg-green-50 text-green-700 border border-green-200">
+              <span className="mr-2">🎉</span>
+              <strong>7-day free trial</strong> - No credit card required
             </div>
-          )}
+          </div>
 
           {/* Messages */}
           {message && (
@@ -369,33 +235,30 @@ export default function Auth() {
                 setMessage('')
                 setIsSuccess(false)
                 setShowResendVerification(false)
-                // Clear form when switching modes
                 setPassword('')
-                setConfirmPassword('')
-                setFullName('')
-                setAgreeToTerms(false)
               }}
               className="text-gray-600 hover:text-gray-800 font-medium text-sm transition-colors"
             >
               {isSignUp ? 'Already have an account? Sign in' : 'Need an account? Start free trial'}
             </button>
           </div>
-
-          {/* Terms */}
-          <div className="mt-8 text-center text-xs text-gray-500">
-            Made for Australian bakers by{' '}
-            <Link to="/about-us" className="text-gray-700 hover:underline">PIX3L</Link>
-            {' • '}
-            <Link to="/privacy-terms" className="text-gray-700 hover:underline">Privacy & Terms</Link>
-          </div>
         </div>
       </div>
 
       {/* Footer */}
-      <div className="p-6">
+      <div className="p-6 space-y-4">
+        {/* Terms Text */}
+        <div className="text-center text-xs text-gray-500">
+          By continuing, you agree to our{' '}
+          <Link to="/privacy-terms" className="text-gray-700 hover:underline">Terms of Service</Link>
+          {' '}and{' '}
+          <Link to="/privacy-terms" className="text-gray-700 hover:underline">Privacy Policy</Link>
+        </div>
+        
+        {/* Footer Brand */}
         <div className="flex items-center justify-between max-w-md mx-auto">
           <div className="flex items-center space-x-2 text-sm text-gray-600">
-            <ChefHat className="w-5 h-5 text-amber-500" />
+            <ChefHat className="w-5 h-5 text-gray-500" />
             <span>BakeStatements</span>
           </div>
           <div className="flex items-center space-x-1 text-sm text-gray-600">
