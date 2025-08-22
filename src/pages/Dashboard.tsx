@@ -37,6 +37,39 @@ export default function Dashboard() {
 
   const fetchDashboardData = async () => {
     try {
+      // Handle demo mode - avoid Supabase queries with invalid UUID
+      if (isDemoMode) {
+        setStats({
+          totalOrders: 12,
+          totalRevenue: 2450.00,
+          totalExpenses: 890.50,
+          netProfit: 1559.50,
+          upcomingOrders: [
+            {
+              id: 'demo-1',
+              customer_name: 'Sarah\'s Cafe',
+              order_details: '24 Chocolate Cupcakes',
+              due_date: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000).toISOString(),
+              status: 'Confirmed',
+              amount: 120.00
+            },
+            {
+              id: 'demo-2',
+              customer_name: 'Birthday Party',
+              order_details: 'Custom Birthday Cake',
+              due_date: new Date(Date.now() + 4 * 24 * 60 * 60 * 1000).toISOString(),
+              status: 'Baking',
+              amount: 85.00
+            }
+          ],
+          pendingInvoices: 3,
+          pendingInvoicesValue: 340.00,
+          newEnquiries: 0
+        })
+        setLoading(false)
+        return
+      }
+
       // Fetch orders
       const { data: orders } = await supabase
         .from('orders')
