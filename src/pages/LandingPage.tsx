@@ -183,13 +183,6 @@ export default function LandingPage() {
           <div className="hero__overlay"></div>
           <div className="hero__fade-overlay"></div>
           <div className="hero__content">
-            <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold text-gray-800 mb-4 md:mb-6">
-              BakeStatements
-            </h1>
-            <p className="text-lg md:text-xl lg:text-2xl text-gray-700 max-w-3xl mb-8 md:mb-12 leading-relaxed">
-              The financial co-pilot for Australian bakers. Simplify bookkeeping, compliance, and branding 
-              so you can spend less time on paperwork and more time creating delicious bakes.
-            </p>
             <a className="btn-primary" href="/auth">Start Free Trial</a>
           </div>
         </section>
