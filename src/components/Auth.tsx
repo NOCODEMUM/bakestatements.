@@ -175,6 +175,18 @@ export default function Auth() {
               </div>
             </div>
 
+            {/* Forgot Password Link - only show in sign-in mode */}
+            {!isSignUp && (
+              <div className="text-right">
+                <Link
+                  to="/forgot-password"
+                  className="text-sm text-gray-600 hover:text-gray-800 transition-colors"
+                >
+                  Forgot your password?
+                </Link>
+              </div>
+            )}
+
             <button
               type="submit"
               disabled={loading}
