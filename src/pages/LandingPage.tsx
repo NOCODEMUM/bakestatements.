@@ -309,19 +309,6 @@ export default function LandingPage() {
                 </div>
                 
                 <ul className="space-y-3 mb-8">
-                  {[
-                    'Unlimited orders & recipes',
-                    'ATO expense tracking',
-                    'Professional invoicing',
-                    'Customer enquiry forms',
-                    'Calendar view',
-                    'CSV/PDF exports'
-                  ].map((feature) => (
-                    <li key={feature} className="flex items-center space-x-3">
-                      <Check className="w-5 h-5 text-green-500 flex-shrink-0" />
-                      <span className="text-gray-600">{feature}</span>
-                    </li>
-                  ))}
                 </ul>
                 
                 <button
@@ -355,18 +342,6 @@ export default function LandingPage() {
                 </div>
                 
                 <ul className="space-y-3 mb-8">
-                  {[
-                    'Everything in Monthly',
-                    'Priority email support',
-                    'Advanced reporting',
-                    'Custom branding options',
-                    'Early access to new features'
-                  ].map((feature) => (
-                    <li key={feature} className="flex items-center space-x-3">
-                      <Check className="w-5 h-5 text-green-500 flex-shrink-0" />
-                      <span className="text-gray-600">{feature}</span>
-                    </li>
-                  ))}
                 </ul>
                 
                 <button
@@ -396,18 +371,6 @@ export default function LandingPage() {
                 </div>
                 
                 <ul className="space-y-3 mb-8">
-                  {[
-                    'Everything in Annual',
-                    'Lifetime access',
-                    'Founder\'s community access',
-                    'Direct feature input',
-                    'No recurring fees ever'
-                  ].map((feature) => (
-                    <li key={feature} className="flex items-center space-x-3">
-                      <Check className="w-5 h-5 text-green-500 flex-shrink-0" />
-                      <span className="text-gray-600">{feature}</span>
-                    </li>
-                  ))}
                 </ul>
                 
                 <button
