@@ -50,7 +50,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const fetchOrCreateProfile = async (firebaseUser: User) => {
     try {
-      // Try to find existing profile by id
+      // Try to find existing profile by Firebase UID as id
       const { data: existingProfile } = await supabase
         .from('profiles')
         .select('*')
@@ -58,7 +58,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         .maybeSingle()
 
       if (!existingProfile) {
-        // Create new profile with Firebase UID as the id
+        // Create new profile with Firebase UID as id
         const { data: newProfile, error } = await supabase
           .from('profiles')
           .insert([{
