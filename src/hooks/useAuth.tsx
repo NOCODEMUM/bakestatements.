@@ -50,32 +50,46 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const fetchOrCreateProfile = async (firebaseUser: User) => {
     try {
-      // Try to find existing profile by firebase_uid
-      let { data: existingProfile } = await supabase
+      // Try to find existing profile by id
+      const { data: existingProfile } = await supabase
         .from('profiles')
         .select('*')
-        .eq('firebase_uid', firebaseUser.uid)
+        .eq('id', firebaseUser.uid)
         .maybeSingle()
 
       if (!existingProfile) {
-        // Create new profile with Firebase UID in firebase_uid column
+        // Create new profile with Firebase UID as the id
         const { data: newProfile, error } = await supabase
           .from('profiles')
           .insert([{
+            id: firebaseUser.uid,
             email: firebaseUser.email!,
-            firebase_uid: firebaseUser.uid,
             trial_end_date: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(), // 7 days from now
-            subscription_status: 'trial'
+            subscription_status: 'trialing'
           }])
           .select()
-          .single()
+          .maybeSingle()
 
-        if (error) throw error
-        existingProfile = newProfile
+        if (error) {
+          console.error('Error creating profile (non-blocking):', error)
+          // Try to fetch again in case it was created by another session
+          const { data: refetchedProfile } = await supabase
+            .from('profiles')
+            .select('*')
+            .eq('id', firebaseUser.uid)
+            .maybeSingle()
+          
+          setProfile(refetchedProfile)
+          if (refetchedProfile) checkTrialStatus(refetchedProfile)
+          return
+        }
+        
+        setProfile(newProfile)
+        if (newProfile) checkTrialStatus(newProfile)
+      } else {
+        setProfile(existingProfile)
+        checkTrialStatus(existingProfile)
       }
-
-      setProfile(existingProfile)
-      checkTrialStatus(existingProfile)
     } catch (error) {
       console.error('Error fetching/creating profile:', error)
     }

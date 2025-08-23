@@ -32,9 +32,9 @@ export default function Settings() {
         .from('profiles')
         .select('business_name, phone_number, abn')
         .eq('id', profile!.id)
-        .single()
+        .maybeSingle()
 
-      if (error && error.code !== 'PGRST116') throw error // PGRST116 means no rows found
+      if (error) throw error
       
       if (data) {
         setProfileData({
