@@ -53,10 +53,10 @@ export default function Recipes() {
   })
 
   useEffect(() => {
-    if (user) {
+    if (profile) {
       fetchData()
     }
-  }, [user])
+  }, [profile])
 
   const fetchData = async () => {
     try {
@@ -64,7 +64,7 @@ export default function Recipes() {
       const { data: ingredientsData } = await supabase
         .from('ingredients')
         .select('*')
-        .eq('user_id', user!.id)
+        .eq('user_id', profile!.id)
         .order('name')
 
       // Fetch recipes with ingredients
@@ -83,7 +83,7 @@ export default function Recipes() {
             )
           )
         `)
-        .eq('user_id', user!.id)
+        .eq('user_id', profile!.id)
         .order('name')
 
       setIngredients(ingredientsData || [])
@@ -122,7 +122,7 @@ export default function Recipes() {
     try {
       const { error } = await supabase
         .from('ingredients')
-        .insert([{ ...ingredientForm, user_id: user!.id }])
+        .insert([{ ...ingredientForm, user_id: profile!.id }])
 
       if (error) throw error
 
@@ -143,7 +143,7 @@ export default function Recipes() {
         .insert([{ 
           name: recipeForm.name, 
           batch_size: recipeForm.batch_size,
-          user_id: user!.id 
+          user_id: profile!.id 
         }])
         .select()
         .single()

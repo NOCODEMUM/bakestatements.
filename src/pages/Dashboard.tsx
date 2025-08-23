@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../hooks/useAuth'
-import { ShoppingCart, DollarSign, TrendingUp, Calendar, Mail } from 'lucide-react'
+import { ShoppingCart, DollarSign, TrendingUp, Calendar, Mail, FileText } from 'lucide-react'
 import { format } from 'date-fns'
 
 interface DashboardStats {

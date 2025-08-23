@@ -29,10 +29,10 @@ export default function Orders() {
   })
 
   useEffect(() => {
-    if (user && profile) {
+    if (profile) {
       fetchOrders()
     }
-  }, [user, profile])
+  }, [profile])
 
   const fetchOrders = async () => {
     try {

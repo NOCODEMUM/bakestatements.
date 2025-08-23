@@ -38,17 +38,17 @@ export default function Expenses() {
   })
 
   useEffect(() => {
-    if (user) {
+    if (profile) {
       fetchExpenses()
     }
-  }, [user])
+  }, [profile])
 
   const fetchExpenses = async () => {
     try {
       const { data, error } = await supabase
         .from('expenses')
         .select('*')
-        .eq('user_id', user!.id)
+        .eq('user_id', profile!.id)
         .order('date', { ascending: false })
 
       if (error) throw error
@@ -65,7 +65,7 @@ export default function Expenses() {
     try {
       const { error } = await supabase
         .from('expenses')
-        .insert([{ ...formData, user_id: user!.id }])
+        .insert([{ ...formData, user_id: profile!.id }])
 
       if (error) throw error
 
