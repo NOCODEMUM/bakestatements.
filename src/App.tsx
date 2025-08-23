@@ -2,28 +2,17 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import { AuthProvider, useAuth } from './hooks/useAuth'
 import { ThemeProvider } from './contexts/ThemeContext'
 import Auth from './components/Auth'
-import Layout from './components/Layout'
-import PaywallModal from './components/PaywallModal'
 import LandingPage from './pages/LandingPage'
 import PrivacyTerms from './pages/PrivacyTerms'
-import Dashboard from './pages/Dashboard'
-import Orders from './pages/Orders'
-import Calendar from './pages/Calendar'
-import Recipes from './pages/Recipes'
-import Invoices from './pages/Invoices'
-import Expenses from './pages/Expenses'
-import Enquiries from './pages/Enquiries'
 import EnquiryForm from './pages/EnquiryForm'
 import AboutUs from './pages/AboutUs'
-import Settings from './pages/Settings'
 import ForgotPassword from './pages/ForgotPassword'
 import ResetPassword from './pages/ResetPassword'
-import ComingSoon from './pages/ComingSoon'
-import { useState } from 'react'
+import MainApp from './pages/MainApp' // New component for authenticated users
+
 
 function AppContent() {
-  const { user, loading, isTrialExpired } = useAuth()
-  const [showPaywall, setShowPaywall] = useState(false)
+  const { user, loading } = useAuth()
 
   if (loading) {
     return (
@@ -49,16 +38,6 @@ function AppContent() {
         {/* Enquiry Form - accessible to everyone */}
         <Route path="/enquiry" element={<EnquiryForm />} />
         
-        {/* Public Invoice View - accessible to everyone */}
-        <Route path="/invoice/*" element={<ComingSoon />} />
-        
-        {/* Pricing Page - accessible to everyone */}
-        <Route path="/pricing" element={<ComingSoon />} />
-        
-        {/* Coming Soon for removed features */}
-        <Route path="/invoices" element={<ComingSoon />} />
-        <Route path="/payment-settings" element={<ComingSoon />} />
-        
         {/* Password Reset Flow - accessible to everyone */}
         <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/reset-password" element={<ResetPassword />} />
@@ -66,23 +45,13 @@ function AppContent() {
         {/* Auth Page - for non-authenticated users */}
         <Route path="/auth" element={!user ? <Auth /> : <Navigate to="/" replace />} />
         
-        {/* Protected Routes - for authenticated users */}
-        <Route path="/*" element={
+        {/* Main Application for Authenticated Users */}
+        {/* All authenticated routes will be handled within MainApp */}
+        <Route
+          path="/*"
+          element={
           user ? (
-            <Layout>
-              <Routes>
-                <Route path="/" element={<Dashboard />} />
-                <Route path="/orders" element={<Orders />} />
-                <Route path="/calendar" element={<Calendar />} />
-                <Route path="/recipes" element={<Recipes />} />
-                <Route path="/invoices" element={<ComingSoon />} />
-                <Route path="/expenses" element={<Expenses />} />
-                <Route path="/enquiries" element={<Enquiries />} />
-                <Route path="/settings" element={<Settings />} />
-                <Route path="/payment-settings" element={<ComingSoon />} />
-                <Route path="*" element={<Navigate to="/" replace />} />
-              </Routes>
-            </Layout>
+            <MainApp />
           ) : (
             <Navigate to="/landing" replace />
           )
