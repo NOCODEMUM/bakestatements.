@@ -29,25 +29,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [isTrialExpired, setIsTrialExpired] = useState(false)
   const [hasActiveSubscription, setHasActiveSubscription] = useState(false)
 
-  useEffect(() => {
-    // Listen for Firebase auth changes
-    const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
-      setUser(firebaseUser)
-      
-      if (firebaseUser) {
-        await fetchOrCreateProfile(firebaseUser)
-      } else {
-        setProfile(null)
-        setIsTrialExpired(false)
-        setHasActiveSubscription(false)
-      }
-      
-      setLoading(false)
-    })
-
-    return () => unsubscribe()
-  }, [])
-
   const fetchOrCreateProfile = async (firebaseUser: User) => {
     try {
       // Try to find existing profile by firebase_uid
@@ -108,6 +89,25 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const result = await firebaseSignOut(auth)
     return result
   }
+
+  useEffect(() => {
+    // Listen for Firebase auth changes
+    const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
+      setUser(firebaseUser)
+      
+      if (firebaseUser) {
+        await fetchOrCreateProfile(firebaseUser)
+      } else {
+        setProfile(null)
+        setIsTrialExpired(false)
+        setHasActiveSubscription(false)
+      }
+      
+      setLoading(false)
+    })
+
+    return () => unsubscribe()
+  }, [])
 
   return (
     <AuthContext.Provider value={{
