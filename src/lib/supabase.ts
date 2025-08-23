@@ -19,6 +19,10 @@ export type Database = {
           subscription_status: string | null
           stripe_customer_id: string | null
           subscription_id: string | null
+          subscription_tier: string | null
+          subscription_end_date: string | null
+          payment_method: string | null
+          full_name: string | null
           created_at: string
         }
         Insert: {
@@ -31,6 +35,10 @@ export type Database = {
           subscription_status?: string | null
           stripe_customer_id?: string | null
           subscription_id?: string | null
+          subscription_tier?: string | null
+          subscription_end_date?: string | null
+          payment_method?: string | null
+          full_name?: string | null
           created_at?: string
         }
         Update: {
@@ -43,6 +51,10 @@ export type Database = {
           subscription_status?: string | null
           stripe_customer_id?: string | null
           subscription_id?: string | null
+          subscription_tier?: string | null
+          subscription_end_date?: string | null
+          payment_method?: string | null
+          full_name?: string | null
           created_at?: string
         }
       }
