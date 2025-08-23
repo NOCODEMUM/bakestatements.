@@ -4,6 +4,8 @@ import { useAuth } from '../hooks/useAuth'
 import { ChefHat, Eye, EyeOff, Mail } from 'lucide-react'
 import { sendEmailVerification } from 'firebase/auth'
 import { auth } from '../lib/firebase'
+import { sendEmailVerification } from 'firebase/auth'
+import { auth } from '../lib/firebase'
 
 export default function Auth() {
   const [loading, setLoading] = useState(false)
@@ -40,6 +42,13 @@ export default function Auth() {
       if (isSignUp) {
         const { user: firebaseUser } = await signUp(email, password)
 
+        if (firebaseUser) {
+          // Send email verification
+          await sendEmailVerification(firebaseUser)
+          setMessage('Account created successfully! You can now sign in.')
+          setIsSuccess(true)
+          setIsSignUp(false) // Switch to sign in mode
+        }
         if (firebaseUser) {
           // Send email verification
           await sendEmailVerification(firebaseUser)

@@ -17,7 +17,8 @@ import {
   X,
   Sun,
   Moon,
-  Mail
+  Mail,
+  CreditCard
 } from 'lucide-react'
 
 interface LayoutProps {
@@ -33,6 +34,7 @@ const navigation = [
   { name: 'Expenses', href: '/expenses', icon: DollarSign },
   { name: 'Enquiries', href: '/enquiries', icon: Mail },
   { name: 'Settings', href: '/settings', icon: Settings },
+  { name: 'Payment Settings', href: '/payment-settings', icon: CreditCard },
   { name: 'Payment Settings', href: '/payment-settings', icon: CreditCard },
 ]
 

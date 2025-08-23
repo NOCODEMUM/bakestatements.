@@ -2,6 +2,8 @@ import { useState, useEffect } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { confirmPasswordReset } from 'firebase/auth'
 import { auth } from '../lib/firebase'
+import { confirmPasswordReset } from 'firebase/auth'
+import { auth } from '../lib/firebase'
 import { ChefHat, Lock, Eye, EyeOff } from 'lucide-react'
 
 export default function ResetPassword() {
@@ -12,6 +14,7 @@ export default function ResetPassword() {
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
   const [searchParams] = useSearchParams()
+  const [oobCode, setOobCode] = useState<string | null>(null)
   const [oobCode, setOobCode] = useState<string | null>(null)
   const navigate = useNavigate()
 
@@ -24,6 +27,7 @@ export default function ResetPassword() {
       return
     }
 
+    setOobCode(code)
     setOobCode(code)
   }, [searchParams])
 
@@ -64,7 +68,14 @@ export default function ResetPassword() {
       setLoading(false)
       return
     }
+
+    if (!oobCode) {
+      setMessage('Invalid reset code. Please request a new password reset.')
+      setLoading(false)
+      return
+    }
     try {
+      await confirmPasswordReset(auth, oobCode, password)
       await confirmPasswordReset(auth, oobCode, password)
 
       // Success - redirect to login with success message

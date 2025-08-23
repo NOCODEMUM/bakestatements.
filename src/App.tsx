@@ -18,6 +18,8 @@ import Enquiries from './pages/Enquiries'
 import EnquiryForm from './pages/EnquiryForm'
 import PaymentSettings from './pages/PaymentSettings'
 import PublicInvoiceView from './pages/PublicInvoiceView'
+import PaymentSettings from './pages/PaymentSettings'
+import PublicInvoiceView from './pages/PublicInvoiceView'
 import ForgotPassword from './pages/ForgotPassword'
 import ResetPassword from './pages/ResetPassword'
 import Pricing from './pages/Pricing'
@@ -53,6 +55,7 @@ function AppContent() {
         
         {/* Public Invoice View - accessible to everyone */}
         <Route path="/invoice/:public_token" element={<PublicInvoiceView />} />
+        <Route path="/invoice/:public_token" element={<PublicInvoiceView />} />
         
         {/* Pricing Page - accessible to everyone */}
         <Route path="/pricing" element={<Pricing />} />
@@ -77,6 +80,7 @@ function AppContent() {
                 <Route path="/expenses" element={<Expenses />} />
                 <Route path="/enquiries" element={<Enquiries />} />
                 <Route path="/settings" element={<Settings />} />
+                <Route path="/payment-settings" element={<PaymentSettings />} />
                 <Route path="/payment-settings" element={<PaymentSettings />} />
                 <Route path="*" element={<Navigate to="/" replace />} />
               </Routes>
