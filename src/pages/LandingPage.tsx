@@ -1,13 +1,11 @@
 import React, { useState } from 'react'
-import StripeCheckout from '../components/StripeCheckout'
-import { Menu, X, Check, ChefHat } from 'lucide-react'
+import { Menu, X, Check, ChefHat, Clock } from 'lucide-react'
 import './LandingPage.css'
 
 export default function LandingPage() {
   const [mailingEmail, setMailingEmail] = useState('')
   const [mailingSubmitted, setMailingSubmitted] = useState(false)
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
-  const [showCheckout, setShowCheckout] = useState(false)
 
   const scrollToSection = (sectionId: string) => {
     const element = document.getElementById(sectionId)
@@ -55,7 +53,7 @@ export default function LandingPage() {
                 onClick={() => scrollToSection('pricing')}
                 className="text-gray-600 hover:text-teal-600 font-medium transition-colors"
               >
-                Pricing
+                Features
               </button>
               <a href="/about-us" className="text-gray-600 hover:text-teal-600 font-medium transition-colors">
                 About
@@ -257,126 +255,62 @@ export default function LandingPage() {
         </section>
 
         {/* Pricing Section */}
-        <section id="pricing" className="py-16 md:py-24 px-4 bg-gray-50">
+        <section id="pricing" className="py-16 md:py-24 px-4 bg-white/50">
           <div className="max-w-6xl mx-auto">
             <div className="text-center mb-12 md:mb-20">
               <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-gray-800 mb-4 md:mb-6">
-                Simple Pricing for Growing Bakers
+                Coming Soon: Professional Features
               </h2>
               <p className="text-lg md:text-xl text-gray-600 max-w-4xl mx-auto leading-relaxed">
-                Start with our 7-day free trial, then choose the plan that fits your baking journey. 
-                All plans include every feature you need to succeed.
+                We're building amazing professional features to help your bakery business grow. 
+                Get ready for invoicing, payments, and advanced business tools!
               </p>
             </div>
             
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8 mb-12">
-              {/* Monthly Plan */}
-              <div className="bg-white border border-gray-200 rounded-2xl p-6 md:p-8 shadow-lg hover:shadow-xl transition-all duration-300">
-                <div className="text-center mb-6">
-                  <h3 className="text-xl md:text-2xl font-bold text-gray-800 mb-2">Monthly</h3>
-                  <div className="text-3xl md:text-4xl font-bold text-amber-600 mb-2">
-                    $19<span className="text-lg text-gray-500">/month</span>
-                  </div>
-                  <p className="text-sm text-amber-600 font-semibold">Perfect for getting started</p>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
+              {/* Professional Invoicing */}
+              <div className="bg-white/80 backdrop-blur-sm border border-gray-200 rounded-2xl p-6 md:p-8 text-center hover:shadow-xl transition-all duration-300">
+                <div className="w-16 h-16 md:w-20 md:h-20 bg-amber-100 rounded-2xl flex items-center justify-center mx-auto mb-6">
+                  <Clock className="w-8 h-8 md:w-10 md:h-10 text-amber-600" />
                 </div>
-                
-                <ul className="space-y-3 mb-8">
-                  {[
-                    'Unlimited orders & recipes',
-                    'ATO-compliant expense tracking',
-                    'Professional invoicing',
-                    'Recipe costing calculator',
-                    'Customer enquiry forms',
-                    'CSV/PDF exports',
-                    'Email support'
-                  ].map((feature) => (
-                    <li key={feature} className="flex items-center space-x-2">
-                      <Check className="w-4 h-4 text-green-500 flex-shrink-0" />
-                      <span className="text-sm text-gray-700">{feature}</span>
-                    </li>
-                  ))}
-                </ul>
-                
-                <button
-                  onClick={() => setShowCheckout(true)}
-                  className="w-full bg-amber-500 text-white py-3 md:py-4 rounded-lg font-bold text-lg hover:bg-amber-600 transition-colors disabled:opacity-50"
-                >
-                  Start Monthly Plan
-                </button>
+                <h3 className="text-xl md:text-2xl font-bold text-gray-800 mb-4">Professional Invoicing</h3>
+                <p className="text-gray-600 mb-6 leading-relaxed">
+                  Generate branded, ATO-compliant invoices with your ABN and business details. 
+                  Send directly to customers via email.
+                </p>
+                <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 text-amber-700 font-semibold text-sm">
+                  Coming Q2 2025
+                </div>
               </div>
               
-              {/* Annual Plan - Featured */}
-              <div className="bg-white border-2 border-teal-500 rounded-2xl p-6 md:p-8 shadow-xl relative md:scale-105 hover:shadow-2xl transition-all duration-300">
-                <div className="absolute -top-3 left-1/2 transform -translate-x-1/2 bg-teal-500 text-white px-4 py-1 rounded-full text-sm font-bold">
-                  MOST POPULAR
+              {/* Payment Processing */}
+              <div className="bg-white/80 backdrop-blur-sm border border-gray-200 rounded-2xl p-6 md:p-8 text-center hover:shadow-xl transition-all duration-300">
+                <div className="w-16 h-16 md:w-20 md:h-20 bg-green-100 rounded-2xl flex items-center justify-center mx-auto mb-6">
+                  <Clock className="w-8 h-8 md:w-10 md:h-10 text-green-600" />
                 </div>
-                
-                <div className="text-center mb-6 mt-2">
-                  <h3 className="text-xl md:text-2xl font-bold text-gray-800 mb-2">Annual</h3>
-                  <div className="text-3xl md:text-4xl font-bold text-teal-600 mb-2">
-                    $180<span className="text-lg text-gray-500">/year</span>
-                  </div>
-                  <p className="text-sm text-pink-600 font-semibold">Save $48 compared to monthly!</p>
+                <h3 className="text-xl md:text-2xl font-bold text-gray-800 mb-4">Online Payments</h3>
+                <p className="text-gray-600 mb-6 leading-relaxed">
+                  Accept payments online with Stripe integration. Bank transfers, 
+                  PayID, and credit card options for your customers.
+                </p>
+                <div className="bg-green-50 border border-green-200 rounded-lg p-4 text-green-700 font-semibold text-sm">
+                  Coming Q2 2025
                 </div>
-                
-                <ul className="space-y-3 mb-8">
-                  {[
-                    'Unlimited orders & recipes',
-                    'ATO-compliant expense tracking',
-                    'Professional invoicing',
-                    'Recipe costing calculator',
-                    'Customer enquiry forms',
-                    'CSV/PDF exports',
-                    'Priority email support'
-                  ].map((feature) => (
-                    <li key={feature} className="flex items-center space-x-2">
-                      <Check className="w-4 h-4 text-green-500 flex-shrink-0" />
-                      <span className="text-sm text-gray-700">{feature}</span>
-                    </li>
-                  ))}
-                </ul>
-                
-                <button
-                  onClick={() => setShowCheckout(true)}
-                  className="w-full bg-teal-600 text-white py-3 md:py-4 rounded-lg font-bold text-lg hover:bg-teal-700 transition-colors disabled:opacity-50"
-                >
-                  Start Annual Plan
-                </button>
               </div>
               
-              {/* Lifetime Plan */}
-              <div className="bg-white border border-gray-200 rounded-2xl p-6 md:p-8 shadow-lg hover:shadow-xl transition-all duration-300">
-                <div className="text-center mb-6">
-                  <h3 className="text-xl md:text-2xl font-bold text-gray-800 mb-2">Founder's Lifetime</h3>
-                  <div className="text-3xl md:text-4xl font-bold text-pink-600 mb-2">
-                    $299<span className="text-lg text-gray-500"> once</span>
-                  </div>
-                  <p className="text-sm text-pink-600 font-semibold">Limited time - First 100 users only</p>
+              {/* Advanced Analytics */}
+              <div className="bg-white/80 backdrop-blur-sm border border-gray-200 rounded-2xl p-6 md:p-8 text-center hover:shadow-xl transition-all duration-300">
+                <div className="w-16 h-16 md:w-20 md:h-20 bg-purple-100 rounded-2xl flex items-center justify-center mx-auto mb-6">
+                  <Clock className="w-8 h-8 md:w-10 md:h-10 text-purple-600" />
                 </div>
-                
-                <ul className="space-y-3 mb-8">
-                  {[
-                    'Everything in Annual plan',
-                    'Lifetime access - no recurring fees',
-                    'All future features included',
-                    'Priority support for life',
-                    'Founder badge & recognition',
-                    'Early access to new tools',
-                    'Community access'
-                  ].map((feature) => (
-                    <li key={feature} className="flex items-center space-x-2">
-                      <Check className="w-4 h-4 text-green-500 flex-shrink-0" />
-                      <span className="text-sm text-gray-700">{feature}</span>
-                    </li>
-                  ))}
-                </ul>
-                
-                <button
-                  onClick={() => setShowCheckout(true)}
-                  className="w-full bg-pink-600 text-white py-3 md:py-4 rounded-lg font-bold text-lg hover:bg-pink-700 transition-colors disabled:opacity-50"
-                >
-                  Get Lifetime Access
-                </button>
+                <h3 className="text-xl md:text-2xl font-bold text-gray-800 mb-4">Business Analytics</h3>
+                <p className="text-gray-600 mb-6 leading-relaxed">
+                  Detailed profit reports, sales trends, and business insights 
+                  to help you make data-driven decisions.
+                </p>
+                <div className="bg-purple-50 border border-purple-200 rounded-lg p-4 text-purple-700 font-semibold text-sm">
+                  Coming Q2 2025
+                </div>
               </div>
             </div>
             
@@ -384,7 +318,7 @@ export default function LandingPage() {
             <div className="text-center mt-12 md:mt-20">
               <div className="bg-white/80 backdrop-blur-sm border border-gray-200 rounded-2xl p-8 md:p-12 max-w-4xl mx-auto shadow-xl">
                 <h3 className="text-2xl md:text-3xl font-bold text-gray-800 mb-6">
-                  Join Australian Bakers Who've Gone Pro
+                  Start Managing Your Bakery Today
                 </h3>
                 
                 <div className="flex flex-col sm:flex-row items-center justify-center gap-4 md:gap-6 mb-6">
@@ -392,24 +326,24 @@ export default function LandingPage() {
                     href="/auth" 
                     className="w-full sm:w-auto bg-amber-500 text-white px-8 py-4 md:px-12 md:py-5 rounded-full text-lg md:text-xl font-bold hover:bg-amber-600 transition-all duration-300 shadow-lg hover:shadow-xl"
                   >
-                    Start Your Free Trial Today
+                    Start Free - No Payment Required
                   </a>
-                  <button 
-                    onClick={() => scrollToSection('pricing')}
+                  <a 
+                    href="/enquiry"
                     className="w-full sm:w-auto bg-white/80 backdrop-blur-sm text-teal-600 px-6 py-3 md:px-8 md:py-4 border-2 border-teal-600 rounded-full text-lg font-semibold hover:bg-teal-600 hover:text-white transition-all duration-300"
                   >
-                    View Pricing Plans
-                  </button>
+                    Get Custom Quote
+                  </a>
                 </div>
 
                 <div className="inline-flex items-center space-x-2 bg-green-100 text-green-800 px-6 py-3 rounded-full font-bold text-sm md:text-base mb-6">
                   <span>✓</span>
-                  <span>No Credit Card Required • Cancel Anytime</span>
+                  <span>Completely Free • No Credit Card Required</span>
                 </div>
                 
                 <p className="text-gray-600 leading-relaxed">
-                  Start managing orders, tracking expenses, and generating professional invoices in under 5 minutes. 
-                  Risk-free trial with full access to all features – upgrade only when you're ready.
+                  Start managing orders, tracking expenses, and costing recipes in under 5 minutes. 
+                  Professional invoicing and payment features launching Q2 2025.
                 </p>
               </div>
             </div>
@@ -517,7 +451,7 @@ export default function LandingPage() {
                     onClick={() => scrollToSection('pricing')}
                     className="text-gray-300 hover:text-white transition-colors"
                   >
-                    Pricing
+                    Features
                   </button>
                 </li>
                 <li>
@@ -577,23 +511,6 @@ export default function LandingPage() {
         </div>
       </footer>
 
-      {/* Checkout Modal */}
-      {showCheckout && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 overflow-y-auto">
-          <div className="bg-white rounded-2xl shadow-xl max-w-4xl w-full my-8 p-6">
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="text-2xl font-bold text-gray-800">Choose Your Plan</h2>
-              <button
-                onClick={() => setShowCheckout(false)}
-                className="p-2 text-gray-400 hover:text-gray-600"
-              >
-                <X className="w-6 h-6" />
-              </button>
-            </div>
-            <StripeCheckout onClose={() => setShowCheckout(false)} />
-          </div>
-        </div>
-      )}
     </div>
   )
 }

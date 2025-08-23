@@ -7,7 +7,6 @@ import {
   ShoppingCart, 
   Calendar, 
   BookOpen, 
-  FileText, 
   DollarSign, 
   Settings,
   ChefHat,
@@ -18,6 +17,7 @@ import {
   Sun,
   Moon,
   Mail,
+  Clock
   CreditCard
 } from 'lucide-react'
 
@@ -30,11 +30,10 @@ const navigation = [
   { name: 'Orders', href: '/orders', icon: ShoppingCart },
   { name: 'Calendar', href: '/calendar', icon: Calendar },
   { name: 'Recipes', href: '/recipes', icon: BookOpen },
-  { name: 'Invoices', href: '/invoices', icon: FileText },
+  { name: 'Invoices', href: '/invoices', icon: Clock, comingSoon: true },
   { name: 'Expenses', href: '/expenses', icon: DollarSign },
   { name: 'Enquiries', href: '/enquiries', icon: Mail },
   { name: 'Settings', href: '/settings', icon: Settings },
-  { name: 'Payment Settings', href: '/payment-settings', icon: CreditCard },
   { name: 'Payment Settings', href: '/payment-settings', icon: CreditCard },
 ]
 
@@ -137,11 +136,20 @@ export default function Layout({ children }: LayoutProps) {
                       className={`flex items-center space-x-3 px-4 py-3 rounded-lg transition-colors ${
                         isActive
                           ? 'bg-amber-50 dark:bg-amber-900/20 text-amber-600 dark:text-amber-400 border-r-2 border-amber-500'
-                          : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 hover:text-gray-800 dark:hover:text-gray-100'
+                          : `text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 hover:text-gray-800 dark:hover:text-gray-100 ${
+                              item.comingSoon ? 'opacity-60' : ''
+                            }`
                       }`}
                     >
                       <item.icon className="w-5 h-5" />
-                      <span className="font-medium">{item.name}</span>
+                      <span className="font-medium">
+                        {item.name}
+                        {item.comingSoon && (
+                          <span className="ml-2 text-xs bg-amber-100 text-amber-600 px-2 py-1 rounded-full">
+                            Soon
+                          </span>
+                        )}
+                      </span>
                     </Link>
                   </li>
                 )

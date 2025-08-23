@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../hooks/useAuth'
-import { ShoppingCart, DollarSign, TrendingUp, Calendar, FileText, Mail } from 'lucide-react'
+import { ShoppingCart, DollarSign, TrendingUp, Calendar, Mail } from 'lucide-react'
 import { format } from 'date-fns'
 
 interface DashboardStats {
@@ -10,8 +10,6 @@ interface DashboardStats {
   totalExpenses: number
   netProfit: number
   upcomingOrders: any[]
-  pendingInvoices: number
-  pendingInvoicesValue: number
   newEnquiries: number
 }
 
@@ -23,8 +21,6 @@ export default function Dashboard() {
     totalExpenses: 0,
     netProfit: 0,
     upcomingOrders: [],
-    pendingInvoices: 0,
-    pendingInvoicesValue: 0,
     newEnquiries: 0
   })
   const [loading, setLoading] = useState(true)
@@ -62,11 +58,6 @@ export default function Dashboard() {
       const totalExpenses = expenses?.reduce((sum, expense) => sum + expense.amount, 0) || 0
       const netProfit = totalRevenue - totalExpenses
       
-      // Calculate pending invoices (orders that are not delivered)
-      const pendingOrders = orders?.filter(order => order.status !== 'Delivered') || []
-      const pendingInvoices = pendingOrders.length
-      const pendingInvoicesValue = pendingOrders.reduce((sum, order) => sum + (order.amount || 0), 0)
-      
       // Count new enquiries
       const newEnquiries = enquiries?.length || 0
 
@@ -86,8 +77,6 @@ export default function Dashboard() {
         totalExpenses,
         netProfit,
         upcomingOrders,
-        pendingInvoices,
-        pendingInvoicesValue,
         newEnquiries
       })
     } catch (error) {
@@ -127,7 +116,7 @@ export default function Dashboard() {
       </div>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
         <StatCard
           title="Total Orders"
           value={stats.totalOrders}
@@ -151,12 +140,6 @@ export default function Dashboard() {
           value={`$${stats.netProfit.toFixed(2)}`}
           icon={TrendingUp}
           color={stats.netProfit >= 0 ? "bg-emerald-500" : "bg-red-500"}
-        />
-        <StatCard
-          title="Pending Invoices"
-          value={stats.pendingInvoices}
-          icon={FileText}
-          color="bg-orange-500"
         />
         <StatCard
           title="New Enquiries"

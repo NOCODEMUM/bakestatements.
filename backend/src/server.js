@@ -1,7 +1,5 @@
 import express from 'express';
 import cors from 'cors';
-import settingsRoutes from './routes/settings.js';
-import invoicesRoutes from './routes/invoices.js';
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -14,8 +12,6 @@ app.use(cors({
 app.use(express.json());
 
 // Routes
-app.use('/api/settings', settingsRoutes);
-app.use('/api/invoices', invoicesRoutes);
 
 // Health check
 app.get('/health', (req, res) => {

@@ -5,7 +5,6 @@ import Auth from './components/Auth'
 import Layout from './components/Layout'
 import PaywallModal from './components/PaywallModal'
 import LandingPage from './pages/LandingPage'
-import AboutUs from './pages/AboutUs'
 import PrivacyTerms from './pages/PrivacyTerms'
 import Dashboard from './pages/Dashboard'
 import Orders from './pages/Orders'
@@ -13,16 +12,13 @@ import Calendar from './pages/Calendar'
 import Recipes from './pages/Recipes'
 import Invoices from './pages/Invoices'
 import Expenses from './pages/Expenses'
-import Settings from './pages/Settings'
 import Enquiries from './pages/Enquiries'
 import EnquiryForm from './pages/EnquiryForm'
 import PaymentSettings from './pages/PaymentSettings'
 import PublicInvoiceView from './pages/PublicInvoiceView'
-import PaymentSettings from './pages/PaymentSettings'
-import PublicInvoiceView from './pages/PublicInvoiceView'
 import ForgotPassword from './pages/ForgotPassword'
 import ResetPassword from './pages/ResetPassword'
-import Pricing from './pages/Pricing'
+import ComingSoon from './pages/ComingSoon'
 import { useState } from 'react'
 
 function AppContent() {
@@ -54,11 +50,15 @@ function AppContent() {
         <Route path="/enquiry" element={<EnquiryForm />} />
         
         {/* Public Invoice View - accessible to everyone */}
-        <Route path="/invoice/:public_token" element={<PublicInvoiceView />} />
+        <Route path="/invoice/*" element={<ComingSoon />} />
         <Route path="/invoice/:public_token" element={<PublicInvoiceView />} />
         
         {/* Pricing Page - accessible to everyone */}
-        <Route path="/pricing" element={<Pricing />} />
+        <Route path="/pricing" element={<ComingSoon />} />
+        
+        {/* Coming Soon for removed features */}
+        <Route path="/invoices" element={<ComingSoon />} />
+        <Route path="/payment-settings" element={<ComingSoon />} />
         
         {/* Password Reset Flow - accessible to everyone */}
         <Route path="/forgot-password" element={<ForgotPassword />} />
@@ -76,11 +76,11 @@ function AppContent() {
                 <Route path="/orders" element={<Orders />} />
                 <Route path="/calendar" element={<Calendar />} />
                 <Route path="/recipes" element={<Recipes />} />
-                <Route path="/invoices" element={<Invoices />} />
+                <Route path="/invoices" element={<ComingSoon />} />
                 <Route path="/expenses" element={<Expenses />} />
                 <Route path="/enquiries" element={<Enquiries />} />
                 <Route path="/settings" element={<Settings />} />
-                <Route path="/payment-settings" element={<PaymentSettings />} />
+                <Route path="/payment-settings" element={<ComingSoon />} />
                 <Route path="/payment-settings" element={<PaymentSettings />} />
                 <Route path="*" element={<Navigate to="/" replace />} />
               </Routes>
@@ -91,12 +91,6 @@ function AppContent() {
         } />
       </Routes>
       
-      {user && (
-        <PaywallModal 
-          isOpen={isTrialExpired || showPaywall} 
-          onClose={() => setShowPaywall(false)} 
-        />
-      )}
     </Router>
   )
 }
