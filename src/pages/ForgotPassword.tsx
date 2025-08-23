@@ -1,5 +1,6 @@
 import { useState } from 'react'
-import { supabase } from '../lib/supabase'
+import { sendPasswordResetEmail } from 'firebase/auth'
+import { auth } from '../lib/firebase'
 import { ChefHat, ArrowLeft, Mail } from 'lucide-react'
 import { Link } from 'react-router-dom'
 
@@ -15,16 +16,16 @@ export default function ForgotPassword() {
     setMessage('')
 
     try {
-      const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: `${window.location.origin}/reset-password`
-      })
-
-      if (error) throw error
+      await sendPasswordResetEmail(auth, email)
 
       setIsSuccess(true)
       setMessage('Check your email for a password reset link. The link will expire in 1 hour.')
     } catch (error: any) {
-      setMessage(error.message || 'An error occurred. Please try again.')
+      if (error.code === 'auth/user-not-found') {
+        setMessage('No account found with this email address.')
+      } else {
+        setMessage(error.message || 'An error occurred. Please try again.')
+      }
     } finally {
       setLoading(false)
     }

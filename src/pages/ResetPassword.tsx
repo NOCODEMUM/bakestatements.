@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
-import { supabase } from '../lib/supabase'
+import { confirmPasswordReset } from 'firebase/auth'
+import { auth } from '../lib/firebase'
 import { ChefHat, Lock, Eye, EyeOff } from 'lucide-react'
 
 export default function ResetPassword() {
@@ -11,23 +12,19 @@ export default function ResetPassword() {
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
   const [searchParams] = useSearchParams()
+  const [oobCode, setOobCode] = useState<string | null>(null)
   const navigate = useNavigate()
 
   useEffect(() => {
-    // Check if we have the necessary tokens from URL
-    const accessToken = searchParams.get('access_token')
-    const refreshToken = searchParams.get('refresh_token')
+    // Check if we have the Firebase oobCode from URL
+    const code = searchParams.get('oobCode')
 
-    if (!accessToken || !refreshToken) {
+    if (!code) {
       setMessage('Invalid reset link. Please request a new password reset.')
       return
     }
 
-    // Set the session with the tokens from the URL
-    supabase.auth.setSession({
-      access_token: accessToken,
-      refresh_token: refreshToken
-    })
+    setOobCode(code)
   }, [searchParams])
 
   const validatePassword = (password: string) => {
@@ -62,24 +59,24 @@ export default function ResetPassword() {
       return
     }
 
+    if (!oobCode) {
+      setMessage('Invalid reset code. Please request a new password reset.')
+      setLoading(false)
+      return
+    }
     try {
-      const { error } = await supabase.auth.updateUser({
-        password: password
-      })
-
-      if (error) {
-        if (error.message.includes('session_not_found') || error.message.includes('invalid_token')) {
-          setMessage('Link expired, request a new one')
-        } else {
-          setMessage(error.message)
-        }
-        return
-      }
+      await confirmPasswordReset(auth, oobCode, password)
 
       // Success - redirect to login with success message
       navigate('/auth?message=password_updated')
     } catch (error: any) {
-      setMessage(error.message || 'An error occurred. Please try again.')
+      if (error.code === 'auth/expired-action-code') {
+        setMessage('Reset link has expired. Please request a new one.')
+      } else if (error.code === 'auth/invalid-action-code') {
+        setMessage('Invalid reset link. Please request a new one.')
+      } else {
+        setMessage(error.message || 'An error occurred. Please try again.')
+      }
     } finally {
       setLoading(false)
     }

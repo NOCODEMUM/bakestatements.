@@ -2,7 +2,8 @@ import { useState, useEffect } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import { useAuth } from '../hooks/useAuth'
 import { ChefHat, Eye, EyeOff, Mail } from 'lucide-react'
-import { supabase } from '../lib/supabase'
+import { sendEmailVerification } from 'firebase/auth'
+import { auth } from '../lib/firebase'
 
 export default function Auth() {
   const [loading, setLoading] = useState(false)
@@ -12,8 +13,6 @@ export default function Auth() {
   const [message, setMessage] = useState('')
   const [isSuccess, setIsSuccess] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
-  const [showResendVerification, setShowResendVerification] = useState(false)
-  const [resendLoading, setResendLoading] = useState(false)
   const { signUp, signIn } = useAuth()
   const [searchParams] = useSearchParams()
 
@@ -31,71 +30,38 @@ export default function Auth() {
     }
   }, [searchParams])
 
-  const handleResendVerification = async () => {
-    if (!email) {
-      setMessage('Please enter your email address first')
-      return
-    }
-
-    setResendLoading(true)
-    try {
-      const { error } = await supabase.auth.resend({
-        type: 'signup',
-        email: email,
-        options: {
-          emailRedirectTo: `${window.location.origin}/auth?message=email_verified`
-        }
-      })
-
-      if (error) throw error
-
-      setMessage('Verification email sent! Check your email and click the link to verify your account.')
-      setIsSuccess(true)
-      setShowResendVerification(false)
-    } catch (error: any) {
-      setMessage(error.message)
-    } finally {
-      setResendLoading(false)
-    }
-  }
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setLoading(true)
     setMessage('')
     setIsSuccess(false)
-    setShowResendVerification(false)
 
     try {
       if (isSignUp) {
-        const { error } = await signUp(email, password)
+        const { user: firebaseUser } = await signUp(email, password)
 
-        if (error) {
-          if (error.message.includes('already registered')) {
-            setMessage('Email already registered')
-          } else {
-            setMessage(error.message)
-          }
-        } else {
+        if (firebaseUser) {
+          // Send email verification
+          await sendEmailVerification(firebaseUser)
           setMessage('Account created successfully! You can now sign in.')
           setIsSuccess(true)
           setIsSignUp(false) // Switch to sign in mode
         }
       } else {
-        const { error } = await signIn(email, password)
-        if (error) {
-          if (error.message?.includes('Email not confirmed') || error.message?.includes('email_not_confirmed')) {
-            setMessage('Please check your email and click the confirmation link before signing in.')
-            setShowResendVerification(true)
-          } else if (error.message?.includes('Invalid login credentials')) {
-            setMessage('Email or password didn\'t match')
-          } else {
-            setMessage(error.message)
-          }
-        }
+        await signIn(email, password)
       }
     } catch (error: any) {
-      setMessage(error.message)
+      if (error.code === 'auth/email-already-in-use') {
+        setMessage('Email already registered')
+      } else if (error.code === 'auth/invalid-credential') {
+        setMessage('Email or password didn\'t match')
+      } else if (error.code === 'auth/user-not-found') {
+        setMessage('No account found with this email')
+      } else if (error.code === 'auth/wrong-password') {
+        setMessage('Incorrect password')
+      } else {
+        setMessage(error.message)
+      }
     } finally {
       setLoading(false)
     }
