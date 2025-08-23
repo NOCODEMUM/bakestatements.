@@ -124,61 +124,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     </AuthContext.Provider>
   )
 }
-      .from('profiles')
-      .select('trial_end_date, subscription_status')
-      .eq('id', userId)
-      .single()
-    
-    if (profile) {
-      const trialEnd = new Date(profile.trial_end_date)
-      const now = new Date()
-      const trialExpired = now > trialEnd
-      const activeSubscription = profile.subscription_status === 'active'
-      
-      setIsTrialExpired(trialExpired && !activeSubscription)
-      setHasActiveSubscription(activeSubscription)
-    }
-  }
-
-  const signUp = async (email: string, password: string, options?: any) => {
-    const result = await supabase.auth.signUp({
-      email,
-      password,
-      options: {
-        emailRedirectTo: `${window.location.origin}/auth?message=email_verified`
-      }
-    })
-    return result
-  }
-
-  const signIn = async (email: string, password: string) => {
-    const result = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    })
-    return result
-  }
-
-  const signOut = async () => {
-    const result = await supabase.auth.signOut()
-    return result
-  }
-
-  return (
-    <AuthContext.Provider value={{
-      user,
-      session,
-      loading,
-      signUp,
-      signIn,
-      signOut,
-      isTrialExpired,
-      hasActiveSubscription
-    }}>
-      {children}
-    </AuthContext.Provider>
-  )
-}
 
 export function useAuth() {
   const context = useContext(AuthContext)
