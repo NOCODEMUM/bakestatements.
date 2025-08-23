@@ -50,7 +50,6 @@ function AppContent() {
         
         {/* Public Invoice View - accessible to everyone */}
         <Route path="/invoice/*" element={<ComingSoon />} />
-        <Route path="/invoice/:public_token" element={<PublicInvoiceView />} />
         
         {/* Pricing Page - accessible to everyone */}
         <Route path="/pricing" element={<ComingSoon />} />
