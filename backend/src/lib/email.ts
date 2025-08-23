@@ -30,7 +30,7 @@
 
               try {
                 await transporter.sendMail(mailOptions);
-                console.log(`Email sent to ${to} with subject: ${subject}`);
+                console.log(\`Email sent to ${to} with subject: ${subject}`);
               } catch (error) {
                 console.error('Error sending email:', error);
                 throw new Error('Failed to send email');
