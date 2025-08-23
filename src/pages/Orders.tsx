@@ -15,13 +15,14 @@ interface Order {
 }
 
 export default function Orders() {
-  const { user } = useAuth()
+  const { user, profile } = useAuth()
   const [orders, setOrders] = useState<Order[]>([])
   const [loading, setLoading] = useState(true)
   const [showForm, setShowForm] = useState(false)
   const [searchTerm, setSearchTerm] = useState('')
   const [formData, setFormData] = useState({
     customer_name: '',
+    customer_email: '',
     order_details: '',
     due_date: '',
     amount: 0,
@@ -29,17 +30,17 @@ export default function Orders() {
   })
 
   useEffect(() => {
-    if (user) {
+    if (user && profile) {
       fetchOrders()
     }
-  }, [user])
+  }, [user, profile])
 
   const fetchOrders = async () => {
     try {
       const { data, error } = await supabase
         .from('orders')
         .select('*')
-        .eq('user_id', user!.id)
+        .eq('user_id', profile!.id)
         .order('created_at', { ascending: false })
 
       if (error) throw error
@@ -56,12 +57,13 @@ export default function Orders() {
     try {
       const { error } = await supabase
         .from('orders')
-        .insert([{ ...formData, user_id: user!.id }])
+        .insert([{ ...formData, user_id: profile!.id }])
 
       if (error) throw error
 
       setFormData({
         customer_name: '',
+        customer_email: '',
         order_details: '',
         due_date: '',
         amount: 0,
@@ -240,6 +242,18 @@ export default function Orders() {
                   onChange={(e) => setFormData({ ...formData, customer_name: e.target.value })}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent"
                   required
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Customer Email
+                </label>
+                <input
+                  type="email"
+                  value={formData.customer_email}
+                  onChange={(e) => setFormData({ ...formData, customer_email: e.target.value })}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent"
+                  placeholder="customer@email.com"
                 />
               </div>
               <div>

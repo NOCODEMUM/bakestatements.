@@ -1,41 +1,42 @@
 import { useEffect, useState } from 'react'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../hooks/useAuth'
-import { FileText, Download, Eye, DollarSign, Calendar, User } from 'lucide-react'
+import { FileText, Download, Eye, DollarSign, Calendar, User, Mail } from 'lucide-react'
 import { format } from 'date-fns'
 
 interface Order {
   id: string
   customer_name: string
+  customer_email: string | null
   order_details: string
   due_date: string
   status: string
   amount: number
   created_at: string
-  is_paid?: boolean
+  invoice_number: string | null
+  public_token: string | null
 }
 
 export default function Invoices() {
-  const { user } = useAuth()
+  const { user, profile } = useAuth()
   const [orders, setOrders] = useState<Order[]>([])
   const [loading, setLoading] = useState(true)
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null)
   const [showInvoiceModal, setShowInvoiceModal] = useState(false)
-  const [userProfile, setUserProfile] = useState<any>(null)
+  const [sendingInvoice, setSendingInvoice] = useState<string | null>(null)
 
   useEffect(() => {
-    if (user) {
+    if (user && profile) {
       fetchOrders()
-      fetchUserProfile()
     }
-  }, [user])
+  }, [user, profile])
 
   const fetchOrders = async () => {
     try {
       const { data, error } = await supabase
         .from('orders')
         .select('*')
-        .eq('user_id', user!.id)
+        .eq('user_id', profile!.id)
         .in('status', ['Confirmed', 'Baking', 'Ready', 'Delivered'])
         .order('created_at', { ascending: false })
 
@@ -48,31 +49,41 @@ export default function Invoices() {
     }
   }
 
-  const fetchUserProfile = async () => {
+  const sendInvoiceByEmail = async (orderId: string) => {
+    setSendingInvoice(orderId)
     try {
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('business_name, abn, phone_number')
-        .eq('id', user!.id)
-        .single()
+      const token = await user!.getIdToken()
+      const response = await fetch(`${import.meta.env.VITE_BACKEND_URL || 'http://localhost:3001'}/api/invoices/send`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ invoice_id: orderId })
+      })
 
-      if (error && error.code !== 'PGRST116') throw error
-      setUserProfile(data)
+      if (!response.ok) {
+        const errorData = await response.json()
+        throw new Error(errorData.error || 'Failed to send invoice')
+      }
+
+      const result = await response.json()
+      alert('Invoice sent successfully!')
+      fetchOrders() // Refresh to show updated status
     } catch (error) {
-      console.error('Error fetching user profile:', error)
+      console.error('Error sending invoice:', error)
+      alert(error instanceof Error ? error.message : 'Failed to send invoice')
+    } finally {
+      setSendingInvoice(null)
     }
   }
 
-  const togglePaymentStatus = async (orderId: string, currentStatus: boolean) => {
+  const togglePaymentStatus = async (orderId: string, currentStatus: string) => {
     try {
-      // For now, we'll use a custom field. In a real app, you'd have a separate invoices table
+      const newStatus = currentStatus === 'paid' ? 'sent' : 'paid'
       const { error } = await supabase
         .from('orders')
-        .update({ 
-          // We can't add is_paid directly to orders table without migration
-          // So we'll use the status field for payment tracking
-          status: currentStatus ? 'Ready' : 'Delivered' 
-        })
+        .update({ status: newStatus })
         .eq('id', orderId)
 
       if (error) throw error
@@ -84,15 +95,15 @@ export default function Invoices() {
 
   const generateInvoicePDF = (order: Order) => {
     // Create a simple HTML structure for the invoice
-    const businessName = userProfile?.business_name || 'BakeStatements'
-    const abn = userProfile?.abn ? `ABN: ${userProfile.abn}` : ''
-    const phone = userProfile?.phone_number ? `Phone: ${userProfile.phone_number}` : ''
+    const businessName = profile?.business_name || 'BakeStatements'
+    const abn = profile?.abn ? `ABN: ${profile.abn}` : ''
+    const phone = profile?.phone_number ? `Phone: ${profile.phone_number}` : ''
     
     const invoiceHTML = `
       <!DOCTYPE html>
       <html>
         <head>
-          <title>Invoice - ${order.customer_name}</title>
+          <title>Invoice #${order.invoice_number || order.id.slice(0, 8).toUpperCase()} - ${order.customer_name}</title>
           <style>
             body { font-family: Arial, sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; }
             .header { border-bottom: 2px solid #f59e0b; padding-bottom: 20px; margin-bottom: 30px; }
@@ -115,7 +126,7 @@ export default function Invoices() {
           </div>
           
           <div class="invoice-details">
-            <h2>Invoice #${order.id.slice(0, 8).toUpperCase()}</h2>
+            <h2>Invoice #${order.invoice_number || order.id.slice(0, 8).toUpperCase()}</h2>
             <p><strong>Invoice Date:</strong> ${format(new Date(), 'MMM dd, yyyy')}</p>
             <p><strong>Due Date:</strong> ${format(new Date(order.due_date), 'MMM dd, yyyy')}</p>
           </div>
@@ -123,6 +134,7 @@ export default function Invoices() {
           <div class="customer-info">
             <h3>Bill To:</h3>
             <p><strong>${order.customer_name}</strong></p>
+            ${order.customer_email ? `<p>${order.customer_email}</p>` : ''}
           </div>
 
           <table class="item-table">
@@ -264,6 +276,9 @@ export default function Invoices() {
                   Invoice
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Email
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Customer
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -288,11 +303,14 @@ export default function Invoices() {
                 <tr key={order.id} className="hover:bg-gray-50">
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="font-medium text-gray-900">
-                      #{order.id.slice(0, 8).toUpperCase()}
+                      #{order.invoice_number || order.id.slice(0, 8).toUpperCase()}
                     </div>
                     <div className="text-sm text-gray-500">
                       {format(new Date(order.created_at), 'MMM dd, yyyy')}
                     </div>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <div className="text-gray-900">{order.customer_email || 'No email'}</div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="font-medium text-gray-900">{order.customer_name}</div>
@@ -309,11 +327,25 @@ export default function Invoices() {
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(order.status)}`}>
-                      {order.status === 'Delivered' ? 'Paid' : 'Unpaid'}
+                      {order.status === 'paid' ? 'Paid' : order.status === 'sent' ? 'Sent' : 'Draft'}
                     </span>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="flex items-center space-x-2">
+                      {order.customer_email && order.status !== 'paid' && (
+                        <button
+                          onClick={() => sendInvoiceByEmail(order.id)}
+                          disabled={sendingInvoice === order.id}
+                          className="p-1 text-blue-600 hover:text-blue-700 disabled:opacity-50"
+                          title="Send Invoice by Email"
+                        >
+                          {sendingInvoice === order.id ? (
+                            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
+                          ) : (
+                            <Mail className="w-4 h-4" />
+                          )}
+                        </button>
+                      )}
                       <button
                         onClick={() => viewInvoice(order)}
                         className="p-1 text-blue-600 hover:text-blue-700"
@@ -329,14 +361,14 @@ export default function Invoices() {
                         <Download className="w-4 h-4" />
                       </button>
                       <button
-                        onClick={() => togglePaymentStatus(order.id, order.status === 'Delivered')}
+                        onClick={() => togglePaymentStatus(order.id, order.status)}
                         className={`px-2 py-1 text-xs rounded ${
-                          order.status === 'Delivered'
+                          order.status === 'paid'
                             ? 'bg-red-100 text-red-600 hover:bg-red-200'
                             : 'bg-emerald-100 text-emerald-600 hover:bg-emerald-200'
                         }`}
                       >
-                        {order.status === 'Delivered' ? 'Mark Unpaid' : 'Mark Paid'}
+                        {order.status === 'paid' ? 'Mark Unpaid' : 'Mark Paid'}
                       </button>
                     </div>
                   </td>
@@ -374,13 +406,13 @@ export default function Invoices() {
             <div className="p-6">
               {/* Invoice Header */}
               <div className="border-b-2 border-amber-500 pb-4 mb-6">
-                <div className="text-2xl font-bold text-amber-600">{userProfile?.business_name || 'BakeStatements'}</div>
+                <div className="text-2xl font-bold text-amber-600">{profile?.business_name || 'BakeStatements'}</div>
                 <p className="text-gray-600">Professional Bakery Services</p>
-                {userProfile?.abn && (
-                  <p className="text-sm text-gray-500">ABN: {userProfile.abn}</p>
+                {profile?.abn && (
+                  <p className="text-sm text-gray-500">ABN: {profile.abn}</p>
                 )}
-                {userProfile?.phone_number && (
-                  <p className="text-sm text-gray-500">Phone: {userProfile.phone_number}</p>
+                {profile?.phone_number && (
+                  <p className="text-sm text-gray-500">Phone: {profile.phone_number}</p>
                 )}
               </div>
 
@@ -388,7 +420,7 @@ export default function Invoices() {
               <div className="grid grid-cols-2 gap-6 mb-6">
                 <div>
                   <h3 className="text-lg font-semibold mb-2">Invoice Details</h3>
-                  <p><strong>Invoice #:</strong> {selectedOrder.id.slice(0, 8).toUpperCase()}</p>
+                  <p><strong>Invoice #:</strong> {selectedOrder.invoice_number || selectedOrder.id.slice(0, 8).toUpperCase()}</p>
                   <p><strong>Date:</strong> {format(new Date(), 'MMM dd, yyyy')}</p>
                   <p><strong>Due Date:</strong> {format(new Date(selectedOrder.due_date), 'MMM dd, yyyy')}</p>
                 </div>
@@ -396,6 +428,9 @@ export default function Invoices() {
                   <h3 className="text-lg font-semibold mb-2">Bill To</h3>
                   <div className="bg-gray-50 p-3 rounded">
                     <p className="font-medium">{selectedOrder.customer_name}</p>
+                    {selectedOrder.customer_email && (
+                      <p className="text-sm text-gray-600">{selectedOrder.customer_email}</p>
+                    )}
                   </div>
                 </div>
               </div>

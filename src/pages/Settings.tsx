@@ -10,7 +10,7 @@ interface ProfileData {
 }
 
 export default function Settings() {
-  const { user, isTrialExpired } = useAuth()
+  const { user, profile, isTrialExpired } = useAuth()
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [saved, setSaved] = useState(false)
@@ -21,17 +21,17 @@ export default function Settings() {
   })
 
   useEffect(() => {
-    if (user) {
+    if (user && profile) {
       fetchProfile()
     }
-  }, [user])
+  }, [user, profile])
 
   const fetchProfile = async () => {
     try {
       const { data, error } = await supabase
         .from('profiles')
         .select('business_name, phone_number, abn')
-        .eq('id', user!.id)
+        .eq('id', profile!.id)
         .single()
 
       if (error && error.code !== 'PGRST116') throw error // PGRST116 means no rows found
@@ -58,7 +58,7 @@ export default function Settings() {
       const { error } = await supabase
         .from('profiles')
         .update(profileData)
-        .eq('id', user!.id)
+        .eq('id', profile!.id)
 
       if (error) throw error
 

@@ -33,6 +33,7 @@ const navigation = [
   { name: 'Expenses', href: '/expenses', icon: DollarSign },
   { name: 'Enquiries', href: '/enquiries', icon: Mail },
   { name: 'Settings', href: '/settings', icon: Settings },
+  { name: 'Payment Settings', href: '/payment-settings', icon: CreditCard },
 ]
 
 export default function Layout({ children }: LayoutProps) {
