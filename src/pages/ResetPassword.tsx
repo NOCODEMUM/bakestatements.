@@ -13,7 +13,6 @@ export default function ResetPassword() {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
   const [searchParams] = useSearchParams()
   const [oobCode, setOobCode] = useState<string | null>(null)
-  const [oobCode, setOobCode] = useState<string | null>(null)
   const navigate = useNavigate()
 
   useEffect(() => {
@@ -25,7 +24,6 @@ export default function ResetPassword() {
       return
     }
 
-    setOobCode(code)
     setOobCode(code)
   }, [searchParams])
 
@@ -66,14 +64,7 @@ export default function ResetPassword() {
       setLoading(false)
       return
     }
-
-    if (!oobCode) {
-      setMessage('Invalid reset code. Please request a new password reset.')
-      setLoading(false)
-      return
-    }
     try {
-      await confirmPasswordReset(auth, oobCode, password)
       await confirmPasswordReset(auth, oobCode, password)
 
       // Success - redirect to login with success message
