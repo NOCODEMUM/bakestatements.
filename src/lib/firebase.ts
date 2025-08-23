@@ -1,17 +1,15 @@
 import { initializeApp } from 'firebase/app'
 import { getAuth } from 'firebase/auth'
 
-// Your web app's Firebase configuration
-// Replace these placeholder values with your actual Firebase project configuration
-// You can find these values in Firebase Console > Project Settings > Your apps > SDK setup and configuration
+// Firebase configuration for BakeStatements project
 const firebaseConfig = {
-  apiKey: "YOUR_API_KEY_HERE",
-  authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
-  projectId: "YOUR_PROJECT_ID",
-  storageBucket: "YOUR_PROJECT_ID.appspot.com",
-  messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
-  appId: "YOUR_APP_ID",
-  measurementId: "YOUR_MEASUREMENT_ID"
+  apiKey: "AIzaSyDK7oR8_jYXX2X3axgBeOWRLd1zcnOvEiw",
+  authDomain: "bakestatements.firebaseapp.com",
+  projectId: "bakestatements",
+  storageBucket: "bakestatements.appspot.com",
+  messagingSenderId: "408315510594",
+  appId: "1:408315510594:web:6dbd412e04d4b0a2a612db",
+  measurementId: "G-YLH8KC6Y1Y"
 }
 
 // Initialize Firebase
