@@ -90,7 +90,7 @@
                 if (!invoice || !paymentSettings) return;
 
                 const businessName = paymentSettings.business_name || 'Your Business Name';
-                const abn = paymentSettings.abn ? `ABN: ${paymentSettings.abn}` : '';
+                const abn = paymentSettings.abn ? \`ABN: ${paymentSettings.abn}` : '';
                 const website = paymentSettings.website ? `<p>Website: <a href="${paymentSettings.website}">${paymentSettings.website}</a></p>` : '';
 
                 const invoiceHTML = `
