@@ -13,6 +13,7 @@ export default function Auth() {
   const [message, setMessage] = useState('')
   const [isSuccess, setIsSuccess] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
+  const [showResendVerification, setShowResendVerification] = useState(false)
   const { signUp, signIn } = useAuth()
   const [searchParams] = useSearchParams()
 
@@ -38,11 +39,8 @@ export default function Auth() {
 
     try {
       if (isSignUp) {
-        const { user: firebaseUser } = await signUp(email, password)
-
-        if (firebaseUser) {
-          // Send email verification
-          await sendEmailVerification(firebaseUser)
+        const { error, firebaseUser } = await signUp(email, password)
+        if (!error) {
           setMessage('Account created successfully! You can now sign in.')
           setIsSuccess(true)
           setIsSignUp(false) // Switch to sign in mode
@@ -50,6 +48,7 @@ export default function Auth() {
         if (firebaseUser) {
           // Send email verification
           await sendEmailVerification(firebaseUser)
+          setMessage('Account created successfully! You can now sign in.')
           setMessage('Account created successfully! You can now sign in.')
           setIsSuccess(true)
           setIsSignUp(false) // Switch to sign in mode
