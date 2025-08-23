@@ -4,8 +4,6 @@ import { useAuth } from '../hooks/useAuth'
 import { ChefHat, Eye, EyeOff, Mail } from 'lucide-react'
 import { sendEmailVerification } from 'firebase/auth'
 import { auth } from '../lib/firebase'
-import { sendEmailVerification } from 'firebase/auth'
-import { auth } from '../lib/firebase'
 
 export default function Auth() {
   const [loading, setLoading] = useState(false)

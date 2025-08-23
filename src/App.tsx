@@ -14,8 +14,6 @@ import Invoices from './pages/Invoices'
 import Expenses from './pages/Expenses'
 import Enquiries from './pages/Enquiries'
 import EnquiryForm from './pages/EnquiryForm'
-import PaymentSettings from './pages/PaymentSettings'
-import PublicInvoiceView from './pages/PublicInvoiceView'
 import ForgotPassword from './pages/ForgotPassword'
 import ResetPassword from './pages/ResetPassword'
 import ComingSoon from './pages/ComingSoon'
@@ -81,7 +79,6 @@ function AppContent() {
                 <Route path="/enquiries" element={<Enquiries />} />
                 <Route path="/settings" element={<Settings />} />
                 <Route path="/payment-settings" element={<ComingSoon />} />
-                <Route path="/payment-settings" element={<PaymentSettings />} />
                 <Route path="*" element={<Navigate to="/" replace />} />
               </Routes>
             </Layout>

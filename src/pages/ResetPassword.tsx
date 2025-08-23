@@ -2,8 +2,6 @@ import { useState, useEffect } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { confirmPasswordReset } from 'firebase/auth'
 import { auth } from '../lib/firebase'
-import { confirmPasswordReset } from 'firebase/auth'
-import { auth } from '../lib/firebase'
 import { ChefHat, Lock, Eye, EyeOff } from 'lucide-react'
 
 export default function ResetPassword() {

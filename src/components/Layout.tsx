@@ -17,7 +17,7 @@ import {
   Sun,
   Moon,
   Mail,
-  Clock
+  Clock,
   CreditCard
 } from 'lucide-react'
 

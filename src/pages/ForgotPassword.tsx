@@ -1,8 +1,6 @@
 import { useState } from 'react'
 import { sendPasswordResetEmail } from 'firebase/auth'
 import { auth } from '../lib/firebase'
-import { sendPasswordResetEmail } from 'firebase/auth'
-import { auth } from '../lib/firebase'
 import { ChefHat, ArrowLeft, Mail } from 'lucide-react'
 import { Link } from 'react-router-dom'
 
