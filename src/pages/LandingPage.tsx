@@ -1,87 +1,56 @@
 import React, { useState } from 'react'
-import { loadStripe } from '@stripe/stripe-js'
 import { supabase } from '../lib/supabase'
-import { STRIPE_PRICES } from '../lib/stripe'
-import { Menu, X, Check, ChefHat } from 'lucide-react'
+import { Menu, X, Check, ChefHat, Mail, CheckCircle } from 'lucide-react'
 import './LandingPage.css'
 
 export default function LandingPage() {
-  const [loading, setLoading] = useState<string | null>(null)
   const [mailingEmail, setMailingEmail] = useState('')
   const [mailingSubmitted, setMailingSubmitted] = useState(false)
+  const [mailingLoading, setMailingLoading] = useState(false)
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+  const [submitMessage, setSubmitMessage] = useState('')
 
   const scrollToSection = (sectionId: string) => {
     const element = document.getElementById(sectionId)
     if (element) {
       element.scrollIntoView({ behavior: 'smooth' })
     }
-    setMobileMenuOpen(false) // Close mobile menu after navigation
-  }
-
-  const handleSubscribe = async (priceId: string, mode: string = 'subscription') => {
-    setLoading(priceId)
-    
-    try {
-      console.log('Starting subscription process for:', { priceId, mode })
-      
-      // Check if user is authenticated
-      const { data: { session } } = await supabase.auth.getSession()
-      
-      if (!session) {
-        console.log('No session found, redirecting to auth')
-        // Redirect to auth page if not logged in
-        window.location.href = '/auth'
-        return
-      }
-
-      console.log('User authenticated, creating checkout session')
-
-      const { data, error } = await supabase.functions.invoke('create-checkout', {
-        body: {
-          priceId: priceId,
-          mode: mode
-        },
-        headers: {
-          Authorization: `Bearer ${session.access_token}`,
-        },
-      })
-
-      if (error) {
-        console.error('Supabase function error:', error)
-        throw error
-      }
-
-      console.log('Checkout response:', data)
-
-      const stripe = await loadStripe('pk_live_51HQu3YHruLrtRCwicQwk5bRfrvR38kdh5R73SmRBSQ12oKzMkkGjPVZ2ZbnSezrwiqjSX5ZHMvTKadLRio4Y4dX900XvrIf0N9')
-      if (stripe && data.url) {
-        console.log('Redirecting to Stripe checkout:', data.url)
-        window.location.href = data.url
-      } else {
-        throw new Error('Failed to get checkout URL from Stripe')
-      }
-    } catch (error) {
-      console.error('Error:', error)
-      alert(`Something went wrong: ${error.message}. Please try again.`)
-    } finally {
-      setLoading(null)
-    }
+    setMobileMenuOpen(false)
   }
 
   const handleMailingSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    setMailingLoading(true)
+    setSubmitMessage('')
     
     try {
-      setMailingSubmitted(true)
+      const { error } = await supabase
+        .from('mailing_list')
+        .insert([{ email: mailingEmail }])
+
+      if (error) {
+        if (error.message?.includes('duplicate key value violates unique constraint')) {
+          setSubmitMessage('You\'re already on our waiting list! We\'ll be in touch soon.')
+        } else {
+          throw error
+        }
+      } else {
+        setMailingSubmitted(true)
+        setSubmitMessage('Welcome to the waiting list! We\'ll notify you when BakeStatements launches.')
+      }
+      
       setMailingEmail('')
       
-      // Reset after 3 seconds
+      // Reset after 5 seconds
       setTimeout(() => {
         setMailingSubmitted(false)
-      }, 3000)
+        setSubmitMessage('')
+      }, 5000)
     } catch (error) {
       console.error('Error submitting email:', error)
+      setSubmitMessage('Something went wrong. Please try again.')
+    } finally {
+      setMailingLoading(false)
     }
   }
 
@@ -91,8 +60,13 @@ export default function LandingPage() {
       <header className="header-fixed">
         <nav className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16 md:h-20">
-            {/* Empty space for logo area */}
-            <div></div>
+            {/* Logo */}
+            <div className="flex items-center space-x-3">
+              <div className="bg-amber-100 p-2 rounded-lg">
+                <ChefHat className="w-6 h-6 md:w-8 md:h-8 text-amber-600" />
+              </div>
+              <span className="text-lg md:text-xl font-bold text-teal-600">BakeStatements</span>
+            </div>
             
             {/* Desktop Navigation */}
             <div className="hidden md:flex items-center space-x-8">
@@ -101,12 +75,6 @@ export default function LandingPage() {
                 className="text-gray-600 hover:text-teal-600 font-medium transition-colors"
               >
                 Features
-              </button>
-              <button 
-                onClick={() => scrollToSection('pricing')}
-                className="text-gray-600 hover:text-teal-600 font-medium transition-colors"
-              >
-                Pricing
               </button>
               <a href="/about-us" className="text-gray-600 hover:text-teal-600 font-medium transition-colors">
                 About
@@ -121,15 +89,12 @@ export default function LandingPage() {
 
             {/* Desktop CTA */}
             <div className="hidden md:flex items-center space-x-4">
-              <a href="/auth" className="text-gray-600 hover:text-teal-600 font-medium transition-colors">
-                Sign In
-              </a>
-              <a 
-                href="/auth" 
+              <button 
+                onClick={() => scrollToSection('waitlist')}
                 className="bg-amber-500 text-white px-6 py-2 rounded-full font-bold hover:bg-amber-600 transition-colors shadow-lg"
               >
-                Start Free Trial
-              </a>
+                Join Waiting List
+              </button>
             </div>
 
             {/* Mobile Menu Button */}
@@ -151,14 +116,8 @@ export default function LandingPage() {
                 >
                   Features
                 </button>
-                <button 
-                  onClick={() => scrollToSection('pricing')}
-                  className="block w-full text-left py-2 text-gray-600 hover:text-teal-600 font-medium"
-                >
-                  Pricing
-                </button>
                 <a href="/about-us" className="block py-2 text-gray-600 hover:text-teal-600 font-medium">
-                  Sign In
+                  About Us
                 </a>
                 <button 
                   onClick={() => scrollToSection('contact')}
@@ -166,16 +125,13 @@ export default function LandingPage() {
                 >
                   Contact
                 </button>
-                <div className="pt-4 border-t border-gray-200 space-y-3">
-                  <a href="/auth" className="block py-2 text-gray-600 hover:text-teal-600 font-medium">
-                    Login
-                  </a>
-                  <a 
-                    href="/auth" 
-                    className="block bg-amber-500 text-white text-center py-3 px-4 rounded-lg font-bold hover:bg-amber-600 transition-colors"
+                <div className="pt-4 border-t border-gray-200">
+                  <button 
+                    onClick={() => scrollToSection('waitlist')}
+                    className="block w-full bg-amber-500 text-white text-center py-3 px-4 rounded-lg font-bold hover:bg-amber-600 transition-colors"
                   >
-                    Start Free Trial
-                  </a>
+                    Join Waiting List
+                  </button>
                 </div>
               </div>
             </div>
@@ -195,8 +151,23 @@ export default function LandingPage() {
           </div>
           <div className="hero__overlay"></div>
           <div className="hero__fade-overlay"></div>
-          <div className="hero__content">
-            <a className="btn-primary" href="/auth">Start Free Trial</a>
+        </section>
+
+        {/* Hero Content Section - positioned below hero image */}
+        <section className="mt-[400px]">
+          <div className="max-w-4xl mx-auto px-4 text-center">
+            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-gray-800 mb-6">
+              Professional Bakery Management for Australian Bakers
+            </h1>
+            <p className="text-xl md:text-2xl text-gray-600 mb-8 leading-relaxed">
+              The complete business toolkit that helps you turn your baking passion into profitable success
+            </p>
+            <button 
+              onClick={() => scrollToSection('waitlist')}
+              className="btn-primary"
+            >
+              Join the Waiting List
+            </button>
           </div>
         </section>
 
@@ -307,194 +278,182 @@ export default function LandingPage() {
           </div>
         </section>
 
-        {/* Pricing Section */}
-        <section id="pricing" className="py-16 md:py-24 px-4 bg-gray-50">
-          <div className="max-w-6xl mx-auto">
-            <div className="text-center mb-12 md:mb-20">
-              <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-gray-800 mb-4 md:mb-6">
-                Simple Pricing for Growing Bakers
-              </h2>
-              <p className="text-lg md:text-xl text-gray-600 max-w-4xl mx-auto leading-relaxed">
-                Start with our 7-day free trial, then choose the plan that fits your baking journey. 
-                All plans include every feature you need to succeed.
-              </p>
-            </div>
+        {/* Why BakeStatements Section */}
+        <section className="py-16 md:py-24 px-4 bg-gradient-to-r from-teal-600 to-amber-600 text-white">
+          <div className="max-w-6xl mx-auto text-center">
+            <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-6 md:mb-8">
+              Why Australian Bakers Choose BakeStatements
+            </h2>
             
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8 mb-12">
-              {/* Monthly Plan */}
-              <div className="bg-white border border-gray-200 rounded-2xl p-6 md:p-8 shadow-lg hover:shadow-xl transition-all duration-300">
-                <div className="text-center mb-6">
-                  <h3 className="text-xl md:text-2xl font-bold text-gray-800 mb-2">Monthly</h3>
-                  <div className="text-3xl md:text-4xl font-bold text-amber-600 mb-2">
-                    $19<span className="text-lg text-gray-500">/month</span>
-                  </div>
-                  <p className="text-sm text-amber-600 font-semibold">Perfect for getting started</p>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-12 mt-12 md:mt-16">
+              <div className="text-center">
+                <div className="w-16 h-16 bg-white/20 rounded-2xl flex items-center justify-center mx-auto mb-4 text-2xl">
+                  🇦🇺
                 </div>
-                
-                <ul className="space-y-3 mb-8">
-                </ul>
-                
-                <button
-                  onClick={() => handleSubscribe('price_1RyA4CHruLrtRCwiXi8uqRWn', 'subscription')}
-                  disabled={loading === STRIPE_PRICES.monthly}
-                  className="w-full bg-amber-500 text-white py-3 md:py-4 rounded-lg font-bold text-lg hover:bg-amber-600 transition-colors disabled:opacity-50"
-                >
-                  {loading === 'price_1RyA4CHruLrtRCwiXi8uqRWn' ? (
-                    <div className="flex items-center justify-center space-x-2">
-                      <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
-                      <span>Processing...</span>
-                    </div>
-                  ) : (
-                    'Start Monthly Plan'
-                  )}
-                </button>
+                <h3 className="text-xl font-bold mb-3">Built for Australia</h3>
+                <p className="opacity-90 leading-relaxed">
+                  ATO compliance, ABN integration, and GST calculations built right in. 
+                  No more wrestling with overseas software that doesn't understand Australian business.
+                </p>
               </div>
               
-              {/* Annual Plan - Featured */}
-              <div className="bg-white border-2 border-teal-500 rounded-2xl p-6 md:p-8 shadow-xl relative md:scale-105 hover:shadow-2xl transition-all duration-300">
-                <div className="absolute -top-3 left-1/2 transform -translate-x-1/2 bg-teal-500 text-white px-4 py-1 rounded-full text-sm font-bold">
-                  MOST POPULAR
+              <div className="text-center">
+                <div className="w-16 h-16 bg-white/20 rounded-2xl flex items-center justify-center mx-auto mb-4 text-2xl">
+                  🍞
                 </div>
-                
-                <div className="text-center mb-6 mt-2">
-                  <h3 className="text-xl md:text-2xl font-bold text-gray-800 mb-2">Annual</h3>
-                  <div className="text-3xl md:text-4xl font-bold text-teal-600 mb-2">
-                    $180<span className="text-lg text-gray-500">/year</span>
-                  </div>
-                  <p className="text-sm text-pink-600 font-semibold">Save $48 compared to monthly!</p>
-                </div>
-                
-                <ul className="space-y-3 mb-8">
-                </ul>
-                
-                <button
-                  onClick={() => handleSubscribe('price_1RyA4CHruLrtRCwiZJlqpEt1', 'subscription')}
-                  disabled={loading === STRIPE_PRICES.annual}
-                  className="w-full bg-teal-600 text-white py-3 md:py-4 rounded-lg font-bold text-lg hover:bg-teal-700 transition-colors disabled:opacity-50"
-                >
-                  {loading === 'price_1RyA4CHruLrtRCwiZJlqpEt1' ? (
-                    <div className="flex items-center justify-center space-x-2">
-                      <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
-                      <span>Processing...</span>
-                    </div>
-                  ) : (
-                    'Start Annual Plan'
-                  )}
-                </button>
+                <h3 className="text-xl font-bold mb-3">Made by Makers</h3>
+                <p className="opacity-90 leading-relaxed">
+                  Created by PIX3L, who've spent 5 years working directly with Australian bakers and makers. 
+                  We understand your challenges because we've lived them.
+                </p>
               </div>
               
-              {/* Lifetime Plan */}
-              <div className="bg-white border border-gray-200 rounded-2xl p-6 md:p-8 shadow-lg hover:shadow-xl transition-all duration-300">
-                <div className="text-center mb-6">
-                  <h3 className="text-xl md:text-2xl font-bold text-gray-800 mb-2">Founder's Lifetime</h3>
-                  <div className="text-3xl md:text-4xl font-bold text-pink-600 mb-2">
-                    $299<span className="text-lg text-gray-500"> once</span>
-                  </div>
-                  <p className="text-sm text-pink-600 font-semibold">Limited time - First 100 users only</p>
+              <div className="text-center">
+                <div className="w-16 h-16 bg-white/20 rounded-2xl flex items-center justify-center mx-auto mb-4 text-2xl">
+                  ⚡
                 </div>
-                
-                <ul className="space-y-3 mb-8">
-                </ul>
-                
-                <button
-                  onClick={() => handleSubscribe('price_1RyA4CHruLrtRCwi7inxZ3l2', 'payment')}
-                  disabled={loading === STRIPE_PRICES.lifetime}
-                  className="w-full bg-pink-600 text-white py-3 md:py-4 rounded-lg font-bold text-lg hover:bg-pink-700 transition-colors disabled:opacity-50"
-                >
-                  {loading === 'price_1RyA4CHruLrtRCwi7inxZ3l2' ? (
-                    <div className="flex items-center justify-center space-x-2">
-                      <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
-                      <span>Processing...</span>
-                    </div>
-                  ) : (
-                    'Get Lifetime Access'
-                  )}
-                </button>
-              </div>
-            </div>
-            
-            {/* Trial CTA */}
-            <div className="text-center mt-12 md:mt-20">
-              <div className="bg-white/80 backdrop-blur-sm border border-gray-200 rounded-2xl p-8 md:p-12 max-w-4xl mx-auto shadow-xl">
-                <h3 className="text-2xl md:text-3xl font-bold text-gray-800 mb-6">
-                  Join Australian Bakers Who've Gone Pro
-                </h3>
-                
-                <div className="flex flex-col sm:flex-row items-center justify-center gap-4 md:gap-6 mb-6">
-                  <a 
-                    href="/auth" 
-                    className="w-full sm:w-auto bg-amber-500 text-white px-8 py-4 md:px-12 md:py-5 rounded-full text-lg md:text-xl font-bold hover:bg-amber-600 transition-all duration-300 shadow-lg hover:shadow-xl"
-                  >
-                    Start Your Free Trial Today
-                  </a>
-                  <button 
-                    onClick={() => scrollToSection('pricing')}
-                    className="w-full sm:w-auto bg-white/80 backdrop-blur-sm text-teal-600 px-6 py-3 md:px-8 md:py-4 border-2 border-teal-600 rounded-full text-lg font-semibold hover:bg-teal-600 hover:text-white transition-all duration-300"
-                  >
-                    View Pricing Plans
-                  </button>
-                </div>
-
-                <div className="inline-flex items-center space-x-2 bg-green-100 text-green-800 px-6 py-3 rounded-full font-bold text-sm md:text-base mb-6">
-                  <span>✓</span>
-                  <span>No Credit Card Required • Cancel Anytime</span>
-                </div>
-                
-                <p className="text-gray-600 leading-relaxed">
-                  Start managing orders, tracking expenses, and generating professional invoices in under 5 minutes. 
-                  Risk-free trial with full access to all features – upgrade only when you're ready.
+                <h3 className="text-xl font-bold mb-3">Simple & Powerful</h3>
+                <p className="opacity-90 leading-relaxed">
+                  No complicated setup or steep learning curves. Get up and running in minutes, 
+                  not days. Focus on baking, we'll handle the business side.
                 </p>
               </div>
             </div>
           </div>
         </section>
 
-        {/* Mailing List Section */}
-        <section id="contact" className="py-16 md:py-24 px-4 bg-gradient-to-r from-teal-600 to-teal-700 text-white">
+        {/* Waiting List Section */}
+        <section id="waitlist" className="py-16 md:py-24 px-4 bg-white">
           <div className="max-w-4xl mx-auto text-center">
-            <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-4 md:mb-6">
-              Join the BakeStatements Community
+            <div className="mb-8 md:mb-12">
+              <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-gray-800 mb-4 md:mb-6">
+                Be First to Experience the Future of Bakery Management
+              </h2>
+              <p className="text-lg md:text-xl text-gray-600 leading-relaxed max-w-3xl mx-auto">
+                BakeStatements is launching soon! Join our exclusive waiting list to get early access, 
+                special launch pricing, and be among the first Australian bakers to revolutionize their business operations.
+              </p>
+            </div>
+
+            {mailingSubmitted ? (
+              <div className="max-w-2xl mx-auto bg-green-50 border border-green-200 rounded-2xl p-8 md:p-12">
+                <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                  <CheckCircle className="w-8 h-8 text-green-600" />
+                </div>
+                <h3 className="text-2xl font-bold text-green-800 mb-4">Welcome to the Crew!</h3>
+                <p className="text-green-700 text-lg">
+                  You're now on our exclusive waiting list. We'll send you early access and launch updates 
+                  as we get closer to release. Get ready to transform your baking business!
+                </p>
+              </div>
+            ) : (
+              <div className="max-w-2xl mx-auto">
+                <form onSubmit={handleMailingSubmit} className="mb-8">
+                  <div className="flex flex-col sm:flex-row gap-4 mb-4">
+                    <input
+                      type="email"
+                      value={mailingEmail}
+                      onChange={(e) => setMailingEmail(e.target.value)}
+                      placeholder="Enter your email address"
+                      className="flex-1 px-6 py-4 rounded-full text-gray-800 bg-white border-2 border-gray-200 focus:outline-none focus:border-teal-500 focus:ring-4 focus:ring-teal-200 text-lg transition-all"
+                      required
+                      disabled={mailingLoading}
+                    />
+                    <button 
+                      type="submit" 
+                      className="bg-teal-600 text-white px-8 py-4 rounded-full font-bold text-lg hover:bg-teal-700 transition-colors shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
+                      disabled={mailingLoading}
+                    >
+                      {mailingLoading ? (
+                        <div className="flex items-center space-x-2">
+                          <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
+                          <span>Joining...</span>
+                        </div>
+                      ) : (
+                        'Join Waiting List'
+                      )}
+                    </button>
+                  </div>
+
+                  {submitMessage && (
+                    <div className={`p-4 rounded-lg text-sm mb-4 ${
+                      submitMessage.includes('already on our waiting list') || submitMessage.includes('Welcome to the waiting list')
+                        ? 'bg-green-50 border border-green-200 text-green-800'
+                        : 'bg-red-50 border border-red-200 text-red-800'
+                    }`}>
+                      {submitMessage}
+                    </div>
+                  )}
+
+                  <div className="text-sm text-gray-500">
+                    Join 500+ Australian bakers already on the list • No spam, unsubscribe anytime
+                  </div>
+                </form>
+
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 max-w-2xl mx-auto">
+                  <div className="flex flex-col items-center space-y-3 bg-teal-50 p-6 rounded-xl border border-teal-200">
+                    <div className="w-12 h-12 bg-teal-100 rounded-full flex items-center justify-center">
+                      <Mail className="w-6 h-6 text-teal-600" />
+                    </div>
+                    <h4 className="font-bold text-gray-800">Early Access</h4>
+                    <p className="text-sm text-gray-600 text-center">Be first to try BakeStatements before public launch</p>
+                  </div>
+                  
+                  <div className="flex flex-col items-center space-y-3 bg-amber-50 p-6 rounded-xl border border-amber-200">
+                    <div className="w-12 h-12 bg-amber-100 rounded-full flex items-center justify-center">
+                      <span className="text-amber-600 text-xl font-bold">%</span>
+                    </div>
+                    <h4 className="font-bold text-gray-800">Launch Pricing</h4>
+                    <p className="text-sm text-gray-600 text-center">Exclusive discounts for waiting list members</p>
+                  </div>
+                  
+                  <div className="flex flex-col items-center space-y-3 bg-purple-50 p-6 rounded-xl border border-purple-200">
+                    <div className="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center">
+                      <span className="text-purple-600 text-xl font-bold">🎁</span>
+                    </div>
+                    <h4 className="font-bold text-gray-800">Founder's Perks</h4>
+                    <p className="text-sm text-gray-600 text-center">Special bonuses and lifetime member benefits</p>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+        </section>
+
+        {/* CTA Section */}
+        <section id="contact" className="py-16 md:py-24 px-4 bg-gradient-to-br from-amber-100 to-teal-100">
+          <div className="max-w-4xl mx-auto text-center">
+            <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-gray-800 mb-4 md:mb-6">
+              Ready to Transform Your Baking Business?
             </h2>
-            <p className="text-lg md:text-xl mb-8 md:mb-12 opacity-95 leading-relaxed">
-              Get exclusive baking business insights, early access to new features, and proven strategies 
-              from successful Australian bakers delivered straight to your inbox.
+            <p className="text-lg md:text-xl text-gray-600 mb-8 md:mb-12 leading-relaxed">
+              Join hundreds of Australian bakers who are preparing to revolutionize how they manage their business. 
+              Don't get left behind when we launch.
             </p>
             
-            <form onSubmit={handleMailingSubmit} className="flex flex-col sm:flex-row gap-4 max-w-2xl mx-auto mb-8 md:mb-12">
-              <input
-                type="email"
-                value={mailingEmail}
-                onChange={(e) => setMailingEmail(e.target.value)}
-                placeholder="your@email.com"
-                className="flex-1 px-6 py-4 rounded-full text-gray-800 bg-white/95 backdrop-blur-sm focus:outline-none focus:ring-4 focus:ring-white/50 text-lg"
-                required
-                disabled={mailingSubmitted}
-              />
-              <button 
-                type="submit" 
-                className="bg-amber-500 text-white px-8 py-4 rounded-full font-bold text-lg hover:bg-amber-600 transition-colors shadow-lg disabled:opacity-50"
-                disabled={mailingSubmitted}
-              >
-                {mailingSubmitted ? 'Thanks! ✓' : 'Join Community'}
-              </button>
-            </form>
+            <button 
+              onClick={() => scrollToSection('waitlist')}
+              className="bg-amber-500 text-white px-8 py-4 md:px-12 md:py-5 rounded-full text-lg md:text-xl font-bold hover:bg-amber-600 transition-all duration-300 shadow-lg hover:shadow-xl"
+            >
+              Secure Your Spot on the Waiting List
+            </button>
             
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 max-w-4xl mx-auto">
-              <div className="flex flex-col items-center space-y-2 bg-white/10 backdrop-blur-sm px-4 py-3 rounded-lg">
-                <span className="text-2xl">📧</span>
-                <span className="font-semibold text-sm">Join the PIX3L Crew</span>
-              </div>
-              <div className="flex flex-col items-center space-y-2 bg-white/10 backdrop-blur-sm px-4 py-3 rounded-lg">
+            <div className="mt-8 grid grid-cols-2 md:grid-cols-4 gap-4 max-w-2xl mx-auto">
+              <div className="flex flex-col items-center space-y-2 bg-white/60 backdrop-blur-sm px-4 py-3 rounded-lg">
                 <span className="text-2xl">🚀</span>
-                <span className="font-semibold text-sm">Early Feature Access</span>
+                <span className="font-semibold text-sm text-gray-700">Launching Soon</span>
               </div>
-              <div className="flex flex-col items-center space-y-2 bg-white/10 backdrop-blur-sm px-4 py-3 rounded-lg">
-                <span className="text-2xl">🎁</span>
-                <span className="font-semibold text-sm">Member-Only Offers</span>
+              <div className="flex flex-col items-center space-y-2 bg-white/60 backdrop-blur-sm px-4 py-3 rounded-lg">
+                <span className="text-2xl">🎯</span>
+                <span className="font-semibold text-sm text-gray-700">Built for Bakers</span>
               </div>
-              <div className="flex flex-col items-center space-y-2 bg-white/10 backdrop-blur-sm px-4 py-3 rounded-lg">
-                <span className="text-2xl">🔒</span>
-                <span className="font-semibold text-sm">No Spam Promise</span>
+              <div className="flex flex-col items-center space-y-2 bg-white/60 backdrop-blur-sm px-4 py-3 rounded-lg">
+                <span className="text-2xl">🇦🇺</span>
+                <span className="font-semibold text-sm text-gray-700">Australian Made</span>
+              </div>
+              <div className="flex flex-col items-center space-y-2 bg-white/60 backdrop-blur-sm px-4 py-3 rounded-lg">
+                <span className="text-2xl">💪</span>
+                <span className="font-semibold text-sm text-gray-700">ATO Ready</span>
               </div>
             </div>
           </div>
@@ -518,7 +477,7 @@ export default function LandingPage() {
       {/* Footer */}
       <footer className="py-12 md:py-16 px-4 bg-gray-800 text-white">
         <div className="max-w-6xl mx-auto">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-8">
             {/* Brand */}
             <div className="lg:col-span-2">
               <div className="flex items-center space-x-3 mb-4">
@@ -533,9 +492,9 @@ export default function LandingPage() {
               </p>
             </div>
 
-            {/* Product Links */}
+            {/* Company Links */}
             <div>
-              <h4 className="text-lg font-bold text-white mb-4">Product</h4>
+              <h4 className="text-lg font-bold text-white mb-4">Company</h4>
               <ul className="space-y-3">
                 <li>
                   <button 
@@ -546,51 +505,26 @@ export default function LandingPage() {
                   </button>
                 </li>
                 <li>
-                  <button 
-                    onClick={() => scrollToSection('pricing')}
-                    className="text-gray-300 hover:text-white transition-colors"
-                  >
-                    Pricing
-                  </button>
-                </li>
-                <li>
-                  <a href="/auth" className="text-gray-300 hover:text-white transition-colors">
-                    Sign Up
-                  </a>
-                </li>
-                <li>
-                  <a href="/enquiry" className="text-gray-300 hover:text-white transition-colors">
-                    Get Quote
-                  </a>
-                </li>
-              </ul>
-            </div>
-
-            {/* Company Links */}
-            <div>
-              <h4 className="text-lg font-bold text-white mb-4">Company</h4>
-              <ul className="space-y-3">
-                <li>
                   <a href="/about-us" className="text-gray-300 hover:text-white transition-colors">
                     About Us
                   </a>
                 </li>
                 <li>
                   <button 
-                    onClick={() => scrollToSection('contact')}
+                    onClick={() => scrollToSection('waitlist')}
                     className="text-gray-300 hover:text-white transition-colors"
                   >
-                    Contact
+                    Join Waiting List
                   </button>
                 </li>
                 <li>
-                  <a href="/privacy-terms" className="text-gray-300 hover:text-white transition-colors">
-                    Privacy Policy
+                  <a href="/enquiry" className="text-gray-300 hover:text-white transition-colors">
+                    Get Quote
                   </a>
                 </li>
                 <li>
                   <a href="/privacy-terms" className="text-gray-300 hover:text-white transition-colors">
-                    Terms of Service
+                    Privacy & Terms
                   </a>
                 </li>
               </ul>
