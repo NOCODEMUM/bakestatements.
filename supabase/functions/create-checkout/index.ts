@@ -38,8 +38,36 @@ Deno.serve(async (req) => {
 
     console.log('Creating checkout session for:', { priceId, mode, userId: user.user.id })
 
+    // Get or create customer
+    let customerId = null
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('stripe_customer_id, business_name')
+      .eq('id', user.user.id)
+      .single()
+
+    if (profile?.stripe_customer_id) {
+      customerId = profile.stripe_customer_id
+    } else {
+      // Create new customer
+      const customer = await stripe.customers.create({
+        email: user.user.email,
+        name: profile?.business_name || undefined,
+        metadata: {
+          supabase_user_id: user.user.id,
+        },
+      })
+      customerId = customer.id
+
+      // Update profile with customer ID
+      await supabase
+        .from('profiles')
+        .update({ stripe_customer_id: customerId })
+        .eq('id', user.user.id)
+    }
+
     const session = await stripe.checkout.sessions.create({
-      customer_email: user.user.email,
+      customer: customerId,
       billing_address_collection: 'required',
       line_items: [
         {
@@ -53,12 +81,19 @@ Deno.serve(async (req) => {
       metadata: {
         user_id: user.user.id,
       },
+      allow_promotion_codes: true,
+      tax_id_collection: {
+        enabled: true,
+      },
     })
 
     console.log('Checkout session created:', session.id)
 
     return new Response(
-      JSON.stringify({ url: session.url }),
+      JSON.stringify({ 
+        url: session.url,
+        session_id: session.id 
+      }),
       {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         status: 200,
