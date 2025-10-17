@@ -36,8 +36,8 @@ export default function PaywallModal({ isOpen, onClose }: PaywallModalProps) {
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-2xl shadow-xl max-w-md w-full p-6">
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-start justify-center z-50 p-4 overflow-y-auto">
+      <div className="bg-white rounded-2xl shadow-xl max-w-md w-full p-6 my-8 max-h-[calc(100vh-4rem)]">
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center space-x-2">
             <Crown className="w-6 h-6 text-amber-600" />
@@ -51,13 +51,13 @@ export default function PaywallModal({ isOpen, onClose }: PaywallModalProps) {
           </button>
         </div>
 
-        <div className="text-center mb-8">
+        <div className="text-center mb-6">
           <p className="text-gray-600 mb-4">
             Your free trial has ended. Upgrade to continue managing your bakery with BakeStatements.
           </p>
         </div>
 
-        <div className="space-y-4 mb-8">
+        <div className="space-y-4 mb-6 overflow-y-auto max-h-[calc(100vh-20rem)]">
           <div className="border border-amber-200 rounded-lg p-4 bg-amber-50">
             <div className="flex items-center justify-between mb-2">
               <h3 className="font-bold text-gray-800">Monthly Plan</h3>
