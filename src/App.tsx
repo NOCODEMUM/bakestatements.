@@ -1,16 +1,24 @@
-import { useState } from 'react'
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom'
-import { AuthProvider, useAuth } from './hooks/useAuth.tsx'
+import { AuthProvider, useAuth } from './hooks/useAuth'
 import { ThemeProvider } from './contexts/ThemeContext'
-import { ProtectedRoute } from './components/auth/ProtectedRoute'
+import Auth from './components/Auth'
+import Layout from './components/Layout'
 import PaywallModal from './components/PaywallModal'
 import LandingPage from './pages/LandingPage'
 import AboutUs from './pages/AboutUs'
-import { LoginPage } from './pages/LoginPage'
-import { SignupPage } from './pages/SignupPage'
-import { DashboardPage } from './pages/DashboardPage'
-import { PricingPage } from './pages/PricingPage'
-import { SuccessPage } from './pages/SuccessPage'
+import PrivacyTerms from './pages/PrivacyTerms'
+import Dashboard from './pages/Dashboard'
+import Orders from './pages/Orders'
+import Calendar from './pages/Calendar'
+import Recipes from './pages/Recipes'
+import Invoices from './pages/Invoices'
+import Expenses from './pages/Expenses'
+import Settings from './pages/Settings'
+import Enquiries from './pages/Enquiries'
+import EnquiryForm from './pages/EnquiryForm'
+import ForgotPassword from './pages/ForgotPassword'
+import ResetPassword from './pages/ResetPassword'
+import { useState } from 'react'
 
 function AppContent() {
   const { user, loading, isTrialExpired } = useAuth()
@@ -23,6 +31,14 @@ function AppContent() {
       </div>
     )
   }
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { ProtectedRoute } from './components/auth/ProtectedRoute';
+import { LoginPage } from './pages/LoginPage';
+import { SignupPage } from './pages/SignupPage';
+import { DashboardPage } from './pages/DashboardPage';
+import { PricingPage } from './pages/PricingPage';
+import { SuccessPage } from './pages/SuccessPage';
+
 
   return (
     <Router>
