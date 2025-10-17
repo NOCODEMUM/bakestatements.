@@ -1,5 +1,4 @@
 import { useEffect, useState } from 'react'
-import { supabase } from '../lib/supabase'
 import { useAuth } from '../hooks/useAuth'
 import { Plus, Search, Calendar, DollarSign } from 'lucide-react'
 import { format } from 'date-fns'

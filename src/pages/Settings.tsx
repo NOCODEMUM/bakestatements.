@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react'
 import { useAuth } from '../hooks/useAuth'
-import { supabase } from '../lib/supabase'
 import { User, Building, Hash, Phone, Save, CheckCircle } from 'lucide-react'
 
 interface ProfileData {

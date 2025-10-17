@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
-import { supabase } from '../lib/supabase'
 import { ChefHat, Lock, Eye, EyeOff } from 'lucide-react'
 
 export default function ResetPassword() {

@@ -1,5 +1,4 @@
 import { useEffect, useState } from 'react'
-import { supabase } from '../lib/supabase'
 import { useAuth } from '../hooks/useAuth'
 import { Plus, Calculator, Package, DollarSign, Edit, Trash2 } from 'lucide-react'
 

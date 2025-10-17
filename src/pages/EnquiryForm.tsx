@@ -1,5 +1,4 @@
 import { useState } from 'react'
-import { supabase } from '../lib/supabase'
 import { ChefHat, Send, CheckCircle } from 'lucide-react'
 
 export default function EnquiryForm() {

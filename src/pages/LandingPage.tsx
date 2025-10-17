@@ -1,6 +1,4 @@
 import React, { useState } from 'react'
-import { loadStripe } from '@stripe/stripe-js'
-import { supabase } from '../lib/supabase'
 import { STRIPE_PRICES } from '../lib/stripe'
 import { Menu, X, Check, ChefHat } from 'lucide-react'
 import './LandingPage.css'
@@ -20,55 +18,8 @@ export default function LandingPage() {
   }
 
   const handleSubscribe = async (priceId: string, mode: string = 'subscription') => {
-    setLoading(priceId)
-    
-    try {
-      console.log('Starting subscription process for:', { priceId, mode })
-      
-      // Check if user is authenticated
-      const { data: { session } } = await supabase.auth.getSession()
-      
-      if (!session) {
-        console.log('No session found, redirecting to auth')
-        // Redirect to auth page if not logged in
-        window.location.href = '/auth'
-        return
-      }
-
-      console.log('User authenticated, creating checkout session')
-
-      const { data, error } = await supabase.functions.invoke('create-checkout', {
-        body: {
-          priceId: priceId,
-          mode: mode
-        },
-        headers: {
-          Authorization: `Bearer ${session.access_token}`,
-        },
-      })
-
-      if (error) {
-        console.error('Supabase function error:', error)
-        throw error
-      }
-
-      console.log('Checkout response:', data)
-
-      const stripe = await loadStripe('pk_live_51HQu3YHruLrtRCwicQwk5bRfrvR38kdh5R73SmRBSQ12oKzMkkGjPVZ2ZbnSezrwiqjSX5ZHMvTKadLRio4Y4dX900XvrIf0N9')
-      if (stripe && data.url) {
-        console.log('Redirecting to Stripe checkout:', data.url)
-        window.location.href = data.url
-      } else {
-        throw new Error('Failed to get checkout URL from Stripe')
-      }
-    } catch (error) {
-      console.error('Error:', error)
-      alert(`Something went wrong: ${error.message}. Please try again.`)
-    } finally {
-      setLoading(null)
-    }
+    window.location.href = '/auth';
   }
-
   const handleMailingSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     

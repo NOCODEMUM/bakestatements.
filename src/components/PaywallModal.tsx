@@ -1,67 +1,39 @@
-import { X, Crown, Check } from 'lucide-react'
-import { stripePromise } from '../lib/stripe'
-import { supabase } from '../lib/supabase'
-import { useAuth } from '../hooks/useAuth'
-import { useState } from 'react'
+import { X, Crown, Check } from 'lucide-react';
+import { useAuth } from '../hooks/useAuth';
+import { api } from '../lib/api';
+import { useState } from 'react';
 
 interface PaywallModalProps {
-  isOpen: boolean
-  onClose: () => void
+  isOpen: boolean;
+  onClose: () => void;
 }
 
 export default function PaywallModal({ isOpen, onClose }: PaywallModalProps) {
-  const { user } = useAuth()
-  const [loading, setLoading] = useState<string | null>(null)
+  const { user, accessToken } = useAuth();
+  const [loading, setLoading] = useState<string | null>(null);
 
   const handleSubscribe = async (priceId: string, mode: string = 'subscription') => {
-    if (!user) return
-    
-    setLoading(priceId)
-    
+    if (!user || !accessToken) return;
+
+    setLoading(priceId);
+
     try {
-      console.log('Starting subscription process for:', { priceId, mode })
-      
-      const { data: session } = await supabase.auth.getSession()
-      
-      if (!session.session) {
-        console.error('No active session found')
-        alert('Please sign in to continue')
-        return
-      }
+      const { url }: any = await api.stripe.createCheckout(accessToken, priceId, mode);
 
-      const { data, error } = await supabase.functions.invoke('create-checkout', {
-        body: {
-          priceId: priceId,
-          mode: mode
-        },
-        headers: {
-          Authorization: `Bearer ${session.session.access_token}`,
-        },
-      })
-
-      if (error) {
-        console.error('Supabase function error:', error)
-        throw error
-      }
-
-      console.log('Checkout response:', data)
-
-      const stripe = await stripePromise
-      if (stripe && data.url) {
-        console.log('Redirecting to Stripe checkout:', data.url)
-        window.location.href = data.url
+      if (url) {
+        window.location.href = url;
       } else {
-        throw new Error('Failed to get checkout URL')
+        throw new Error('Failed to get checkout URL');
       }
-    } catch (error) {
-      console.error('Error:', error)
-      alert(`Something went wrong: ${error.message}. Please try again.`)
+    } catch (error: any) {
+      console.error('Error:', error);
+      alert(`Something went wrong: ${error.message}. Please try again.`);
     } finally {
-      setLoading(null)
+      setLoading(null);
     }
-  }
+  };
 
-  if (!isOpen) return null
+  if (!isOpen) return null;
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
@@ -106,7 +78,7 @@ export default function PaywallModal({ isOpen, onClose }: PaywallModalProps) {
                 </li>
               ))}
             </ul>
-            <button 
+            <button
               onClick={() => handleSubscribe('price_1RyA4CHruLrtRCwiXi8uqRWn', 'subscription')}
               disabled={loading === 'price_1RyA4CHruLrtRCwiXi8uqRWn'}
               className="w-full bg-amber-500 text-white py-2 px-4 rounded-lg hover:bg-amber-600 transition-colors mt-4 font-medium disabled:opacity-50"
@@ -134,7 +106,7 @@ export default function PaywallModal({ isOpen, onClose }: PaywallModalProps) {
               </div>
             </div>
             <p className="text-sm text-gray-600 mb-3">AUD per year (Save $48!)</p>
-            <button 
+            <button
               onClick={() => handleSubscribe('price_1RyA4CHruLrtRCwiZJlqpEt1', 'subscription')}
               disabled={loading === 'price_1RyA4CHruLrtRCwiZJlqpEt1'}
               className="w-full bg-emerald-600 text-white py-2 px-4 rounded-lg hover:bg-emerald-700 transition-colors font-medium disabled:opacity-50"
@@ -159,7 +131,7 @@ export default function PaywallModal({ isOpen, onClose }: PaywallModalProps) {
               </div>
             </div>
             <p className="text-sm text-gray-600 mb-3">One-time payment • First 50 users only</p>
-            <button 
+            <button
               onClick={() => handleSubscribe('price_1RyA4CHruLrtRCwi7inxZ3l2', 'payment')}
               disabled={loading === 'price_1RyA4CHruLrtRCwi7inxZ3l2'}
               className="w-full bg-purple-500 text-white py-2 px-4 rounded-lg hover:bg-purple-600 transition-colors font-medium disabled:opacity-50"
@@ -189,5 +161,5 @@ export default function PaywallModal({ isOpen, onClose }: PaywallModalProps) {
         </div>
       </div>
     </div>
-  )
+  );
 }

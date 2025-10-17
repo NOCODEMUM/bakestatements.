@@ -1,5 +1,4 @@
 import { useState } from 'react'
-import { supabase } from '../lib/supabase'
 import { ChefHat, ArrowLeft, Mail } from 'lucide-react'
 import { Link } from 'react-router-dom'
 
