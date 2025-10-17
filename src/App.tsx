@@ -13,6 +13,7 @@ import Calendar from './pages/Calendar'
 import Recipes from './pages/Recipes'
 import Invoices from './pages/Invoices'
 import Expenses from './pages/Expenses'
+import Equipment from './pages/Equipment'
 import Settings from './pages/Settings'
 import Enquiries from './pages/Enquiries'
 import EnquiryForm from './pages/EnquiryForm'
@@ -69,6 +70,7 @@ function AppContent() {
                 <Route path="/orders" element={<Orders />} />
                 <Route path="/calendar" element={<Calendar />} />
                 <Route path="/recipes" element={<Recipes />} />
+                <Route path="/equipment" element={<Equipment />} />
                 <Route path="/invoices" element={<Invoices />} />
                 <Route path="/expenses" element={<Expenses />} />
                 <Route path="/enquiries" element={<Enquiries />} />

@@ -18,7 +18,8 @@ import {
   Sun,
   Moon,
   Mail,
-  Globe
+  Globe,
+  Wrench
 } from 'lucide-react'
 
 interface LayoutProps {
@@ -30,6 +31,7 @@ const navigation = [
   { name: 'Orders', href: '/orders', icon: ShoppingCart },
   { name: 'Calendar', href: '/calendar', icon: Calendar },
   { name: 'Recipes', href: '/recipes', icon: BookOpen },
+  { name: 'Equipment', href: '/equipment', icon: Wrench },
   { name: 'Invoices', href: '/invoices', icon: FileText },
   { name: 'Expenses', href: '/expenses', icon: DollarSign },
   { name: 'Enquiries', href: '/enquiries', icon: Mail },

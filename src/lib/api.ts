@@ -637,4 +637,120 @@ export const api = {
       return { success: true };
     },
   },
+
+  equipment: {
+    getAll: async (_token: string) => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error('Not authenticated');
+
+      const { data, error } = await supabase
+        .from('equipment')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      return { equipment: data || [] };
+    },
+
+    getOne: async (_token: string, id: string) => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error('Not authenticated');
+
+      const { data, error } = await supabase
+        .from('equipment')
+        .select('*')
+        .eq('id', id)
+        .eq('user_id', user.id)
+        .maybeSingle();
+
+      if (error) throw error;
+      return { equipment: data };
+    },
+
+    create: async (_token: string, equipmentData: any) => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error('Not authenticated');
+
+      const { data, error } = await supabase
+        .from('equipment')
+        .insert({
+          ...equipmentData,
+          user_id: user.id,
+        })
+        .select()
+        .single();
+
+      if (error) throw error;
+      return { equipment: data };
+    },
+
+    update: async (_token: string, id: string, equipmentData: any) => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error('Not authenticated');
+
+      const { data, error } = await supabase
+        .from('equipment')
+        .update({
+          ...equipmentData,
+          updated_at: new Date().toISOString(),
+        })
+        .eq('id', id)
+        .eq('user_id', user.id)
+        .select()
+        .single();
+
+      if (error) throw error;
+      return { equipment: data };
+    },
+
+    delete: async (_token: string, id: string) => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error('Not authenticated');
+
+      const { error } = await supabase
+        .from('equipment')
+        .delete()
+        .eq('id', id)
+        .eq('user_id', user.id);
+
+      if (error) throw error;
+      return { success: true };
+    },
+
+    uploadPhoto: async (file: File) => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error('Not authenticated');
+
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${user.id}/${Date.now()}.${fileExt}`;
+
+      const { data, error } = await supabase.storage
+        .from('equipment-photos')
+        .upload(fileName, file, {
+          cacheControl: '3600',
+          upsert: false,
+        });
+
+      if (error) throw error;
+
+      const { data: { publicUrl } } = supabase.storage
+        .from('equipment-photos')
+        .getPublicUrl(fileName);
+
+      return { url: publicUrl, path: fileName };
+    },
+
+    deletePhoto: async (filePath: string) => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error('Not authenticated');
+
+      const { error } = await supabase.storage
+        .from('equipment-photos')
+        .remove([filePath]);
+
+      if (error) throw error;
+      return { success: true };
+    },
+  },
 };

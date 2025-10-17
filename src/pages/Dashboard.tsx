@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useAuth } from '../hooks/useAuth'
 import { api } from '../lib/api'
-import { ShoppingCart, DollarSign, TrendingUp, Calendar, FileText, Mail } from 'lucide-react'
+import { ShoppingCart, DollarSign, TrendingUp, Calendar, FileText, Mail, Wrench } from 'lucide-react'
 import { format } from 'date-fns'
 
 interface DashboardStats {
@@ -240,13 +240,13 @@ export default function Dashboard() {
                 <DollarSign className="w-6 h-6 text-green-600 mb-2 group-hover:scale-110 transition-transform" />
                 <p className="text-sm font-medium text-gray-800">Add Expense</p>
               </Link>
-              <Link to="/enquiries" className="p-4 bg-purple-50 border border-purple-200 rounded-lg hover:bg-purple-100 transition-colors group">
-                <Mail className="w-6 h-6 text-purple-600 mb-2 group-hover:scale-110 transition-transform" />
-                <p className="text-sm font-medium text-gray-800">View Enquiries</p>
+              <Link to="/equipment" className="p-4 bg-teal-50 border border-teal-200 rounded-lg hover:bg-teal-100 transition-colors group">
+                <Wrench className="w-6 h-6 text-teal-600 mb-2 group-hover:scale-110 transition-transform" />
+                <p className="text-sm font-medium text-gray-800">Equipment</p>
               </Link>
-              <Link to="/calendar" className="p-4 bg-blue-50 border border-blue-200 rounded-lg hover:bg-blue-100 transition-colors group">
-                <Calendar className="w-6 h-6 text-blue-600 mb-2 group-hover:scale-110 transition-transform" />
-                <p className="text-sm font-medium text-gray-800">View Calendar</p>
+              <Link to="/enquiries" className="p-4 bg-rose-50 border border-rose-200 rounded-lg hover:bg-rose-100 transition-colors group">
+                <Mail className="w-6 h-6 text-rose-600 mb-2 group-hover:scale-110 transition-transform" />
+                <p className="text-sm font-medium text-gray-800">View Enquiries</p>
               </Link>
             </div>
           </div>
