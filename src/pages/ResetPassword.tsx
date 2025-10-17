@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useNavigate, useSearchParams, Link } from 'react-router-dom'
 import { ChefHat, Lock, Eye, EyeOff } from 'lucide-react'
-import { api } from '../lib/api'
+import { supabase } from '../lib/supabase'
 
 export default function ResetPassword() {
   const [password, setPassword] = useState('')
@@ -10,17 +10,18 @@ export default function ResetPassword() {
   const [message, setMessage] = useState('')
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
-  const [resetToken, setResetToken] = useState<string | null>(null)
   const [searchParams] = useSearchParams()
   const navigate = useNavigate()
+  const [isValidSession, setIsValidSession] = useState(false)
 
   useEffect(() => {
-    const token = searchParams.get('token')
-    if (!token) {
-      setMessage('Invalid reset link. Please request a new password reset.')
-      return
-    }
-    setResetToken(token)
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session) {
+        setIsValidSession(true)
+      } else {
+        setMessage('Invalid reset link. Please request a new password reset.')
+      }
+    })
   }, [searchParams])
 
   const validatePassword = (password: string) => {
@@ -41,7 +42,7 @@ export default function ResetPassword() {
     setLoading(true)
     setMessage('')
 
-    if (!resetToken) {
+    if (!isValidSession) {
       setMessage('Invalid reset link. Please request a new password reset.')
       setLoading(false)
       return
@@ -61,14 +62,21 @@ export default function ResetPassword() {
     }
 
     try {
-      await api.auth.resetPassword(resetToken, password)
-      navigate('/auth?message=password_updated')
-    } catch (error: any) {
-      if (error.message.includes('expired') || error.message.includes('invalid')) {
-        setMessage('Link expired, request a new one')
+      const { error } = await supabase.auth.updateUser({
+        password: password
+      })
+
+      if (error) {
+        if (error.message.includes('expired') || error.message.includes('invalid')) {
+          setMessage('Link expired, request a new one')
+        } else {
+          setMessage(error.message || 'An error occurred. Please try again.')
+        }
       } else {
-        setMessage(error.message || 'An error occurred. Please try again.')
+        navigate('/auth?message=password_updated')
       }
+    } catch (error: any) {
+      setMessage(error.message || 'An error occurred. Please try again.')
     } finally {
       setLoading(false)
     }

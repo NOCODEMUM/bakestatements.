@@ -1,7 +1,8 @@
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
-import { api } from '../lib/api';
+import { supabase } from '../lib/supabase';
+import type { User as SupabaseUser } from '@supabase/supabase-js';
 
-interface User {
+interface UserProfile {
   id: string;
   email: string;
   business_name?: string;
@@ -10,12 +11,11 @@ interface User {
   trial_end_date: string;
   subscription_status: string;
   subscription_tier?: string;
-  email_verified: boolean;
 }
 
 interface AuthContextType {
-  user: User | null;
-  accessToken: string | null;
+  user: UserProfile | null;
+  supabaseUser: SupabaseUser | null;
   loading: boolean;
   signUp: (email: string, password: string, businessName?: string) => Promise<void>;
   signIn: (email: string, password: string) => Promise<void>;
@@ -27,43 +27,29 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-const TOKEN_KEY = 'bakestatements_access_token';
-const REFRESH_TOKEN_KEY = 'bakestatements_refresh_token';
-const USER_KEY = 'bakestatements_user';
-
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<User | null>(null);
-  const [accessToken, setAccessToken] = useState<string | null>(null);
+  const [user, setUser] = useState<UserProfile | null>(null);
+  const [supabaseUser, setSupabaseUser] = useState<SupabaseUser | null>(null);
   const [loading, setLoading] = useState(true);
   const [isTrialExpired, setIsTrialExpired] = useState(false);
   const [hasActiveSubscription, setHasActiveSubscription] = useState(false);
 
-  useEffect(() => {
-    const storedToken = localStorage.getItem(TOKEN_KEY);
-    const storedUser = localStorage.getItem(USER_KEY);
+  const fetchUserProfile = async (userId: string) => {
+    const { data, error } = await supabase
+      .from('profiles')
+      .select('*')
+      .eq('id', userId)
+      .maybeSingle();
 
-    if (storedToken && storedUser) {
-      try {
-        const parsedUser = JSON.parse(storedUser);
-        setAccessToken(storedToken);
-        setUser(parsedUser);
-        checkTrialStatus(parsedUser);
-
-        api.auth.getProfile(storedToken).then((response: any) => {
-          setUser(response.user);
-          localStorage.setItem(USER_KEY, JSON.stringify(response.user));
-          checkTrialStatus(response.user);
-        }).catch(() => {
-          handleLogout();
-        });
-      } catch (error) {
-        handleLogout();
-      }
+    if (error) {
+      console.error('Error fetching profile:', error);
+      return null;
     }
-    setLoading(false);
-  }, []);
 
-  const checkTrialStatus = (userData: User) => {
+    return data;
+  };
+
+  const checkTrialStatus = (userData: UserProfile) => {
     const trialEnd = new Date(userData.trial_end_date);
     const now = new Date();
     const trialExpired = now > trialEnd;
@@ -73,72 +59,113 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setHasActiveSubscription(activeSubscription);
   };
 
-  const handleLogout = () => {
-    localStorage.removeItem(TOKEN_KEY);
-    localStorage.removeItem(REFRESH_TOKEN_KEY);
-    localStorage.removeItem(USER_KEY);
-    setAccessToken(null);
-    setUser(null);
-    setIsTrialExpired(false);
-    setHasActiveSubscription(false);
-  };
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSupabaseUser(session?.user ?? null);
+      if (session?.user) {
+        fetchUserProfile(session.user.id).then((profile) => {
+          if (profile) {
+            setUser(profile);
+            checkTrialStatus(profile);
+          }
+        });
+      }
+      setLoading(false);
+    });
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setSupabaseUser(session?.user ?? null);
+      if (session?.user) {
+        fetchUserProfile(session.user.id).then((profile) => {
+          if (profile) {
+            setUser(profile);
+            checkTrialStatus(profile);
+          }
+        });
+      } else {
+        setUser(null);
+        setIsTrialExpired(false);
+        setHasActiveSubscription(false);
+      }
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
 
   const signUp = async (email: string, password: string, businessName?: string) => {
-    try {
-      const response: any = await api.auth.register(email, password, businessName);
+    const { data, error } = await supabase.auth.signUp({
+      email,
+      password,
+    });
 
-      setAccessToken(response.accessToken);
-      setUser(response.user);
+    if (error) {
+      throw new Error(error.message);
+    }
 
-      localStorage.setItem(TOKEN_KEY, response.accessToken);
-      localStorage.setItem(REFRESH_TOKEN_KEY, response.refreshToken);
-      localStorage.setItem(USER_KEY, JSON.stringify(response.user));
+    if (data.user) {
+      const { error: profileError } = await supabase
+        .from('profiles')
+        .insert({
+          id: data.user.id,
+          email: data.user.email!,
+          business_name: businessName || null,
+        });
 
-      checkTrialStatus(response.user);
-    } catch (error: any) {
-      throw new Error(error.message || 'Registration failed');
+      if (profileError) {
+        console.error('Error creating profile:', profileError);
+      }
+
+      const profile = await fetchUserProfile(data.user.id);
+      if (profile) {
+        setUser(profile);
+        checkTrialStatus(profile);
+      }
     }
   };
 
   const signIn = async (email: string, password: string) => {
-    try {
-      const response: any = await api.auth.login(email, password);
+    const { data, error } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    });
 
-      setAccessToken(response.accessToken);
-      setUser(response.user);
+    if (error) {
+      throw new Error(error.message);
+    }
 
-      localStorage.setItem(TOKEN_KEY, response.accessToken);
-      localStorage.setItem(REFRESH_TOKEN_KEY, response.refreshToken);
-      localStorage.setItem(USER_KEY, JSON.stringify(response.user));
-
-      checkTrialStatus(response.user);
-    } catch (error: any) {
-      throw new Error(error.message || 'Login failed');
+    if (data.user) {
+      const profile = await fetchUserProfile(data.user.id);
+      if (profile) {
+        setUser(profile);
+        checkTrialStatus(profile);
+      }
     }
   };
 
   const signOut = async () => {
-    try {
-      const refreshToken = localStorage.getItem(REFRESH_TOKEN_KEY);
-      if (refreshToken) {
-        await api.auth.logout(refreshToken);
-      }
-    } catch (error) {
-      console.error('Logout error:', error);
-    } finally {
-      handleLogout();
-    }
+    await supabase.auth.signOut();
+    setUser(null);
+    setSupabaseUser(null);
+    setIsTrialExpired(false);
+    setHasActiveSubscription(false);
   };
 
   const updateProfile = async (data: any) => {
-    if (!accessToken) throw new Error('Not authenticated');
+    if (!supabaseUser) throw new Error('Not authenticated');
 
-    try {
-      const response: any = await api.auth.updateProfile(accessToken, data);
-      setUser(response.user);
-      localStorage.setItem(USER_KEY, JSON.stringify(response.user));
-    } catch (error: any) {
-      throw new Error(error.message || 'Profile update failed');
+    const { error } = await supabase
+      .from('profiles')
+      .update(data)
+      .eq('id', supabaseUser.id);
+
+    if (error) {
+      throw new Error(error.message);
+    }
+
+    const profile = await fetchUserProfile(supabaseUser.id);
+    if (profile) {
+      setUser(profile);
+      checkTrialStatus(profile);
     }
   };
 
@@ -146,7 +173,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     <AuthContext.Provider
       value={{
         user,
-        accessToken,
+        supabaseUser,
         loading,
         signUp,
         signIn,

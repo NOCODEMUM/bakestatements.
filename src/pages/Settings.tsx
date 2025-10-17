@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useAuth } from '../hooks/useAuth'
 import { User, Building, Hash, Phone, Save, CheckCircle } from 'lucide-react'
-import { api } from '../lib/api'
 
 interface ProfileData {
   business_name: string | null
@@ -10,7 +9,7 @@ interface ProfileData {
 }
 
 export default function Settings() {
-  const { user, accessToken, isTrialExpired } = useAuth()
+  const { user, isTrialExpired, updateProfile } = useAuth()
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [saved, setSaved] = useState(false)
@@ -21,38 +20,23 @@ export default function Settings() {
   })
 
   useEffect(() => {
-    if (user && accessToken) {
-      fetchProfile()
-    }
-  }, [user, accessToken])
-
-  const fetchProfile = async () => {
-    if (!accessToken) return
-
-    try {
-      const response: any = await api.auth.getProfile(accessToken)
-      if (response && response.user) {
-        setProfileData({
-          business_name: response.user.business_name || '',
-          phone_number: response.user.phone_number || '',
-          abn: response.user.abn || ''
-        })
-      }
-    } catch (error) {
-      console.error('Error fetching profile:', error)
-    } finally {
+    if (user) {
+      setProfileData({
+        business_name: user.business_name || '',
+        phone_number: user.phone_number || '',
+        abn: user.abn || ''
+      })
       setLoading(false)
     }
-  }
+  }, [user])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!accessToken) return
 
     setSaving(true)
 
     try {
-      await api.auth.updateProfile(accessToken, profileData)
+      await updateProfile(profileData)
       setSaved(true)
       setTimeout(() => setSaved(false), 3000)
     } catch (error) {
