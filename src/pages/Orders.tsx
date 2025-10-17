@@ -263,7 +263,7 @@ export default function Orders() {
 
         {/* All Orders Table */}
         <div className="lg:col-span-2 bg-white rounded-lg shadow-sm border border-gray-100 overflow-hidden">
-          <div className="p-6 border-b border-gray-100">
+          <div className="p-4 md:p-6 border-b border-gray-100">
             <h2 className="text-lg font-semibold text-gray-800 mb-3">All Orders</h2>
             <div className="relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
@@ -276,86 +276,153 @@ export default function Orders() {
               />
             </div>
           </div>
-          <div className="overflow-x-auto">
-            <table className="w-full table-auto">
-              <thead className="bg-gray-50">
-                <tr>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
-                    Customer
-                  </th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
-                    Order Details
-                  </th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
-                    Due Date
-                  </th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
-                    Amount
-                  </th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
-                    Status
-                  </th>
-                  <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
-                    Actions
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
-                {filteredOrders.map((order) => (
-                  <tr key={order.id} className="hover:bg-gray-50">
-                    <td className="px-4 py-4 whitespace-nowrap">
-                      <div className="font-medium text-gray-900">{order.customer_name}</div>
-                    </td>
-                    <td className="px-4 py-4">
-                      <div className="text-gray-900 max-w-xs truncate">{order.order_details}</div>
-                    </td>
-                    <td className="px-4 py-4 whitespace-nowrap">
-                      <div className="flex items-center space-x-2">
-                        <Calendar className="w-4 h-4 text-gray-400" />
-                        <span className="text-gray-900">{format(new Date(order.due_date), 'MMM dd, yyyy')}</span>
-                      </div>
-                    </td>
-                    <td className="px-4 py-4 whitespace-nowrap">
-                      <div className="flex items-center space-x-2">
-                        <DollarSign className="w-4 h-4 text-gray-400" />
-                        <span className="text-gray-900">${order.amount.toFixed(2)}</span>
-                      </div>
-                    </td>
-                    <td className="px-4 py-4 whitespace-nowrap">
-                      <select
-                        value={order.status}
-                        onChange={(e) => updateOrderStatus(order.id, e.target.value)}
-                        className="text-sm border border-gray-300 rounded px-2 py-1.5 focus:ring-2 focus:ring-amber-500 focus:border-transparent bg-white"
-                      >
-                        <option value="Inquiry">Inquiry</option>
-                        <option value="Confirmed">Confirmed</option>
-                        <option value="Baking">Baking</option>
-                        <option value="Ready">Ready</option>
-                        <option value="Delivered">Delivered</option>
-                      </select>
-                    </td>
-                    <td className="px-4 py-4 whitespace-nowrap">
-                      <div className="flex items-center justify-center gap-2">
-                        <button
-                          onClick={() => handleEditOrder(order)}
-                          className="p-2 text-amber-600 hover:text-amber-700 hover:bg-amber-50 rounded transition-colors"
-                          title="Edit order"
-                        >
-                          <Edit className="w-4 h-4" />
-                        </button>
-                        <button
-                          onClick={() => confirmDelete(order)}
-                          className="p-2 text-red-600 hover:text-red-700 hover:bg-red-50 rounded transition-colors"
-                          title="Delete order"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </button>
-                      </div>
-                    </td>
+
+          {/* Desktop Table View */}
+          <div className="hidden md:block overflow-x-auto">
+            <div className="inline-block min-w-full align-middle">
+              <table className="min-w-full divide-y divide-gray-200">
+                <thead className="bg-gray-50">
+                  <tr>
+                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap" style={{minWidth: '150px'}}>
+                      Customer
+                    </th>
+                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap" style={{minWidth: '200px'}}>
+                      Order Details
+                    </th>
+                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap" style={{minWidth: '140px'}}>
+                      Due Date
+                    </th>
+                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap" style={{minWidth: '120px'}}>
+                      Amount
+                    </th>
+                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap" style={{minWidth: '140px'}}>
+                      Status
+                    </th>
+                    <th scope="col" className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap" style={{minWidth: '100px'}}>
+                      Actions
+                    </th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody className="bg-white divide-y divide-gray-200">
+                  {filteredOrders.map((order) => (
+                    <tr key={order.id} className="hover:bg-gray-50">
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="font-medium text-gray-900">{order.customer_name}</div>
+                      </td>
+                      <td className="px-6 py-4">
+                        <div className="text-gray-900 max-w-xs">{order.order_details}</div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="flex items-center space-x-2">
+                          <Calendar className="w-4 h-4 text-gray-400" />
+                          <span className="text-gray-900">{format(new Date(order.due_date), 'MMM dd, yyyy')}</span>
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="flex items-center space-x-2">
+                          <DollarSign className="w-4 h-4 text-gray-400" />
+                          <span className="text-gray-900">${order.amount.toFixed(2)}</span>
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <select
+                          value={order.status}
+                          onChange={(e) => updateOrderStatus(order.id, e.target.value)}
+                          className="text-sm border border-gray-300 rounded px-2 py-1.5 focus:ring-2 focus:ring-amber-500 focus:border-transparent bg-white"
+                        >
+                          <option value="Inquiry">Inquiry</option>
+                          <option value="Confirmed">Confirmed</option>
+                          <option value="Baking">Baking</option>
+                          <option value="Ready">Ready</option>
+                          <option value="Delivered">Delivered</option>
+                        </select>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="flex items-center justify-center gap-2">
+                          <button
+                            onClick={() => handleEditOrder(order)}
+                            className="p-2 text-amber-600 hover:text-amber-700 hover:bg-amber-50 rounded transition-colors"
+                            title="Edit order"
+                          >
+                            <Edit className="w-4 h-4" />
+                          </button>
+                          <button
+                            onClick={() => confirmDelete(order)}
+                            className="p-2 text-red-600 hover:text-red-700 hover:bg-red-50 rounded transition-colors"
+                            title="Delete order"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          {/* Mobile Card View */}
+          <div className="md:hidden divide-y divide-gray-200">
+            {filteredOrders.map((order) => (
+              <div key={order.id} className="p-4 hover:bg-gray-50">
+                <div className="flex items-start justify-between mb-3">
+                  <div className="flex-1">
+                    <h3 className="font-semibold text-gray-900 text-base mb-1">{order.customer_name}</h3>
+                    <p className="text-sm text-gray-600 line-clamp-2">{order.order_details}</p>
+                  </div>
+                  <div className="flex items-center gap-2 ml-3">
+                    <button
+                      onClick={() => handleEditOrder(order)}
+                      className="p-2 text-amber-600 hover:text-amber-700 hover:bg-amber-50 rounded transition-colors"
+                      title="Edit order"
+                    >
+                      <Edit className="w-4 h-4" />
+                    </button>
+                    <button
+                      onClick={() => confirmDelete(order)}
+                      className="p-2 text-red-600 hover:text-red-700 hover:bg-red-50 rounded transition-colors"
+                      title="Delete order"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-3 mt-3">
+                  <div>
+                    <div className="flex items-center space-x-2 text-gray-500 mb-1">
+                      <Calendar className="w-4 h-4" />
+                      <span className="text-xs font-medium uppercase">Due Date</span>
+                    </div>
+                    <p className="text-sm text-gray-900 font-medium">{format(new Date(order.due_date), 'MMM dd, yyyy')}</p>
+                  </div>
+
+                  <div>
+                    <div className="flex items-center space-x-2 text-gray-500 mb-1">
+                      <DollarSign className="w-4 h-4" />
+                      <span className="text-xs font-medium uppercase">Amount</span>
+                    </div>
+                    <p className="text-sm text-gray-900 font-medium">${order.amount.toFixed(2)}</p>
+                  </div>
+                </div>
+
+                <div className="mt-3">
+                  <label className="text-xs font-medium text-gray-500 uppercase mb-1 block">Status</label>
+                  <select
+                    value={order.status}
+                    onChange={(e) => updateOrderStatus(order.id, e.target.value)}
+                    className="w-full text-sm border border-gray-300 rounded px-3 py-2 focus:ring-2 focus:ring-amber-500 focus:border-transparent bg-white"
+                  >
+                    <option value="Inquiry">Inquiry</option>
+                    <option value="Confirmed">Confirmed</option>
+                    <option value="Baking">Baking</option>
+                    <option value="Ready">Ready</option>
+                    <option value="Delivered">Delivered</option>
+                  </select>
+                </div>
+              </div>
+            ))}
           </div>
 
           {filteredOrders.length === 0 && (
