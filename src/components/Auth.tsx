@@ -121,8 +121,8 @@ export default function Auth() {
         <div className="w-full max-w-md">
           {/* Koala Logo */}
           <div className="text-center mb-8">
-            <img 
-              src="/ChatGPT Image Aug 19, 2025, 11_27_18 AM copy copy copy copy copy copy copy copy copy copy copy.png"
+            <img
+              src="/20250821_1326_Baking Koala_remix_01k35afawhfm8tcpx1kf95gj8h.png"
               alt="BakeStatements Koala Logo"
               className="w-24 h-24 mx-auto mb-6"
             />
