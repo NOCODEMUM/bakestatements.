@@ -3,12 +3,12 @@ import { Link, useLocation } from 'react-router-dom'
 import { useAuth } from '../hooks/useAuth'
 import { useTheme } from '../contexts/ThemeContext'
 import {
-  Home, 
-  ShoppingCart, 
-  Calendar, 
-  BookOpen, 
-  FileText, 
-  DollarSign, 
+  Home,
+  ShoppingCart,
+  Calendar,
+  BookOpen,
+  FileText,
+  DollarSign,
   Settings,
   ChefHat,
   LogOut,
@@ -17,7 +17,8 @@ import {
   X,
   Sun,
   Moon,
-  Mail
+  Mail,
+  Globe
 } from 'lucide-react'
 
 interface LayoutProps {
@@ -32,6 +33,7 @@ const navigation = [
   { name: 'Invoices', href: '/invoices', icon: FileText },
   { name: 'Expenses', href: '/expenses', icon: DollarSign },
   { name: 'Enquiries', href: '/enquiries', icon: Mail },
+  { name: 'My Landing Page', href: '/my-landing-page', icon: Globe },
   { name: 'Settings', href: '/settings', icon: Settings },
 ]
 

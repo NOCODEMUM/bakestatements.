@@ -511,4 +511,130 @@ export const api = {
       return { events: data || [] };
     },
   },
+
+  landingPages: {
+    getBySlug: async (slug: string) => {
+      const { data, error } = await supabase
+        .from('landing_pages')
+        .select('*, profiles(business_name, email, phone_number)')
+        .eq('slug', slug)
+        .eq('is_active', true)
+        .maybeSingle();
+
+      if (error) throw error;
+      return { landingPage: data };
+    },
+
+    getMyLandingPage: async (_token: string) => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error('Not authenticated');
+
+      const { data, error } = await supabase
+        .from('landing_pages')
+        .select('*')
+        .eq('user_id', user.id)
+        .maybeSingle();
+
+      if (error) throw error;
+      return { landingPage: data };
+    },
+
+    create: async (_token: string, landingPageData: any) => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error('Not authenticated');
+
+      const { data, error } = await supabase
+        .from('landing_pages')
+        .insert({
+          ...landingPageData,
+          user_id: user.id,
+        })
+        .select()
+        .single();
+
+      if (error) throw error;
+      return { landingPage: data };
+    },
+
+    update: async (_token: string, landingPageData: any) => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error('Not authenticated');
+
+      const { data, error } = await supabase
+        .from('landing_pages')
+        .update(landingPageData)
+        .eq('user_id', user.id)
+        .select()
+        .single();
+
+      if (error) throw error;
+      return { landingPage: data };
+    },
+
+    delete: async (_token: string) => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error('Not authenticated');
+
+      const { error } = await supabase
+        .from('landing_pages')
+        .delete()
+        .eq('user_id', user.id);
+
+      if (error) throw error;
+      return { success: true };
+    },
+
+    checkSlugAvailability: async (slug: string, currentUserId?: string) => {
+      const { data: { user } } = await supabase.auth.getUser();
+
+      let query = supabase
+        .from('landing_pages')
+        .select('id')
+        .eq('slug', slug);
+
+      if (currentUserId) {
+        query = query.neq('user_id', currentUserId);
+      }
+
+      const { data, error } = await query.maybeSingle();
+
+      if (error) throw error;
+      return { available: !data };
+    },
+
+    uploadImage: async (file: File, folder: string = 'general') => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error('Not authenticated');
+
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${user.id}/${folder}/${Date.now()}.${fileExt}`;
+
+      const { data, error } = await supabase.storage
+        .from('landing-page-assets')
+        .upload(fileName, file, {
+          cacheControl: '3600',
+          upsert: false,
+        });
+
+      if (error) throw error;
+
+      const { data: { publicUrl } } = supabase.storage
+        .from('landing-page-assets')
+        .getPublicUrl(fileName);
+
+      return { url: publicUrl, path: fileName };
+    },
+
+    deleteImage: async (filePath: string) => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error('Not authenticated');
+
+      const { error } = await supabase.storage
+        .from('landing-page-assets')
+        .remove([filePath]);
+
+      if (error) throw error;
+      return { success: true };
+    },
+  },
 };

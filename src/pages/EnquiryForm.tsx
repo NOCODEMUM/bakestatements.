@@ -1,10 +1,12 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import { Send, CheckCircle } from 'lucide-react'
 import PublicHeader from '../components/PublicHeader'
 import PublicFooter from '../components/PublicFooter'
 import { api } from '../lib/api'
 
 export default function EnquiryForm() {
+  const [searchParams] = useSearchParams()
   const [loading, setLoading] = useState(false)
   const [submitted, setSubmitted] = useState(false)
   const [formData, setFormData] = useState({
@@ -13,12 +15,32 @@ export default function EnquiryForm() {
     message: ''
   })
 
+  useEffect(() => {
+    const packageParam = searchParams.get('package')
+    if (packageParam) {
+      setFormData(prev => ({
+        ...prev,
+        message: `Hi! I'm interested in your "${packageParam}" package. Please provide more details.`
+      }))
+    }
+  }, [searchParams])
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setLoading(true)
 
     try {
-      await api.enquiries.create(formData)
+      const userIdParam = searchParams.get('userId')
+      const packageParam = searchParams.get('package')
+      const landingPageIdParam = searchParams.get('landingPageId')
+
+      await api.enquiries.create({
+        ...formData,
+        user_id: userIdParam || undefined,
+        package_selected: packageParam || undefined,
+        landing_page_id: landingPageIdParam || undefined,
+        status: 'New'
+      })
       setSubmitted(true)
       setFormData({ name: '', email: '', message: '' })
     } catch (error) {

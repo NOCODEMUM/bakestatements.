@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'react'
 import { useAuth } from '../hooks/useAuth'
 import { api } from '../lib/api'
-import { Mail, Calendar, User, MessageSquare } from 'lucide-react'
+import { Mail, Calendar, User, MessageSquare, Globe, Link as LinkIcon, Settings } from 'lucide-react'
 import { format } from 'date-fns'
+import { generateLandingPageUrl } from '../lib/slugUtils'
 
 interface Enquiry {
   id: string
@@ -10,17 +11,27 @@ interface Enquiry {
   email: string
   message: string
   status: string
+  package_selected?: string
   created_at: string
+}
+
+interface LandingPage {
+  id: string
+  slug: string
+  is_active: boolean
 }
 
 export default function Enquiries() {
   const { user } = useAuth()
   const [enquiries, setEnquiries] = useState<Enquiry[]>([])
+  const [landingPage, setLandingPage] = useState<LandingPage | null>(null)
   const [loading, setLoading] = useState(true)
+  const [loadingLandingPage, setLoadingLandingPage] = useState(true)
 
   useEffect(() => {
     if (user) {
       fetchEnquiries()
+      fetchLandingPage()
     }
   }, [user])
 
@@ -33,6 +44,18 @@ export default function Enquiries() {
       console.error('Error fetching enquiries:', error)
     } finally {
       setLoading(false)
+    }
+  }
+
+  const fetchLandingPage = async () => {
+    if (!user) return
+    try {
+      const response = await api.landingPages.getMyLandingPage('')
+      setLandingPage(response.landingPage)
+    } catch (error) {
+      console.error('Error fetching landing page:', error)
+    } finally {
+      setLoadingLandingPage(false)
     }
   }
 
@@ -66,23 +89,88 @@ export default function Enquiries() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-800 dark:text-gray-100">Enquiries</h1>
-          <p className="text-gray-600 dark:text-gray-300">Manage customer enquiries and follow up on potential orders</p>
+      <div>
+        <h1 className="text-3xl font-bold text-gray-800 dark:text-gray-100">Enquiries</h1>
+        <p className="text-gray-600 dark:text-gray-300">Manage customer enquiries and follow up on potential orders</p>
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-100 dark:border-gray-700 p-4">
+          <div className="flex items-start justify-between">
+            <div className="flex-1">
+              <div className="flex items-center space-x-2 mb-2">
+                <Mail className="w-5 h-5 text-amber-600" />
+                <h3 className="font-semibold text-gray-800 dark:text-gray-100">Direct Enquiry Form</h3>
+              </div>
+              <p className="text-sm text-gray-600 dark:text-gray-300 mb-3">Share this link to receive direct enquiries</p>
+              <div className="flex items-center space-x-2">
+                <code className="flex-1 bg-gray-100 dark:bg-gray-700 px-3 py-2 rounded text-sm">
+                  {window.location.origin}/enquiry
+                </code>
+                <button
+                  onClick={() => navigator.clipboard.writeText(`${window.location.origin}/enquiry`)}
+                  className="bg-amber-500 text-white px-3 py-2 rounded text-sm hover:bg-amber-600 transition-colors"
+                >
+                  Copy
+                </button>
+              </div>
+            </div>
+          </div>
         </div>
-        <div className="text-right">
-          <p className="text-sm text-gray-500 dark:text-gray-400">Share your enquiry form:</p>
-          <div className="flex items-center space-x-2 mt-1">
-            <code className="bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded text-sm">
-              {window.location.origin}/enquiry
-            </code>
-            <button
-              onClick={() => navigator.clipboard.writeText(`${window.location.origin}/enquiry`)}
-              className="bg-amber-500 text-white px-3 py-1 rounded text-sm hover:bg-amber-600 transition-colors"
-            >
-              Copy
-            </button>
+
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-100 dark:border-gray-700 p-4">
+          <div className="flex items-start justify-between">
+            <div className="flex-1">
+              <div className="flex items-center space-x-2 mb-2">
+                <Globe className="w-5 h-5 text-teal-600" />
+                <h3 className="font-semibold text-gray-800 dark:text-gray-100">Landing Page</h3>
+              </div>
+              {loadingLandingPage ? (
+                <div className="flex items-center space-x-2">
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-teal-600"></div>
+                  <span className="text-sm text-gray-600 dark:text-gray-300">Loading...</span>
+                </div>
+              ) : landingPage ? (
+                landingPage.is_active ? (
+                  <>
+                    <p className="text-sm text-gray-600 dark:text-gray-300 mb-3">Your landing page is live!</p>
+                    <div className="flex items-center space-x-2">
+                      <code className="flex-1 bg-gray-100 dark:bg-gray-700 px-3 py-2 rounded text-sm truncate">
+                        {generateLandingPageUrl(landingPage.slug)}
+                      </code>
+                      <button
+                        onClick={() => navigator.clipboard.writeText(generateLandingPageUrl(landingPage.slug))}
+                        className="bg-teal-500 text-white px-3 py-2 rounded text-sm hover:bg-teal-600 transition-colors"
+                      >
+                        Copy
+                      </button>
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <p className="text-sm text-amber-600 dark:text-amber-400 mb-3">Your landing page is not active yet</p>
+                    <a
+                      href="/my-landing-page"
+                      className="flex items-center space-x-2 text-sm text-teal-600 dark:text-teal-400 hover:underline"
+                    >
+                      <Settings className="w-4 h-4" />
+                      <span>Activate in Settings</span>
+                    </a>
+                  </>
+                )
+              ) : (
+                <>
+                  <p className="text-sm text-gray-600 dark:text-gray-300 mb-3">Create your personalized landing page</p>
+                  <a
+                    href="/my-landing-page"
+                    className="inline-flex items-center space-x-2 bg-teal-500 text-white px-4 py-2 rounded text-sm hover:bg-teal-600 transition-colors"
+                  >
+                    <LinkIcon className="w-4 h-4" />
+                    <span>Setup Landing Page</span>
+                  </a>
+                </>
+              )}
+            </div>
           </div>
         </div>
       </div>
@@ -141,8 +229,15 @@ export default function Enquiries() {
                     </div>
                   </td>
                   <td className="px-6 py-4">
-                    <div className="text-gray-900 dark:text-gray-100 max-w-xs truncate">
-                      {enquiry.message}
+                    <div className="space-y-1">
+                      {enquiry.package_selected && (
+                        <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-teal-100 text-teal-800 dark:bg-teal-900 dark:text-teal-200 mb-1">
+                          {enquiry.package_selected}
+                        </span>
+                      )}
+                      <div className="text-gray-900 dark:text-gray-100 max-w-xs truncate">
+                        {enquiry.message}
+                      </div>
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">

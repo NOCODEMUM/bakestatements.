@@ -18,6 +18,8 @@ import Enquiries from './pages/Enquiries'
 import EnquiryForm from './pages/EnquiryForm'
 import ForgotPassword from './pages/ForgotPassword'
 import ResetPassword from './pages/ResetPassword'
+import MyLandingPage from './pages/MyLandingPage'
+import BakerLandingPage from './pages/BakerLandingPage'
 import { useState } from 'react'
 
 function AppContent() {
@@ -47,7 +49,10 @@ function AppContent() {
         
         {/* Enquiry Form - accessible to everyone */}
         <Route path="/enquiry" element={<EnquiryForm />} />
-        
+
+        {/* Baker Landing Pages - accessible to everyone */}
+        <Route path="/baker/:slug" element={<BakerLandingPage />} />
+
         {/* Password Reset Flow - accessible to everyone */}
         <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/reset-password" element={<ResetPassword />} />
@@ -67,6 +72,7 @@ function AppContent() {
                 <Route path="/invoices" element={<Invoices />} />
                 <Route path="/expenses" element={<Expenses />} />
                 <Route path="/enquiries" element={<Enquiries />} />
+                <Route path="/my-landing-page" element={<MyLandingPage />} />
                 <Route path="/settings" element={<Settings />} />
                 <Route path="*" element={<Navigate to="/" replace />} />
               </Routes>
