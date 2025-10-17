@@ -8,4 +8,9 @@ export default defineConfig({
     exclude: ['lucide-react'],
     include: ['@supabase/supabase-js'],
   },
+  server: {
+    hmr: {
+      overlay: false
+    }
+  }
 });
