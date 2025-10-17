@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useAuth } from '../hooks/useAuth'
 import { api } from '../lib/api'
-import { Plus, Download, PieChart } from 'lucide-react'
+import { Plus, Download, PieChart, Edit, Receipt } from 'lucide-react'
 import { format } from 'date-fns'
 
 interface Expense {
@@ -30,6 +30,7 @@ export default function Expenses() {
   const [loading, setLoading] = useState(true)
   const [showForm, setShowForm] = useState(false)
   const [selectedCategory, setSelectedCategory] = useState('All')
+  const [editingExpense, setEditingExpense] = useState<Expense | null>(null)
   const [formData, setFormData] = useState({
     date: format(new Date(), 'yyyy-MM-dd'),
     description: '',
@@ -59,7 +60,11 @@ export default function Expenses() {
     e.preventDefault()
     if (!user) return
     try {
-      await api.expenses.create('', formData)
+      if (editingExpense) {
+        await api.expenses.update('', editingExpense.id, formData)
+      } else {
+        await api.expenses.create('', formData)
+      }
 
       setFormData({
         date: format(new Date(), 'yyyy-MM-dd'),
@@ -68,10 +73,33 @@ export default function Expenses() {
         category: 'Ingredients'
       })
       setShowForm(false)
+      setEditingExpense(null)
       fetchExpenses()
     } catch (error) {
-      console.error('Error creating expense:', error)
+      console.error('Error saving expense:', error)
     }
+  }
+
+  const handleEditExpense = (expense: Expense) => {
+    setEditingExpense(expense)
+    setFormData({
+      date: expense.date,
+      description: expense.description,
+      amount: expense.amount,
+      category: expense.category
+    })
+    setShowForm(true)
+  }
+
+  const handleCancelExpense = () => {
+    setShowForm(false)
+    setEditingExpense(null)
+    setFormData({
+      date: format(new Date(), 'yyyy-MM-dd'),
+      description: '',
+      amount: 0,
+      category: 'Ingredients'
+    })
   }
 
   const filteredExpenses = selectedCategory === 'All' 
@@ -145,80 +173,85 @@ export default function Expenses() {
         </div>
       </div>
 
-      {/* Summary Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="bg-white rounded-lg shadow-sm p-6 border border-gray-100">
-          <h3 className="text-lg font-semibold text-gray-800 mb-4">Total Expenses</h3>
-          <p className="text-3xl font-bold text-red-600">${totalExpenses.toFixed(2)}</p>
-          <p className="text-sm text-gray-500 mt-1">All categories</p>
-        </div>
-        
-        <div className="bg-white rounded-lg shadow-sm p-6 border border-gray-100">
-          <h3 className="text-lg font-semibold text-gray-800 mb-4">This Month</h3>
-          <p className="text-3xl font-bold text-blue-600">
-            ${expenses
-              .filter(expense => {
-                const expenseDate = new Date(expense.date)
-                const now = new Date()
-                return expenseDate.getMonth() === now.getMonth() && 
-                       expenseDate.getFullYear() === now.getFullYear()
-              })
-              .reduce((sum, expense) => sum + expense.amount, 0)
-              .toFixed(2)
-            }
-          </p>
-          <p className="text-sm text-gray-500 mt-1">Current month total</p>
-        </div>
-
-        <div className="bg-white rounded-lg shadow-sm p-6 border border-gray-100">
-          <h3 className="text-lg font-semibold text-gray-800 mb-4">Average Daily</h3>
-          <p className="text-3xl font-bold text-purple-600">
-            ${expenses.length > 0 ? (totalExpenses / Math.max(1, new Date().getDate())).toFixed(2) : '0.00'}
-          </p>
-          <p className="text-sm text-gray-500 mt-1">Daily average this month</p>
-        </div>
-      </div>
-
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Category Breakdown */}
+        {/* Recent Expenses Panel */}
         <div className="bg-white rounded-lg shadow-sm border border-gray-100">
           <div className="p-6 border-b border-gray-100">
             <div className="flex items-center space-x-2">
-              <PieChart className="w-5 h-5 text-amber-600" />
-              <h2 className="text-lg font-semibold text-gray-800">ATO Categories</h2>
+              <Receipt className="w-5 h-5 text-red-600" />
+              <h2 className="text-lg font-semibold text-gray-800">Recent Expenses</h2>
             </div>
           </div>
           <div className="p-6">
-            <div className="space-y-3">
-              {ATO_CATEGORIES.map((category) => {
-                const total = categoryTotals[category]
-                const percentage = totalExpenses > 0 ? (total / totalExpenses) * 100 : 0
-                return (
-                  <div key={category} className="flex items-center justify-between">
+            {expenses.length > 0 ? (
+              <div className="space-y-3">
+                {expenses.slice(0, 8).map((expense) => (
+                  <div key={expense.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
                     <div className="flex-1">
-                      <div className="flex items-center justify-between mb-1">
-                        <span className="text-sm font-medium text-gray-700">{category}</span>
-                        <span className="text-sm text-gray-600">${total.toFixed(2)}</span>
+                      <div className="flex items-center justify-between">
+                        <h3 className="font-medium text-gray-800 text-sm">{expense.description}</h3>
+                        <button
+                          onClick={() => handleEditExpense(expense)}
+                          className="p-1 text-amber-600 hover:text-amber-700 hover:bg-amber-50 rounded transition-colors"
+                          title="Edit expense"
+                        >
+                          <Edit className="w-4 h-4" />
+                        </button>
                       </div>
-                      <div className="w-full bg-gray-200 rounded-full h-2">
-                        <div
-                          className="bg-amber-500 h-2 rounded-full transition-all duration-300"
-                          style={{ width: `${percentage}%` }}
-                        ></div>
+                      <div className="flex items-center justify-between mt-1">
+                        <div className="flex items-center space-x-2">
+                          <span className="text-xs text-gray-500">{format(new Date(expense.date), 'MMM dd')}</span>
+                          <span className="px-2 py-0.5 text-xs font-medium bg-amber-100 text-amber-800 rounded-full">
+                            {expense.category}
+                          </span>
+                        </div>
+                        <span className="text-sm font-semibold text-red-600">${expense.amount.toFixed(2)}</span>
                       </div>
                     </div>
                   </div>
-                )
-              })}
-            </div>
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-8">
+                <Receipt className="w-12 h-12 text-gray-300 mx-auto mb-4" />
+                <p className="text-gray-500">No expenses recorded yet</p>
+                <button
+                  onClick={() => setShowForm(true)}
+                  className="text-red-600 hover:text-red-700 font-medium mt-2"
+                >
+                  Add your first expense
+                </button>
+              </div>
+            )}
           </div>
         </div>
 
-        {/* Expenses List */}
+        {/* All Expenses List */}
         <div className="lg:col-span-2 bg-white rounded-lg shadow-sm border border-gray-100">
           <div className="p-6 border-b border-gray-100">
             <div className="flex items-center justify-between">
-              <h2 className="text-lg font-semibold text-gray-800">Recent Expenses</h2>
+              <div>
+                <h2 className="text-lg font-semibold text-gray-800">All Expenses</h2>
+                <div className="mt-2 flex items-center space-x-4">
+                  <div className="text-sm text-gray-600">
+                    <span className="font-semibold text-red-600">${totalExpenses.toFixed(2)}</span> total
+                  </div>
+                  <div className="text-sm text-gray-600">
+                    <span className="font-semibold text-blue-600">
+                      ${expenses
+                        .filter(expense => {
+                          const expenseDate = new Date(expense.date)
+                          const now = new Date()
+                          return expenseDate.getMonth() === now.getMonth() &&
+                                 expenseDate.getFullYear() === now.getFullYear()
+                        })
+                        .reduce((sum, expense) => sum + expense.amount, 0)
+                        .toFixed(2)
+                      }
+                    </span> this month
+                  </div>
+                </div>
+              </div>
               <select
                 value={selectedCategory}
                 onChange={(e) => setSelectedCategory(e.target.value)}
@@ -250,7 +283,7 @@ export default function Expenses() {
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
-                {filteredExpenses.slice(0, 10).map((expense) => (
+                {filteredExpenses.map((expense) => (
                   <tr key={expense.id} className="hover:bg-gray-50">
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                       {format(new Date(expense.date), 'MMM dd, yyyy')}
@@ -263,8 +296,17 @@ export default function Expenses() {
                         {expense.category}
                       </span>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-right font-medium">
-                      ${expense.amount.toFixed(2)}
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-right">
+                      <div className="flex items-center justify-end space-x-3">
+                        <span className="font-medium text-gray-900">${expense.amount.toFixed(2)}</span>
+                        <button
+                          onClick={() => handleEditExpense(expense)}
+                          className="p-1 text-amber-600 hover:text-amber-700 hover:bg-amber-50 rounded transition-colors"
+                          title="Edit expense"
+                        >
+                          <Edit className="w-4 h-4" />
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 ))}
@@ -290,7 +332,9 @@ export default function Expenses() {
       {showForm && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-lg shadow-xl max-w-md w-full p-6">
-            <h2 className="text-xl font-bold text-gray-800 mb-6">Add Expense</h2>
+            <h2 className="text-xl font-bold text-gray-800 mb-6">
+              {editingExpense ? 'Edit Expense' : 'Add Expense'}
+            </h2>
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -351,11 +395,11 @@ export default function Expenses() {
                   type="submit"
                   className="flex-1 bg-amber-600 text-white py-2 px-4 rounded-lg hover:bg-amber-700 transition-colors"
                 >
-                  Add Expense
+                  {editingExpense ? 'Update Expense' : 'Add Expense'}
                 </button>
                 <button
                   type="button"
-                  onClick={() => setShowForm(false)}
+                  onClick={handleCancelExpense}
                   className="flex-1 bg-gray-300 text-gray-700 py-2 px-4 rounded-lg hover:bg-gray-400 transition-colors"
                 >
                   Cancel
