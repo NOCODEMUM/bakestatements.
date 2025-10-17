@@ -131,6 +131,17 @@ export default function ForgotPassword() {
           </div>
         </div>
       </div>
+
+      {/* Footer */}
+      <div className="p-6 text-center">
+        <div className="flex items-center justify-center space-x-2 text-sm text-gray-600 mb-2">
+          <ChefHat className="w-4 h-4" />
+          <span>BakeStatements by PIX3L</span>
+        </div>
+        <p className="text-xs text-gray-500">
+          © 2025 BakeStatements by PIX3L. Made with ❤️ in Sydney, Australia. 🇦🇺
+        </p>
+      </div>
     </div>
   )
 }

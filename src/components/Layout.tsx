@@ -199,10 +199,44 @@ export default function Layout({ children }: LayoutProps) {
         </div>
 
         {/* Main Content */}
-        <div className="flex-1 overflow-hidden">
-          <main className="p-4 md:pt-8 md:pl-8 md:pb-8 md:pr-8 relative min-h-screen">
+        <div className="flex-1 overflow-hidden flex flex-col">
+          <main className="p-4 md:pt-8 md:pl-8 md:pb-8 md:pr-8 relative flex-1">
             {children}
           </main>
+
+          {/* Footer */}
+          <footer className="mt-auto border-t border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 px-4 py-6">
+            <div className="max-w-7xl mx-auto">
+              <div className="flex flex-col sm:flex-row items-center justify-between gap-4 text-sm">
+                <p className="text-gray-600 dark:text-gray-400 text-center sm:text-left">
+                  © 2025 BakeStatements by{' '}
+                  <a
+                    href="https://www.pix3l.com.au"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-amber-600 dark:text-amber-400 hover:text-amber-700 dark:hover:text-amber-300 font-medium transition-colors"
+                  >
+                    PIX3L
+                  </a>
+                  . Made with ❤️ in Sydney, Australia.
+                </p>
+                <div className="flex items-center space-x-2 bg-amber-50 dark:bg-amber-900/20 px-4 py-2 rounded-full">
+                  <span>🇦🇺</span>
+                  <span className="font-semibold text-gray-700 dark:text-gray-300 text-xs">
+                    From the Creators of{' '}
+                    <a
+                      href="https://www.pix3l.com.au"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-amber-600 dark:text-amber-400 hover:text-amber-700 dark:hover:text-amber-300 transition-colors"
+                    >
+                      PIX3L
+                    </a>
+                  </span>
+                </div>
+              </div>
+            </div>
+          </footer>
         </div>
       </div>
     </div>
