@@ -32,7 +32,7 @@ interface RecipeIngredient {
 }
 
 export default function Recipes() {
-  const { user, accessToken } = useAuth()
+  const { user } = useAuth()
   const [recipes, setRecipes] = useState<Recipe[]>([])
   const [ingredients, setIngredients] = useState<Ingredient[]>([])
   const [loading, setLoading] = useState(true)
@@ -53,16 +53,16 @@ export default function Recipes() {
   })
 
   useEffect(() => {
-    if (user && accessToken) {
+    if (user) {
       fetchData()
     }
-  }, [user, accessToken])
+  }, [user])
 
   const fetchData = async () => {
-    if (!accessToken) return
+    if (!user) return
     try {
-      const ingredientsResponse: any = await api.ingredients.getAll(accessToken)
-      const recipesResponse: any = await api.recipes.getAll(accessToken)
+      const ingredientsResponse: any = await api.ingredients.getAll('')
+      const recipesResponse: any = await api.recipes.getAll('')
 
       const ingredientsData = ingredientsResponse.ingredients || []
       const recipesData = recipesResponse.recipes || []
@@ -101,8 +101,8 @@ export default function Recipes() {
   const handleIngredientSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     try {
-      if (!accessToken) return
-      await api.ingredients.create(accessToken, ingredientForm)
+      if (!user) return
+      await api.ingredients.create('', ingredientForm)
 
       setIngredientForm({ name: '', cost_per_unit: 0, unit_type: 'kg' })
       setShowIngredientForm(false)
@@ -115,8 +115,8 @@ export default function Recipes() {
   const handleRecipeSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     try {
-      if (!accessToken) return
-      await api.recipes.create(accessToken, {
+      if (!user) return
+      await api.recipes.create('', {
         name: recipeForm.name,
         batch_size: recipeForm.batch_size,
         ingredients: recipeForm.ingredients

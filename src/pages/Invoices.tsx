@@ -16,7 +16,7 @@ interface Order {
 }
 
 export default function Invoices() {
-  const { user, accessToken } = useAuth()
+  const { user } = useAuth()
   const [orders, setOrders] = useState<Order[]>([])
   const [loading, setLoading] = useState(true)
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null)
@@ -24,16 +24,16 @@ export default function Invoices() {
   const [userProfile, setUserProfile] = useState<any>(null)
 
   useEffect(() => {
-    if (user && accessToken) {
+    if (user) {
       fetchOrders()
       fetchUserProfile()
     }
-  }, [user, accessToken])
+  }, [user])
 
   const fetchOrders = async () => {
-    if (!accessToken) return
+    if (!user) return
     try {
-      const response: any = await api.orders.getAll(accessToken)
+      const response: any = await api.orders.getAll('')
       const allOrders = response.orders || []
       const invoiceOrders = allOrders.filter((o: any) =>
         ['Confirmed', 'Baking', 'Ready', 'Delivered'].includes(o.status)
@@ -47,9 +47,9 @@ export default function Invoices() {
   }
 
   const fetchUserProfile = async () => {
-    if (!accessToken) return
+    if (!user) return
     try {
-      const response: any = await api.auth.getProfile(accessToken)
+      const response: any = await api.auth.getProfile()
       if (response && response.user) {
         setUserProfile({
           business_name: response.user.business_name,
@@ -63,9 +63,9 @@ export default function Invoices() {
   }
 
   const togglePaymentStatus = async (orderId: string, currentStatus: boolean) => {
-    if (!accessToken) return
+    if (!user) return
     try {
-      await api.orders.update(accessToken, orderId, {
+      await api.orders.update('', orderId, {
         status: currentStatus ? 'Ready' : 'Delivered'
       })
       fetchOrders()

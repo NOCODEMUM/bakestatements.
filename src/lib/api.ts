@@ -2,7 +2,7 @@ import { supabase } from './supabase';
 
 export const api = {
   auth: {
-    getProfile: async () => {
+    getProfile: async (_token?: string) => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('Not authenticated');
 

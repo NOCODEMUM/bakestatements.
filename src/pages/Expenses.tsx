@@ -25,7 +25,7 @@ const ATO_CATEGORIES = [
 ]
 
 export default function Expenses() {
-  const { user, accessToken } = useAuth()
+  const { user } = useAuth()
   const [expenses, setExpenses] = useState<Expense[]>([])
   const [loading, setLoading] = useState(true)
   const [showForm, setShowForm] = useState(false)
@@ -38,15 +38,15 @@ export default function Expenses() {
   })
 
   useEffect(() => {
-    if (user && accessToken) {
+    if (user) {
       fetchExpenses()
     }
-  }, [user, accessToken])
+  }, [user])
 
   const fetchExpenses = async () => {
-    if (!accessToken) return
+    if (!user) return
     try {
-      const response: any = await api.expenses.getAll(accessToken)
+      const response: any = await api.expenses.getAll('')
       setExpenses(response.expenses || [])
     } catch (error) {
       console.error('Error fetching expenses:', error)
@@ -57,9 +57,9 @@ export default function Expenses() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!accessToken) return
+    if (!user) return
     try {
-      await api.expenses.create(accessToken, formData)
+      await api.expenses.create('', formData)
 
       setFormData({
         date: format(new Date(), 'yyyy-MM-dd'),

@@ -15,7 +15,7 @@ interface Order {
 }
 
 export default function Orders() {
-  const { user, accessToken } = useAuth()
+  const { user } = useAuth()
   const [orders, setOrders] = useState<Order[]>([])
   const [loading, setLoading] = useState(true)
   const [showForm, setShowForm] = useState(false)
@@ -29,15 +29,15 @@ export default function Orders() {
   })
 
   useEffect(() => {
-    if (user && accessToken) {
+    if (user) {
       fetchOrders()
     }
-  }, [user, accessToken])
+  }, [user])
 
   const fetchOrders = async () => {
-    if (!accessToken) return
+    if (!user) return
     try {
-      const response: any = await api.orders.getAll(accessToken)
+      const response: any = await api.orders.getAll('')
       setOrders(response.orders || [])
     } catch (error) {
       console.error('Error fetching orders:', error)
@@ -49,8 +49,8 @@ export default function Orders() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     try {
-      if (!accessToken) return
-      await api.orders.create(accessToken, formData)
+      if (!user) return
+      await api.orders.create('', formData)
 
       setFormData({
         customer_name: '',
@@ -67,9 +67,9 @@ export default function Orders() {
   }
 
   const updateOrderStatus = async (orderId: string, newStatus: string) => {
-    if (!accessToken) return
+    if (!user) return
     try {
-      await api.orders.update(accessToken, orderId, { status: newStatus })
+      await api.orders.update('', orderId, { status: newStatus })
       fetchOrders()
     } catch (error) {
       console.error('Error updating order status:', error)

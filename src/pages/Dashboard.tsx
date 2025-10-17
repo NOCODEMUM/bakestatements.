@@ -17,7 +17,7 @@ interface DashboardStats {
 }
 
 export default function Dashboard() {
-  const { user, accessToken } = useAuth()
+  const { user } = useAuth()
   const [stats, setStats] = useState<DashboardStats>({
     totalOrders: 0,
     totalRevenue: 0,
@@ -31,18 +31,18 @@ export default function Dashboard() {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    if (user && accessToken) {
+    if (user) {
       fetchDashboardData()
     }
-  }, [user, accessToken])
+  }, [user])
 
   const fetchDashboardData = async () => {
-    if (!accessToken) return
+    if (!user) return
 
     try {
-      const ordersResponse: any = await api.orders.getAll(accessToken)
-      const expensesResponse: any = await api.expenses.getAll(accessToken)
-      const enquiriesResponse: any = await api.enquiries.getAll(accessToken)
+      const ordersResponse: any = await api.orders.getAll('')
+      const expensesResponse: any = await api.expenses.getAll('')
+      const enquiriesResponse: any = await api.enquiries.getAll('')
 
       const orders = ordersResponse.orders || []
       const expenses = expensesResponse.expenses || []

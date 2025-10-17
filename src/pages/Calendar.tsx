@@ -14,21 +14,21 @@ interface Order {
 }
 
 export default function Calendar() {
-  const { user, accessToken } = useAuth()
+  const { user } = useAuth()
   const [orders, setOrders] = useState<Order[]>([])
   const [loading, setLoading] = useState(true)
   const [currentDate, setCurrentDate] = useState(new Date())
 
   useEffect(() => {
-    if (user && accessToken) {
+    if (user) {
       fetchOrders()
     }
-  }, [user, accessToken])
+  }, [user])
 
   const fetchOrders = async () => {
-    if (!accessToken) return
+    if (!user) return
     try {
-      const response: any = await api.orders.getAll(accessToken)
+      const response: any = await api.orders.getAll('')
       setOrders(response.orders || [])
     } catch (error) {
       console.error('Error fetching orders:', error)

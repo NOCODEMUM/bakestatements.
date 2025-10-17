@@ -14,20 +14,20 @@ interface Enquiry {
 }
 
 export default function Enquiries() {
-  const { user, accessToken } = useAuth()
+  const { user } = useAuth()
   const [enquiries, setEnquiries] = useState<Enquiry[]>([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    if (user && accessToken) {
+    if (user) {
       fetchEnquiries()
     }
-  }, [user, accessToken])
+  }, [user])
 
   const fetchEnquiries = async () => {
-    if (!accessToken) return
+    if (!user) return
     try {
-      const response: any = await api.enquiries.getAll(accessToken)
+      const response: any = await api.enquiries.getAll('')
       setEnquiries(response.enquiries || [])
     } catch (error) {
       console.error('Error fetching enquiries:', error)
@@ -37,9 +37,9 @@ export default function Enquiries() {
   }
 
   const updateEnquiryStatus = async (enquiryId: string, newStatus: string) => {
-    if (!accessToken) return
+    if (!user) return
     try {
-      await api.enquiries.delete(accessToken, enquiryId)
+      await api.enquiries.delete('', enquiryId)
       fetchEnquiries()
     } catch (error) {
       console.error('Error updating enquiry status:', error)

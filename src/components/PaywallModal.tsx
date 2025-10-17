@@ -9,16 +9,16 @@ interface PaywallModalProps {
 }
 
 export default function PaywallModal({ isOpen, onClose }: PaywallModalProps) {
-  const { user, accessToken } = useAuth();
+  const { user } = useAuth();
   const [loading, setLoading] = useState<string | null>(null);
 
   const handleSubscribe = async (priceId: string, mode: string = 'subscription') => {
-    if (!user || !accessToken) return;
+    if (!user) return;
 
     setLoading(priceId);
 
     try {
-      const { url }: any = await api.stripe.createCheckout(accessToken, priceId, mode);
+      const { url }: any = await api.stripe.createCheckout('', priceId, mode);
 
       if (url) {
         window.location.href = url;
