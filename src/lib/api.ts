@@ -423,7 +423,32 @@ export const api = {
 
   stripe: {
     createCheckout: async (_token: string, priceId: string, mode: string = 'subscription') => {
-      throw new Error('Stripe integration not yet implemented');
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error('Not authenticated');
+
+      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+      const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+
+      const response = await fetch(`${supabaseUrl}/functions/v1/create-checkout-session`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${supabaseAnonKey}`,
+        },
+        body: JSON.stringify({
+          priceId,
+          mode,
+          userId: user.id,
+        }),
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || 'Failed to create checkout session');
+      }
+
+      const data = await response.json();
+      return data;
     },
 
     getSubscriptionStatus: async (_token: string) => {
@@ -432,7 +457,7 @@ export const api = {
 
       const { data, error } = await supabase
         .from('profiles')
-        .select('subscription_status, subscription_tier')
+        .select('subscription_status, subscription_tier, trial_end_date')
         .eq('id', user.id)
         .maybeSingle();
 

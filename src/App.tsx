@@ -7,6 +7,7 @@ import PaywallModal from './components/PaywallModal'
 import LandingPage from './pages/LandingPage'
 import AboutUs from './pages/AboutUs'
 import PrivacyTerms from './pages/PrivacyTerms'
+import Pricing from './pages/Pricing'
 import Dashboard from './pages/Dashboard'
 import Orders from './pages/Orders'
 import Calendar from './pages/Calendar'
@@ -41,13 +42,16 @@ function AppContent() {
       <Routes>
         {/* Landing Page - accessible to everyone */}
         <Route path="/landing" element={<LandingPage />} />
-        
+
         {/* About Us Page - accessible to everyone */}
         <Route path="/about-us" element={<AboutUs />} />
-        
+
         {/* Privacy & Terms Page - accessible to everyone */}
         <Route path="/privacy-terms" element={<PrivacyTerms />} />
-        
+
+        {/* Pricing Page - accessible to everyone */}
+        <Route path="/pricing" element={<Pricing />} />
+
         {/* Enquiry Form - accessible to everyone */}
         <Route path="/enquiry" element={<EnquiryForm />} />
 
