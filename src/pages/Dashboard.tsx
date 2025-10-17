@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react'
+import { Link } from 'react-router-dom'
 import { useAuth } from '../hooks/useAuth'
+import { supabase } from '../lib/supabase'
 import { ShoppingCart, DollarSign, TrendingUp, Calendar, FileText, Mail } from 'lucide-react'
 import { format } from 'date-fns'
 
@@ -243,22 +245,22 @@ export default function Dashboard() {
           </div>
           <div className="p-6">
             <div className="grid grid-cols-2 gap-4">
-              <button className="p-4 bg-amber-50 border border-amber-200 rounded-lg hover:bg-amber-100 transition-colors group">
+              <Link to="/orders" className="p-4 bg-amber-50 border border-amber-200 rounded-lg hover:bg-amber-100 transition-colors group">
                 <ShoppingCart className="w-6 h-6 text-amber-600 mb-2 group-hover:scale-110 transition-transform" />
                 <p className="text-sm font-medium text-gray-800">New Order</p>
-              </button>
-              <button className="p-4 bg-green-50 border border-green-200 rounded-lg hover:bg-green-100 transition-colors group">
+              </Link>
+              <Link to="/expenses" className="p-4 bg-green-50 border border-green-200 rounded-lg hover:bg-green-100 transition-colors group">
                 <DollarSign className="w-6 h-6 text-green-600 mb-2 group-hover:scale-110 transition-transform" />
                 <p className="text-sm font-medium text-gray-800">Add Expense</p>
-              </button>
-              <button className="p-4 bg-purple-50 border border-purple-200 rounded-lg hover:bg-purple-100 transition-colors group">
+              </Link>
+              <Link to="/enquiries" className="p-4 bg-purple-50 border border-purple-200 rounded-lg hover:bg-purple-100 transition-colors group">
                 <Mail className="w-6 h-6 text-purple-600 mb-2 group-hover:scale-110 transition-transform" />
                 <p className="text-sm font-medium text-gray-800">View Enquiries</p>
-              </button>
-              <button className="p-4 bg-blue-50 border border-blue-200 rounded-lg hover:bg-blue-100 transition-colors group">
+              </Link>
+              <Link to="/calendar" className="p-4 bg-blue-50 border border-blue-200 rounded-lg hover:bg-blue-100 transition-colors group">
                 <Calendar className="w-6 h-6 text-blue-600 mb-2 group-hover:scale-110 transition-transform" />
                 <p className="text-sm font-medium text-gray-800">View Calendar</p>
-              </button>
+              </Link>
             </div>
           </div>
         </div>

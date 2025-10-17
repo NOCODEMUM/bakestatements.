@@ -1,5 +1,8 @@
 import { useState } from 'react'
-import { ChefHat, Send, CheckCircle } from 'lucide-react'
+import { Send, CheckCircle } from 'lucide-react'
+import PublicHeader from '../components/PublicHeader'
+import PublicFooter from '../components/PublicFooter'
+import { supabase } from '../lib/supabase'
 
 export default function EnquiryForm() {
   const [loading, setLoading] = useState(false)
@@ -33,43 +36,38 @@ export default function EnquiryForm() {
 
   if (submitted) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-amber-50 to-orange-50 flex items-center justify-center p-4">
-        <div className="bg-white rounded-2xl shadow-xl max-w-md w-full p-8 text-center">
-          <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
-            <CheckCircle className="w-8 h-8 text-green-600" />
+      <div className="min-h-screen bg-gradient-to-br from-teal-50 to-amber-50">
+        <PublicHeader />
+        <div className="flex items-center justify-center min-h-[calc(100vh-80px)] p-4">
+          <div className="bg-white rounded-2xl shadow-xl max-w-md w-full p-8 text-center">
+            <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
+              <CheckCircle className="w-8 h-8 text-green-600" />
+            </div>
+            <h2 className="text-2xl font-bold text-gray-800 mb-4">Thank You!</h2>
+            <p className="text-gray-600 mb-6">
+              Your enquiry has been submitted successfully. We'll get back to you within 24 hours.
+            </p>
+            <div className="space-y-3">
+              <button
+                onClick={() => setSubmitted(false)}
+                className="w-full bg-amber-500 text-white px-6 py-2 rounded-lg hover:bg-amber-600 transition-colors"
+              >
+                Submit Another Enquiry
+              </button>
+            </div>
           </div>
-          <h2 className="text-2xl font-bold text-gray-800 mb-4">Thank You!</h2>
-          <p className="text-gray-600 mb-6">
-            Your enquiry has been submitted successfully. We'll get back to you within 24 hours.
-          </p>
-          <button
-            onClick={() => setSubmitted(false)}
-            className="bg-amber-500 text-white px-6 py-2 rounded-lg hover:bg-amber-600 transition-colors"
-          >
-            Submit Another Enquiry
-          </button>
         </div>
+        <PublicFooter />
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-amber-50 to-orange-50">
-      {/* Header */}
-      <header className="bg-white shadow-sm border-b border-gray-200 px-6 py-4">
-        <div className="max-w-4xl mx-auto flex items-center space-x-3">
-          <div className="bg-amber-50 p-2 rounded-lg">
-            <ChefHat className="w-6 h-6 text-amber-500" />
-          </div>
-          <div>
-            <h1 className="text-xl font-bold text-gray-800">BakeStatements</h1>
-            <p className="text-sm text-gray-500">Professional Bakery Services</p>
-          </div>
-        </div>
-      </header>
+    <div className="min-h-screen bg-gradient-to-br from-teal-50 to-amber-50">
+      <PublicHeader />
 
-      {/* Main Content */}
-      <div className="flex items-center justify-center min-h-[calc(100vh-80px)] p-4">
+      <main className="py-8 px-4">
+        <div className="flex items-center justify-center min-h-[calc(100vh-200px)]">
         <div className="bg-white rounded-2xl shadow-xl max-w-2xl w-full p-8">
           <div className="text-center mb-8">
             <h2 className="text-3xl font-bold text-gray-800 mb-4">Get a Custom Quote</h2>
@@ -147,16 +145,10 @@ export default function EnquiryForm() {
             </ul>
           </div>
         </div>
-      </div>
-
-      {/* Footer */}
-      <footer className="bg-white border-t border-gray-200 px-6 py-4">
-        <div className="max-w-4xl mx-auto text-center">
-          <p className="text-sm text-gray-500">
-            © 2025 BakeStatements. Professional bakery services across Australia.
-          </p>
         </div>
-      </footer>
+      </main>
+
+      <PublicFooter />
     </div>
   )
 }

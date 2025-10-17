@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import { useAuth } from '../hooks/useAuth'
+import { supabase } from '../lib/supabase'
 import { ChefHat, Eye, EyeOff, Mail } from 'lucide-react'
 
 export default function Auth() {
@@ -104,16 +105,19 @@ export default function Auth() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col">
+    <div className="min-h-screen bg-gradient-to-br from-teal-50 to-amber-50 flex flex-col">
       {/* Header */}
       <div className="flex items-center justify-between p-6">
-        <div className="flex items-center space-x-2">
-          <ChefHat className="w-6 h-6 text-gray-700" />
+        <Link to="/landing" className="flex items-center space-x-2">
+          <ChefHat className="w-6 h-6 text-amber-600" />
           <span className="text-lg font-semibold text-gray-800">BakeStatements</span>
-        </div>
-        <div className="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center">
-          <span className="text-white font-bold text-lg">?</span>
-        </div>
+        </Link>
+        <Link
+          to="/landing"
+          className="text-sm text-gray-600 hover:text-gray-800 font-medium transition-colors"
+        >
+          Back to Home
+        </Link>
       </div>
 
       {/* Main Content */}

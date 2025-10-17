@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
-import { useNavigate, useSearchParams } from 'react-router-dom'
+import { useNavigate, useSearchParams, Link } from 'react-router-dom'
 import { ChefHat, Lock, Eye, EyeOff } from 'lucide-react'
+import { supabase } from '../lib/supabase'
 
 export default function ResetPassword() {
   const [password, setPassword] = useState('')
@@ -87,10 +88,18 @@ export default function ResetPassword() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-teal-50 to-amber-50 flex flex-col">
       {/* Header */}
-      <div className="flex items-center justify-center p-6">
-        <div className="flex items-center space-x-2">
-          <ChefHat className="w-6 h-6 text-amber-500" />
-          <span className="font-semibold text-gray-800">BakeStatements</span>
+      <div className="flex items-center justify-between p-6">
+        <Link to="/auth" className="text-sm text-gray-600 hover:text-gray-800 font-medium transition-colors">
+          Back to Sign In
+        </Link>
+        <div className="flex items-center space-x-4">
+          <Link to="/landing" className="text-sm text-gray-600 hover:text-teal-600 font-medium transition-colors">
+            Home
+          </Link>
+          <Link to="/landing" className="flex items-center space-x-2">
+            <ChefHat className="w-6 h-6 text-amber-500" />
+            <span className="font-semibold text-gray-800">BakeStatements</span>
+          </Link>
         </div>
       </div>
 

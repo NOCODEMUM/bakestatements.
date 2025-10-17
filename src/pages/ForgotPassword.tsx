@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { ChefHat, ArrowLeft, Mail } from 'lucide-react'
 import { Link } from 'react-router-dom'
+import { supabase } from '../lib/supabase'
 
 export default function ForgotPassword() {
   const [email, setEmail] = useState('')
@@ -37,9 +38,14 @@ export default function ForgotPassword() {
           <ArrowLeft className="w-5 h-5" />
           <span>Back to Sign In</span>
         </Link>
-        <div className="flex items-center space-x-2">
-          <ChefHat className="w-6 h-6 text-amber-500" />
-          <span className="font-semibold text-gray-800">BakeStatements</span>
+        <div className="flex items-center space-x-4">
+          <Link to="/landing" className="text-sm text-gray-600 hover:text-teal-600 font-medium transition-colors">
+            Home
+          </Link>
+          <Link to="/landing" className="flex items-center space-x-2">
+            <ChefHat className="w-6 h-6 text-amber-500" />
+            <span className="font-semibold text-gray-800">BakeStatements</span>
+          </Link>
         </div>
       </div>
 
