@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useAuth } from '../hooks/useAuth'
 import { User, Building, Hash, Phone, Save, CheckCircle } from 'lucide-react'
+import { api } from '../lib/api'
 
 interface ProfileData {
   business_name: string | null
@@ -9,7 +10,7 @@ interface ProfileData {
 }
 
 export default function Settings() {
-  const { user, isTrialExpired } = useAuth()
+  const { user, accessToken, isTrialExpired } = useAuth()
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [saved, setSaved] = useState(false)
@@ -20,26 +21,21 @@ export default function Settings() {
   })
 
   useEffect(() => {
-    if (user) {
+    if (user && accessToken) {
       fetchProfile()
     }
-  }, [user])
+  }, [user, accessToken])
 
   const fetchProfile = async () => {
-    try {
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('business_name, phone_number, abn')
-        .eq('id', user!.id)
-        .single()
+    if (!accessToken) return
 
-      if (error && error.code !== 'PGRST116') throw error // PGRST116 means no rows found
-      
-      if (data) {
+    try {
+      const response: any = await api.auth.getProfile(accessToken)
+      if (response && response.user) {
         setProfileData({
-          business_name: data.business_name || '',
-          phone_number: data.phone_number || '',
-          abn: data.abn || ''
+          business_name: response.user.business_name || '',
+          phone_number: response.user.phone_number || '',
+          abn: response.user.abn || ''
         })
       }
     } catch (error) {
@@ -51,16 +47,12 @@ export default function Settings() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    if (!accessToken) return
+
     setSaving(true)
 
     try {
-      const { error } = await supabase
-        .from('profiles')
-        .update(profileData)
-        .eq('id', user!.id)
-
-      if (error) throw error
-
+      await api.auth.updateProfile(accessToken, profileData)
       setSaved(true)
       setTimeout(() => setSaved(false), 3000)
     } catch (error) {

@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { Send, CheckCircle } from 'lucide-react'
 import PublicHeader from '../components/PublicHeader'
 import PublicFooter from '../components/PublicFooter'
-import { supabase } from '../lib/supabase'
+import { api } from '../lib/api'
 
 export default function EnquiryForm() {
   const [loading, setLoading] = useState(false)
@@ -18,12 +18,7 @@ export default function EnquiryForm() {
     setLoading(true)
 
     try {
-      const { error } = await supabase
-        .from('enquiries')
-        .insert([formData])
-
-      if (error) throw error
-      
+      await api.enquiries.create(formData)
       setSubmitted(true)
       setFormData({ name: '', email: '', message: '' })
     } catch (error) {

@@ -214,6 +214,46 @@ export const api = {
     getSubscriptionStatus: (token: string) =>
       request('/stripe/subscription-status', { token }),
   },
+
+  enquiries: {
+    getAll: (token: string) =>
+      request('/enquiries', { token }),
+
+    create: (data: any) =>
+      request('/enquiries', {
+        method: 'POST',
+        body: JSON.stringify(data),
+      }),
+
+    delete: (token: string, id: string) =>
+      request(`/enquiries/${id}`, {
+        method: 'DELETE',
+        token,
+      }),
+  },
+
+  invoices: {
+    getAll: (token: string) =>
+      request('/invoices', { token }),
+
+    create: (token: string, data: any) =>
+      request('/invoices', {
+        method: 'POST',
+        token,
+        body: JSON.stringify(data),
+      }),
+
+    delete: (token: string, id: string) =>
+      request(`/invoices/${id}`, {
+        method: 'DELETE',
+        token,
+      }),
+  },
+
+  calendar: {
+    getEvents: (token: string) =>
+      request('/calendar/events', { token }),
+  },
 };
 
 export { ApiError };

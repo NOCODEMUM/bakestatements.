@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useAuth } from '../hooks/useAuth'
+import { api } from '../lib/api'
 import { Plus, Download, PieChart } from 'lucide-react'
 import { format } from 'date-fns'
 
@@ -24,7 +25,7 @@ const ATO_CATEGORIES = [
 ]
 
 export default function Expenses() {
-  const { user } = useAuth()
+  const { user, accessToken } = useAuth()
   const [expenses, setExpenses] = useState<Expense[]>([])
   const [loading, setLoading] = useState(true)
   const [showForm, setShowForm] = useState(false)
@@ -37,21 +38,16 @@ export default function Expenses() {
   })
 
   useEffect(() => {
-    if (user) {
+    if (user && accessToken) {
       fetchExpenses()
     }
-  }, [user])
+  }, [user, accessToken])
 
   const fetchExpenses = async () => {
+    if (!accessToken) return
     try {
-      const { data, error } = await supabase
-        .from('expenses')
-        .select('*')
-        .eq('user_id', user!.id)
-        .order('date', { ascending: false })
-
-      if (error) throw error
-      setExpenses(data || [])
+      const response: any = await api.expenses.getAll(accessToken)
+      setExpenses(response.expenses || [])
     } catch (error) {
       console.error('Error fetching expenses:', error)
     } finally {
@@ -61,12 +57,9 @@ export default function Expenses() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    if (!accessToken) return
     try {
-      const { error } = await supabase
-        .from('expenses')
-        .insert([{ ...formData, user_id: user!.id }])
-
-      if (error) throw error
+      await api.expenses.create(accessToken, formData)
 
       setFormData({
         date: format(new Date(), 'yyyy-MM-dd'),

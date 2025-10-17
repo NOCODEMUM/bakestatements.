@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useNavigate, useSearchParams, Link } from 'react-router-dom'
 import { ChefHat, Lock, Eye, EyeOff } from 'lucide-react'
-import { supabase } from '../lib/supabase'
+import { api } from '../lib/api'
 
 export default function ResetPassword() {
   const [password, setPassword] = useState('')
@@ -10,24 +10,17 @@ export default function ResetPassword() {
   const [message, setMessage] = useState('')
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
+  const [resetToken, setResetToken] = useState<string | null>(null)
   const [searchParams] = useSearchParams()
   const navigate = useNavigate()
 
   useEffect(() => {
-    // Check if we have the necessary tokens from URL
-    const accessToken = searchParams.get('access_token')
-    const refreshToken = searchParams.get('refresh_token')
-
-    if (!accessToken || !refreshToken) {
+    const token = searchParams.get('token')
+    if (!token) {
       setMessage('Invalid reset link. Please request a new password reset.')
       return
     }
-
-    // Set the session with the tokens from the URL
-    supabase.auth.setSession({
-      access_token: accessToken,
-      refresh_token: refreshToken
-    })
+    setResetToken(token)
   }, [searchParams])
 
   const validatePassword = (password: string) => {
@@ -48,7 +41,12 @@ export default function ResetPassword() {
     setLoading(true)
     setMessage('')
 
-    // Validate passwords
+    if (!resetToken) {
+      setMessage('Invalid reset link. Please request a new password reset.')
+      setLoading(false)
+      return
+    }
+
     const passwordError = validatePassword(password)
     if (passwordError) {
       setMessage(passwordError)
@@ -63,23 +61,14 @@ export default function ResetPassword() {
     }
 
     try {
-      const { error } = await supabase.auth.updateUser({
-        password: password
-      })
-
-      if (error) {
-        if (error.message.includes('session_not_found') || error.message.includes('invalid_token')) {
-          setMessage('Link expired, request a new one')
-        } else {
-          setMessage(error.message)
-        }
-        return
-      }
-
-      // Success - redirect to login with success message
+      await api.auth.resetPassword(resetToken, password)
       navigate('/auth?message=password_updated')
     } catch (error: any) {
-      setMessage(error.message || 'An error occurred. Please try again.')
+      if (error.message.includes('expired') || error.message.includes('invalid')) {
+        setMessage('Link expired, request a new one')
+      } else {
+        setMessage(error.message || 'An error occurred. Please try again.')
+      }
     } finally {
       setLoading(false)
     }

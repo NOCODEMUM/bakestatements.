@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useAuth } from '../hooks/useAuth'
+import { api } from '../lib/api'
 import { Plus, Calculator, Package, DollarSign, Edit, Trash2 } from 'lucide-react'
 
 interface Ingredient {
@@ -31,7 +32,7 @@ interface RecipeIngredient {
 }
 
 export default function Recipes() {
-  const { user } = useAuth()
+  const { user, accessToken } = useAuth()
   const [recipes, setRecipes] = useState<Recipe[]>([])
   const [ingredients, setIngredients] = useState<Ingredient[]>([])
   const [loading, setLoading] = useState(true)
@@ -52,38 +53,19 @@ export default function Recipes() {
   })
 
   useEffect(() => {
-    if (user) {
+    if (user && accessToken) {
       fetchData()
     }
-  }, [user])
+  }, [user, accessToken])
 
   const fetchData = async () => {
+    if (!accessToken) return
     try {
-      // Fetch ingredients
-      const { data: ingredientsData } = await supabase
-        .from('ingredients')
-        .select('*')
-        .eq('user_id', user!.id)
-        .order('name')
+      const ingredientsResponse: any = await api.ingredients.getAll(accessToken)
+      const recipesResponse: any = await api.recipes.getAll(accessToken)
 
-      // Fetch recipes with ingredients
-      const { data: recipesData } = await supabase
-        .from('recipes')
-        .select(`
-          *,
-          recipe_ingredients (
-            id,
-            quantity,
-            ingredient:ingredients (
-              id,
-              name,
-              cost_per_unit,
-              unit_type
-            )
-          )
-        `)
-        .eq('user_id', user!.id)
-        .order('name')
+      const ingredientsData = ingredientsResponse.ingredients || []
+      const recipesData = recipesResponse.recipes || []
 
       setIngredients(ingredientsData || [])
       
@@ -119,11 +101,8 @@ export default function Recipes() {
   const handleIngredientSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     try {
-      const { error } = await supabase
-        .from('ingredients')
-        .insert([{ ...ingredientForm, user_id: user!.id }])
-
-      if (error) throw error
+      if (!accessToken) return
+      await api.ingredients.create(accessToken, ingredientForm)
 
       setIngredientForm({ name: '', cost_per_unit: 0, unit_type: 'kg' })
       setShowIngredientForm(false)
@@ -136,33 +115,12 @@ export default function Recipes() {
   const handleRecipeSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     try {
-      // Insert recipe
-      const { data: recipeData, error: recipeError } = await supabase
-        .from('recipes')
-        .insert([{ 
-          name: recipeForm.name, 
-          batch_size: recipeForm.batch_size,
-          user_id: user!.id 
-        }])
-        .select()
-        .single()
-
-      if (recipeError) throw recipeError
-
-      // Insert recipe ingredients
-      if (recipeForm.ingredients.length > 0) {
-        const { error: ingredientsError } = await supabase
-          .from('recipe_ingredients')
-          .insert(
-            recipeForm.ingredients.map(ingredient => ({
-              recipe_id: recipeData.id,
-              ingredient_id: ingredient.ingredient_id,
-              quantity: ingredient.quantity
-            }))
-          )
-
-        if (ingredientsError) throw ingredientsError
-      }
+      if (!accessToken) return
+      await api.recipes.create(accessToken, {
+        name: recipeForm.name,
+        batch_size: recipeForm.batch_size,
+        ingredients: recipeForm.ingredients
+      })
 
       setRecipeForm({ name: '', batch_size: 1, ingredients: [] })
       setShowRecipeForm(false)

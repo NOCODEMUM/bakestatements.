@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useAuth } from '../hooks/useAuth'
-import { supabase } from '../lib/supabase'
+import { api } from '../lib/api'
 import { ShoppingCart, DollarSign, TrendingUp, Calendar, FileText, Mail } from 'lucide-react'
 import { format } from 'date-fns'
 
@@ -17,7 +17,7 @@ interface DashboardStats {
 }
 
 export default function Dashboard() {
-  const { user } = useAuth()
+  const { user, accessToken } = useAuth()
   const [stats, setStats] = useState<DashboardStats>({
     totalOrders: 0,
     totalRevenue: 0,
@@ -31,55 +31,42 @@ export default function Dashboard() {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    if (user) {
+    if (user && accessToken) {
       fetchDashboardData()
     }
-  }, [user])
+  }, [user, accessToken])
 
   const fetchDashboardData = async () => {
+    if (!accessToken) return
+
     try {
-      // Fetch orders
-      const { data: orders } = await supabase
-        .from('orders')
-        .select('*')
-        .eq('user_id', user!.id)
+      const ordersResponse: any = await api.orders.getAll(accessToken)
+      const expensesResponse: any = await api.expenses.getAll(accessToken)
+      const enquiriesResponse: any = await api.enquiries.getAll(accessToken)
 
-      // Fetch expenses
-      const { data: expenses } = await supabase
-        .from('expenses')
-        .select('*')
-        .eq('user_id', user!.id)
+      const orders = ordersResponse.orders || []
+      const expenses = expensesResponse.expenses || []
+      const enquiries = enquiriesResponse.enquiries || []
 
-      // Fetch enquiries
-      const { data: enquiries } = await supabase
-        .from('enquiries')
-        .select('*')
-        .eq('user_id', user!.id)
-        .eq('status', 'New')
-
-      // Calculate stats
-      const totalOrders = orders?.length || 0
-      const totalRevenue = orders?.reduce((sum, order) => sum + (order.amount || 0), 0) || 0
-      const totalExpenses = expenses?.reduce((sum, expense) => sum + expense.amount, 0) || 0
+      const totalOrders = orders.length
+      const totalRevenue = orders.reduce((sum: number, order: any) => sum + (order.amount || 0), 0)
+      const totalExpenses = expenses.reduce((sum: number, expense: any) => sum + expense.amount, 0)
       const netProfit = totalRevenue - totalExpenses
-      
-      // Calculate pending invoices (orders that are not delivered)
-      const pendingOrders = orders?.filter(order => order.status !== 'Delivered') || []
-      const pendingInvoices = pendingOrders.length
-      const pendingInvoicesValue = pendingOrders.reduce((sum, order) => sum + (order.amount || 0), 0)
-      
-      // Count new enquiries
-      const newEnquiries = enquiries?.length || 0
 
-      // Get upcoming orders (next 7 days)
+      const pendingOrders = orders.filter((order: any) => order.status !== 'Delivered')
+      const pendingInvoices = pendingOrders.length
+      const pendingInvoicesValue = pendingOrders.reduce((sum: number, order: any) => sum + (order.amount || 0), 0)
+
+      const newEnquiries = enquiries.filter((e: any) => e.status === 'New').length
+
       const nextWeek = new Date()
       nextWeek.setDate(nextWeek.getDate() + 7)
-      
-      const upcomingOrders = orders?.filter(order => {
+
+      const upcomingOrders = orders.filter((order: any) => {
         const dueDate = new Date(order.due_date)
         const today = new Date()
         return dueDate >= today && dueDate <= nextWeek
-      }).slice(0, 5) || []
+      }).slice(0, 5)
 
       setStats({
         totalOrders,

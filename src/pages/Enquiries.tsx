@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useAuth } from '../hooks/useAuth'
+import { api } from '../lib/api'
 import { Mail, Calendar, User, MessageSquare } from 'lucide-react'
 import { format } from 'date-fns'
 
@@ -13,26 +14,21 @@ interface Enquiry {
 }
 
 export default function Enquiries() {
-  const { user } = useAuth()
+  const { user, accessToken } = useAuth()
   const [enquiries, setEnquiries] = useState<Enquiry[]>([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    if (user) {
+    if (user && accessToken) {
       fetchEnquiries()
     }
-  }, [user])
+  }, [user, accessToken])
 
   const fetchEnquiries = async () => {
+    if (!accessToken) return
     try {
-      const { data, error } = await supabase
-        .from('enquiries')
-        .select('*')
-        .or(`user_id.eq.${user!.id},user_id.is.null`)
-        .order('created_at', { ascending: false })
-
-      if (error) throw error
-      setEnquiries(data || [])
+      const response: any = await api.enquiries.getAll(accessToken)
+      setEnquiries(response.enquiries || [])
     } catch (error) {
       console.error('Error fetching enquiries:', error)
     } finally {
@@ -41,13 +37,9 @@ export default function Enquiries() {
   }
 
   const updateEnquiryStatus = async (enquiryId: string, newStatus: string) => {
+    if (!accessToken) return
     try {
-      const { error } = await supabase
-        .from('enquiries')
-        .update({ status: newStatus })
-        .eq('id', enquiryId)
-
-      if (error) throw error
+      await api.enquiries.delete(accessToken, enquiryId)
       fetchEnquiries()
     } catch (error) {
       console.error('Error updating enquiry status:', error)

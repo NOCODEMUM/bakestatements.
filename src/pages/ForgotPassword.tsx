@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { ChefHat, ArrowLeft, Mail } from 'lucide-react'
 import { Link } from 'react-router-dom'
-import { supabase } from '../lib/supabase'
+import { api } from '../lib/api'
 
 export default function ForgotPassword() {
   const [email, setEmail] = useState('')
@@ -15,12 +15,7 @@ export default function ForgotPassword() {
     setMessage('')
 
     try {
-      const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: `${window.location.origin}/reset-password`
-      })
-
-      if (error) throw error
-
+      await api.auth.forgotPassword(email)
       setIsSuccess(true)
       setMessage('Check your email for a password reset link. The link will expire in 1 hour.')
     } catch (error: any) {

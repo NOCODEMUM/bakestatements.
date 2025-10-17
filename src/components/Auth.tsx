@@ -1,8 +1,7 @@
 import { useState, useEffect } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import { useAuth } from '../hooks/useAuth'
-import { supabase } from '../lib/supabase'
-import { ChefHat, Eye, EyeOff, Mail } from 'lucide-react'
+import { ChefHat, Eye, EyeOff } from 'lucide-react'
 
 export default function Auth() {
   const [loading, setLoading] = useState(false)
@@ -12,93 +11,41 @@ export default function Auth() {
   const [message, setMessage] = useState('')
   const [isSuccess, setIsSuccess] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
-  const [showResendVerification, setShowResendVerification] = useState(false)
-  const [resendLoading, setResendLoading] = useState(false)
   const { signUp, signIn } = useAuth()
   const [searchParams] = useSearchParams()
 
   useEffect(() => {
-    // Check for success messages from URL parameters
     const urlMessage = searchParams.get('message')
     if (urlMessage === 'password_updated') {
       setMessage('Password updated successfully! You can now sign in with your new password.')
       setIsSuccess(true)
-      setIsSignUp(false) // Switch to sign in mode
-    } else if (urlMessage === 'email_verified') {
-      setMessage('Email verified successfully! You can now sign in to your account.')
-      setIsSuccess(true)
-      setIsSignUp(false) // Switch to sign in mode
+      setIsSignUp(false)
     }
   }, [searchParams])
-
-  const handleResendVerification = async () => {
-    if (!email) {
-      setMessage('Please enter your email address first')
-      return
-    }
-
-    setResendLoading(true)
-    try {
-      const { error } = await supabase.auth.resend({
-        type: 'signup',
-        email: email,
-        options: {
-          emailRedirectTo: `${window.location.origin}/auth?message=email_verified`
-        }
-      })
-
-      if (error) throw error
-
-      setMessage('Verification email sent! Check your email and click the link to verify your account.')
-      setIsSuccess(true)
-      setShowResendVerification(false)
-    } catch (error: any) {
-      setMessage(error.message)
-    } finally {
-      setResendLoading(false)
-    }
-  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setLoading(true)
     setMessage('')
     setIsSuccess(false)
-    setShowResendVerification(false)
 
     try {
       if (isSignUp) {
-        const { error } = await signUp(email, password, {
-          options: {
-            emailRedirectTo: `${window.location.origin}/auth?message=email_verified`
-          }
-        })
-
-        if (error) {
-          if (error.message.includes('already registered')) {
-            setMessage('Email already registered')
-          } else {
-            setMessage(error.message)
-          }
-        } else {
-          setMessage('Success! Check your email for the confirmation link.')
-          setIsSuccess(true)
-        }
+        await signUp(email, password)
+        setMessage('Account created successfully! You can now sign in.')
+        setIsSuccess(true)
+        setIsSignUp(false)
       } else {
-        const { error } = await signIn(email, password)
-        if (error) {
-          if (error.message?.includes('Email not confirmed') || error.message?.includes('email_not_confirmed')) {
-            setMessage('Please check your email and click the confirmation link before signing in.')
-            setShowResendVerification(true)
-          } else if (error.message?.includes('Invalid login credentials')) {
-            setMessage('Email or password didn\'t match')
-          } else {
-            setMessage(error.message)
-          }
-        }
+        await signIn(email, password)
       }
     } catch (error: any) {
-      setMessage(error.message)
+      if (error.message.includes('already registered') || error.message.includes('already exists')) {
+        setMessage('Email already registered')
+      } else if (error.message.includes('Invalid') || error.message.includes('credentials')) {
+        setMessage('Email or password didn\'t match')
+      } else {
+        setMessage(error.message || 'An error occurred')
+      }
     } finally {
       setLoading(false)
     }
@@ -207,37 +154,13 @@ export default function Auth() {
             </div>
           </div>
 
-          {/* Messages */}
           {message && (
             <div className={`mt-6 p-4 rounded-lg text-sm ${
-              isSuccess || message.includes('Success') || message.includes('updated successfully') || message.includes('verified successfully')
-                ? 'bg-green-50 border border-green-200 text-green-800' 
+              isSuccess || message.includes('Success') || message.includes('updated successfully') || message.includes('created successfully')
+                ? 'bg-green-50 border border-green-200 text-green-800'
                 : 'bg-red-50 border border-red-200 text-red-800'
             }`}>
               {message}
-              
-              {/* Resend Verification Button */}
-              {showResendVerification && (
-                <div className="mt-3">
-                  <button
-                    onClick={handleResendVerification}
-                    disabled={resendLoading}
-                    className="inline-flex items-center space-x-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium disabled:opacity-50"
-                  >
-                    {resendLoading ? (
-                      <>
-                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                        <span>Sending...</span>
-                      </>
-                    ) : (
-                      <>
-                        <Mail className="w-4 h-4" />
-                        <span>Resend Verification</span>
-                      </>
-                    )}
-                  </button>
-                </div>
-              )}
             </div>
           )}
 
@@ -249,7 +172,6 @@ export default function Auth() {
                 setIsSignUp(!isSignUp)
                 setMessage('')
                 setIsSuccess(false)
-                setShowResendVerification(false)
                 setPassword('')
               }}
               className="text-gray-600 hover:text-gray-800 font-medium text-sm transition-colors"

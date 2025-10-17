@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useAuth } from '../hooks/useAuth'
+import { api } from '../lib/api'
 import { Plus, Search, Calendar, DollarSign } from 'lucide-react'
 import { format } from 'date-fns'
 
@@ -14,7 +15,7 @@ interface Order {
 }
 
 export default function Orders() {
-  const { user } = useAuth()
+  const { user, accessToken } = useAuth()
   const [orders, setOrders] = useState<Order[]>([])
   const [loading, setLoading] = useState(true)
   const [showForm, setShowForm] = useState(false)
@@ -28,21 +29,16 @@ export default function Orders() {
   })
 
   useEffect(() => {
-    if (user) {
+    if (user && accessToken) {
       fetchOrders()
     }
-  }, [user])
+  }, [user, accessToken])
 
   const fetchOrders = async () => {
+    if (!accessToken) return
     try {
-      const { data, error } = await supabase
-        .from('orders')
-        .select('*')
-        .eq('user_id', user!.id)
-        .order('created_at', { ascending: false })
-
-      if (error) throw error
-      setOrders(data || [])
+      const response: any = await api.orders.getAll(accessToken)
+      setOrders(response.orders || [])
     } catch (error) {
       console.error('Error fetching orders:', error)
     } finally {
@@ -53,11 +49,8 @@ export default function Orders() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     try {
-      const { error } = await supabase
-        .from('orders')
-        .insert([{ ...formData, user_id: user!.id }])
-
-      if (error) throw error
+      if (!accessToken) return
+      await api.orders.create(accessToken, formData)
 
       setFormData({
         customer_name: '',
@@ -74,13 +67,9 @@ export default function Orders() {
   }
 
   const updateOrderStatus = async (orderId: string, newStatus: string) => {
+    if (!accessToken) return
     try {
-      const { error } = await supabase
-        .from('orders')
-        .update({ status: newStatus })
-        .eq('id', orderId)
-
-      if (error) throw error
+      await api.orders.update(accessToken, orderId, { status: newStatus })
       fetchOrders()
     } catch (error) {
       console.error('Error updating order status:', error)
