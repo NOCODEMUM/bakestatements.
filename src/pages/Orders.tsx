@@ -295,7 +295,7 @@ export default function Orders() {
                   <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
                     Status
                   </th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap min-w-[280px]">
+                  <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
                     Actions
                   </th>
                 </tr>
@@ -322,36 +322,33 @@ export default function Orders() {
                       </div>
                     </td>
                     <td className="px-4 py-4 whitespace-nowrap">
-                      <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(order.status)}`}>
-                        {order.status}
-                      </span>
+                      <select
+                        value={order.status}
+                        onChange={(e) => updateOrderStatus(order.id, e.target.value)}
+                        className="text-sm border border-gray-300 rounded px-2 py-1.5 focus:ring-2 focus:ring-amber-500 focus:border-transparent bg-white"
+                      >
+                        <option value="Inquiry">Inquiry</option>
+                        <option value="Confirmed">Confirmed</option>
+                        <option value="Baking">Baking</option>
+                        <option value="Ready">Ready</option>
+                        <option value="Delivered">Delivered</option>
+                      </select>
                     </td>
                     <td className="px-4 py-4 whitespace-nowrap">
-                      <div className="flex items-center gap-2 min-w-[280px]">
-                        <select
-                          value={order.status}
-                          onChange={(e) => updateOrderStatus(order.id, e.target.value)}
-                          className="text-sm border border-gray-300 rounded px-2 py-1.5 focus:ring-2 focus:ring-amber-500 focus:border-transparent bg-white min-w-[120px]"
-                        >
-                          <option value="Inquiry">Inquiry</option>
-                          <option value="Confirmed">Confirmed</option>
-                          <option value="Baking">Baking</option>
-                          <option value="Ready">Ready</option>
-                          <option value="Delivered">Delivered</option>
-                        </select>
+                      <div className="flex items-center justify-center gap-2">
                         <button
                           onClick={() => handleEditOrder(order)}
-                          className="p-2 text-amber-600 hover:text-amber-700 hover:bg-amber-50 rounded transition-colors flex-shrink-0"
+                          className="p-2 text-amber-600 hover:text-amber-700 hover:bg-amber-50 rounded transition-colors"
                           title="Edit order"
                         >
-                          <Edit className="w-5 h-5" />
+                          <Edit className="w-4 h-4" />
                         </button>
                         <button
                           onClick={() => confirmDelete(order)}
-                          className="p-2 text-red-600 hover:text-red-700 hover:bg-red-50 rounded transition-colors flex-shrink-0"
+                          className="p-2 text-red-600 hover:text-red-700 hover:bg-red-50 rounded transition-colors"
                           title="Delete order"
                         >
-                          <Trash2 className="w-5 h-5" />
+                          <Trash2 className="w-4 h-4" />
                         </button>
                       </div>
                     </td>
