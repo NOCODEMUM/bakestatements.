@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useAuth } from '../hooks/useAuth'
 import { api } from '../lib/api'
-import { Plus, Search, Calendar, DollarSign, Edit, Clock } from 'lucide-react'
+import { Plus, Search, Calendar, DollarSign, Edit, Clock, Trash2 } from 'lucide-react'
 import { format } from 'date-fns'
 
 interface Order {
@@ -21,6 +21,8 @@ export default function Orders() {
   const [showForm, setShowForm] = useState(false)
   const [searchTerm, setSearchTerm] = useState('')
   const [editingOrder, setEditingOrder] = useState<Order | null>(null)
+  const [deletingOrder, setDeletingOrder] = useState<Order | null>(null)
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
   const [formData, setFormData] = useState({
     customer_name: '',
     order_details: '',
@@ -107,6 +109,28 @@ export default function Orders() {
     }
   }
 
+  const handleDeleteOrder = async () => {
+    if (!user || !deletingOrder) return
+    try {
+      await api.orders.delete('', deletingOrder.id)
+      setShowDeleteConfirm(false)
+      setDeletingOrder(null)
+      fetchOrders()
+    } catch (error) {
+      console.error('Error deleting order:', error)
+    }
+  }
+
+  const confirmDelete = (order: Order) => {
+    setDeletingOrder(order)
+    setShowDeleteConfirm(true)
+  }
+
+  const cancelDelete = () => {
+    setShowDeleteConfirm(false)
+    setDeletingOrder(null)
+  }
+
   const filteredOrders = orders.filter(order =>
     order.customer_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
     order.order_details.toLowerCase().includes(searchTerm.toLowerCase())
@@ -177,13 +201,22 @@ export default function Orders() {
                         <h3 className="font-medium text-gray-800 text-sm">{order.customer_name}</h3>
                         <p className="text-xs text-gray-600 mt-1 line-clamp-2">{order.order_details}</p>
                       </div>
-                      <button
-                        onClick={() => handleEditOrder(order)}
-                        className="p-1 text-amber-600 hover:text-amber-700 hover:bg-amber-50 rounded transition-colors"
-                        title="Edit order"
-                      >
-                        <Edit className="w-4 h-4" />
-                      </button>
+                      <div className="flex items-center space-x-1">
+                        <button
+                          onClick={() => handleEditOrder(order)}
+                          className="p-1 text-amber-600 hover:text-amber-700 hover:bg-amber-50 rounded transition-colors"
+                          title="Edit order"
+                        >
+                          <Edit className="w-4 h-4" />
+                        </button>
+                        <button
+                          onClick={() => confirmDelete(order)}
+                          className="p-1 text-red-600 hover:text-red-700 hover:bg-red-50 rounded transition-colors"
+                          title="Delete order"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </div>
                     </div>
                     <div className="flex items-center justify-between mt-2">
                       <div className="flex items-center space-x-2">
@@ -313,6 +346,13 @@ export default function Orders() {
                         >
                           <Edit className="w-4 h-4" />
                         </button>
+                        <button
+                          onClick={() => confirmDelete(order)}
+                          className="p-1 text-red-600 hover:text-red-700 hover:bg-red-50 rounded transition-colors"
+                          title="Delete order"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
                       </div>
                     </td>
                   </tr>
@@ -399,6 +439,16 @@ export default function Orders() {
                 >
                   {editingOrder ? 'Update Order' : 'Create Order'}
                 </button>
+                {editingOrder && (
+                  <button
+                    type="button"
+                    onClick={() => confirmDelete(editingOrder)}
+                    className="bg-red-600 text-white py-2 px-4 rounded-lg hover:bg-red-700 transition-colors flex items-center space-x-2"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                    <span>Delete</span>
+                  </button>
+                )}
                 <button
                   type="button"
                   onClick={handleCancelOrder}
@@ -408,6 +458,43 @@ export default function Orders() {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* Delete Confirmation Modal */}
+      {showDeleteConfirm && deletingOrder && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg shadow-xl max-w-md w-full p-6">
+            <div className="flex items-center space-x-3 mb-4">
+              <div className="bg-red-100 p-3 rounded-full">
+                <Trash2 className="w-6 h-6 text-red-600" />
+              </div>
+              <h2 className="text-xl font-bold text-gray-800">Delete Order</h2>
+            </div>
+            <p className="text-gray-600 mb-4">
+              Are you sure you want to delete this order? This action cannot be undone.
+            </p>
+            <div className="bg-gray-50 p-4 rounded-lg mb-6">
+              <p className="text-sm font-medium text-gray-700">Order Details:</p>
+              <p className="text-sm text-gray-900 mt-1"><strong>Customer:</strong> {deletingOrder.customer_name}</p>
+              <p className="text-sm text-gray-900 mt-1"><strong>Details:</strong> {deletingOrder.order_details}</p>
+              <p className="text-sm text-gray-900 mt-1"><strong>Amount:</strong> ${deletingOrder.amount.toFixed(2)}</p>
+            </div>
+            <div className="flex space-x-3">
+              <button
+                onClick={handleDeleteOrder}
+                className="flex-1 bg-red-600 text-white py-2 px-4 rounded-lg hover:bg-red-700 transition-colors font-medium"
+              >
+                Delete Order
+              </button>
+              <button
+                onClick={cancelDelete}
+                className="flex-1 bg-gray-300 text-gray-700 py-2 px-4 rounded-lg hover:bg-gray-400 transition-colors font-medium"
+              >
+                Cancel
+              </button>
+            </div>
           </div>
         </div>
       )}
