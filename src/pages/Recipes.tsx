@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useAuth } from '../hooks/useAuth'
 import { api } from '../lib/api'
+import { supabase } from '../lib/supabase'
 import { Plus, Calculator, Package, DollarSign, Edit, Trash2 } from 'lucide-react'
 
 interface Ingredient {
@@ -144,9 +145,28 @@ export default function Recipes() {
       if (editingRecipe) {
         await api.recipes.update('', editingRecipe.id, {
           name: recipeForm.name,
-          batch_size: recipeForm.batch_size,
-          ingredients: recipeForm.ingredients
+          batch_size: recipeForm.batch_size
         })
+
+        const { data: { user: currentUser } } = await supabase.auth.getUser()
+        if (!currentUser) throw new Error('Not authenticated')
+
+        await supabase
+          .from('recipe_ingredients')
+          .delete()
+          .eq('recipe_id', editingRecipe.id)
+
+        if (recipeForm.ingredients && recipeForm.ingredients.length > 0) {
+          const recipeIngredients = recipeForm.ingredients.map((ing: any) => ({
+            recipe_id: editingRecipe.id,
+            ingredient_id: ing.ingredient_id,
+            quantity: ing.quantity,
+          }))
+
+          await supabase
+            .from('recipe_ingredients')
+            .insert(recipeIngredients)
+        }
       } else {
         await api.recipes.create('', {
           name: recipeForm.name,

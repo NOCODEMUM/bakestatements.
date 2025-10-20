@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { Link, useSearchParams, useNavigate } from 'react-router-dom'
+import { Link, useSearchParams } from 'react-router-dom'
 import { useAuth } from '../hooks/useAuth'
 import { ChefHat, Eye, EyeOff } from 'lucide-react'
 
@@ -13,7 +13,6 @@ export default function Auth() {
   const [showPassword, setShowPassword] = useState(false)
   const { signUp, signIn } = useAuth()
   const [searchParams] = useSearchParams()
-  const navigate = useNavigate()
 
   useEffect(() => {
     const urlMessage = searchParams.get('message')
@@ -38,18 +37,14 @@ export default function Auth() {
         setIsSignUp(false)
       } else {
         await signIn(email, password)
-        navigate('/')
       }
     } catch (error: any) {
-      console.error('Auth error:', error)
-      if (error.message.includes('User already registered') || error.message.includes('already exists')) {
+      if (error.message.includes('already registered') || error.message.includes('already exists')) {
         setMessage('Email already registered')
-      } else if (error.message.includes('Invalid login credentials') || error.message.includes('credentials')) {
+      } else if (error.message.includes('Invalid') || error.message.includes('credentials')) {
         setMessage('Email or password didn\'t match')
-      } else if (error.message.includes('Email not confirmed')) {
-        setMessage('Please check your email to confirm your account')
       } else {
-        setMessage(error.message || 'An error occurred. Please try again.')
+        setMessage(error.message || 'An error occurred')
       }
     } finally {
       setLoading(false)
