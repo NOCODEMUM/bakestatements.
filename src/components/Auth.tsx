@@ -39,12 +39,15 @@ export default function Auth() {
         await signIn(email, password)
       }
     } catch (error: any) {
-      if (error.message.includes('already registered') || error.message.includes('already exists')) {
+      console.error('Auth error:', error)
+      if (error.message.includes('User already registered') || error.message.includes('already exists')) {
         setMessage('Email already registered')
-      } else if (error.message.includes('Invalid') || error.message.includes('credentials')) {
+      } else if (error.message.includes('Invalid login credentials') || error.message.includes('credentials')) {
         setMessage('Email or password didn\'t match')
+      } else if (error.message.includes('Email not confirmed')) {
+        setMessage('Please check your email to confirm your account')
       } else {
-        setMessage(error.message || 'An error occurred')
+        setMessage(error.message || 'An error occurred. Please try again.')
       }
     } finally {
       setLoading(false)

@@ -1,5 +1,5 @@
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
-import { api } from '../lib/api';
+import { supabase } from '../lib/supabase';
 
 interface UserProfile {
   id: string;
@@ -33,10 +33,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [hasActiveSubscription, setHasActiveSubscription] = useState(false);
   const [accessToken, setAccessToken] = useState<string | null>(null);
 
-  const fetchUserProfile = async () => {
+  const fetchUserProfile = async (userId: string) => {
     try {
-      const { user: profile } = await api.auth.getProfile();
-      return profile;
+      const { data, error } = await supabase
+        .from('user_profiles')
+        .select('*')
+        .eq('id', userId)
+        .maybeSingle();
+
+      if (error) throw error;
+      return data;
     } catch (error) {
       console.error('Error fetching profile:', error);
       return null;
@@ -55,25 +61,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     const initAuth = async () => {
-      const token = localStorage.getItem('accessToken');
+      const { data: { session } } = await supabase.auth.getSession();
 
-      if (token) {
-        setAccessToken(token);
-        try {
-          const profile = await fetchUserProfile();
-          if (profile) {
-            setUser(profile);
-            checkTrialStatus(profile);
-          } else {
-            localStorage.removeItem('accessToken');
-            localStorage.removeItem('refreshToken');
-            setAccessToken(null);
-          }
-        } catch (error) {
-          console.error('Auth initialization error:', error);
-          localStorage.removeItem('accessToken');
-          localStorage.removeItem('refreshToken');
-          setAccessToken(null);
+      if (session?.user) {
+        setAccessToken(session.access_token);
+        const profile = await fetchUserProfile(session.user.id);
+        if (profile) {
+          setUser(profile);
+          checkTrialStatus(profile);
         }
       }
 
@@ -81,19 +76,52 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     };
 
     initAuth();
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      (async () => {
+        if (session?.user) {
+          setAccessToken(session.access_token);
+          const profile = await fetchUserProfile(session.user.id);
+          if (profile) {
+            setUser(profile);
+            checkTrialStatus(profile);
+          }
+        } else {
+          setUser(null);
+          setAccessToken(null);
+          setIsTrialExpired(false);
+          setHasActiveSubscription(false);
+        }
+      })();
+    });
+
+    return () => subscription.unsubscribe();
   }, []);
 
   const signUp = async (email: string, password: string, businessName?: string) => {
     try {
-      const data = await api.auth.register(email, password, businessName);
+      const { data, error } = await supabase.auth.signUp({
+        email,
+        password,
+      });
 
-      const token = localStorage.getItem('accessToken');
-      setAccessToken(token);
+      if (error) throw error;
 
-      const profile = await fetchUserProfile();
-      if (profile) {
-        setUser(profile);
-        checkTrialStatus(profile);
+      if (data.user) {
+        await new Promise(resolve => setTimeout(resolve, 1000));
+
+        if (businessName) {
+          await supabase
+            .from('user_profiles')
+            .update({ business_name: businessName })
+            .eq('id', data.user.id);
+        }
+
+        const profile = await fetchUserProfile(data.user.id);
+        if (profile) {
+          setUser(profile);
+          checkTrialStatus(profile);
+        }
       }
     } catch (error: any) {
       throw new Error(error.message || 'Registration failed');
@@ -102,15 +130,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const signIn = async (email: string, password: string) => {
     try {
-      const data = await api.auth.login(email, password);
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
 
-      const token = localStorage.getItem('accessToken');
-      setAccessToken(token);
+      if (error) throw error;
 
-      const profile = await fetchUserProfile();
-      if (profile) {
-        setUser(profile);
-        checkTrialStatus(profile);
+      if (data.session) {
+        setAccessToken(data.session.access_token);
+        const profile = await fetchUserProfile(data.user.id);
+        if (profile) {
+          setUser(profile);
+          checkTrialStatus(profile);
+        }
       }
     } catch (error: any) {
       throw new Error(error.message || 'Login failed');
@@ -119,7 +152,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const signOut = async () => {
     try {
-      await api.auth.logout();
+      await supabase.auth.signOut();
     } catch (error) {
       console.error('Logout error:', error);
     } finally {
@@ -132,9 +165,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const updateProfile = async (data: any) => {
     try {
-      await api.auth.updateProfile(data);
+      if (!user) throw new Error('No user logged in');
 
-      const profile = await fetchUserProfile();
+      const { error } = await supabase
+        .from('user_profiles')
+        .update(data)
+        .eq('id', user.id);
+
+      if (error) throw error;
+
+      const profile = await fetchUserProfile(user.id);
       if (profile) {
         setUser(profile);
         checkTrialStatus(profile);
