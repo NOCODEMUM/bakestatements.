@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../hooks/useAuth'
 import { Crown, AlertCircle, CheckCircle, CreditCard, Calendar, ArrowLeft } from 'lucide-react'
 import { supabase } from '../lib/supabase'
+import { STRIPE_PAYMENT_LINKS, redirectToStripePayment } from '../lib/stripe'
 
 export default function SubscriptionManagement() {
   const navigate = useNavigate()
@@ -215,20 +216,74 @@ export default function SubscriptionManagement() {
             )}
 
             {!user?.subscription_tier && !isLifetime && (
-              <div className="bg-blue-50 border border-blue-200 rounded-lg p-6">
-                <div className="flex items-start space-x-3">
-                  <CheckCircle className="w-6 h-6 text-blue-600 mt-0.5" />
-                  <div className="flex-1">
-                    <h3 className="font-semibold text-blue-900 mb-2">Free Trial Active</h3>
-                    <p className="text-blue-800 mb-4">
-                      You're currently enjoying your 7-day free trial. Upgrade anytime to continue accessing all features after your trial ends.
-                    </p>
-                    <button
-                      onClick={() => navigate('/pricing')}
-                      className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors font-medium"
-                    >
-                      View Plans & Upgrade
-                    </button>
+              <div className="space-y-6">
+                <div className="bg-blue-50 border border-blue-200 rounded-lg p-6">
+                  <div className="flex items-start space-x-3">
+                    <CheckCircle className="w-6 h-6 text-blue-600 mt-0.5" />
+                    <div className="flex-1">
+                      <h3 className="font-semibold text-blue-900 mb-2">Free Trial Active</h3>
+                      <p className="text-blue-800 mb-4">
+                        You're currently enjoying your 7-day free trial. Choose a plan below to continue accessing all features after your trial ends.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="border-t border-gray-200 pt-6">
+                  <h3 className="font-semibold text-gray-800 mb-4">Choose Your Plan</h3>
+                  <div className="grid md:grid-cols-3 gap-4">
+                    <div className="border border-gray-200 rounded-lg p-4 hover:border-amber-500 transition-colors">
+                      <div className="text-center mb-3">
+                        <h4 className="font-semibold text-gray-800 mb-1">Monthly</h4>
+                        <div className="text-3xl font-bold text-amber-600 mb-1">$19</div>
+                        <p className="text-sm text-gray-600">per month</p>
+                      </div>
+                      <button
+                        onClick={() => redirectToStripePayment(STRIPE_PAYMENT_LINKS.monthly)}
+                        disabled={!STRIPE_PAYMENT_LINKS.monthly}
+                        className="w-full bg-amber-500 text-white py-2 rounded-lg hover:bg-amber-600 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        {STRIPE_PAYMENT_LINKS.monthly ? 'Subscribe Monthly' : 'Coming Soon'}
+                      </button>
+                    </div>
+
+                    <div className="border-2 border-teal-500 rounded-lg p-4 hover:border-teal-600 transition-colors relative">
+                      <div className="absolute -top-2 left-1/2 transform -translate-x-1/2 bg-teal-500 text-white px-3 py-1 rounded-full text-xs font-medium">
+                        BEST VALUE
+                      </div>
+                      <div className="text-center mb-3 mt-2">
+                        <h4 className="font-semibold text-gray-800 mb-1">Annual</h4>
+                        <div className="text-3xl font-bold text-teal-600 mb-1">$180</div>
+                        <p className="text-sm text-gray-600">per year</p>
+                        <p className="text-xs text-pink-600 font-semibold">Save $48!</p>
+                      </div>
+                      <button
+                        onClick={() => redirectToStripePayment(STRIPE_PAYMENT_LINKS.annual)}
+                        disabled={!STRIPE_PAYMENT_LINKS.annual}
+                        className="w-full bg-teal-600 text-white py-2 rounded-lg hover:bg-teal-700 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        {STRIPE_PAYMENT_LINKS.annual ? 'Subscribe Annual' : 'Coming Soon'}
+                      </button>
+                    </div>
+
+                    <div className="border border-pink-200 rounded-lg p-4 hover:border-pink-500 transition-colors bg-gradient-to-br from-pink-50 to-purple-50">
+                      <div className="text-center mb-3">
+                        <h4 className="font-semibold text-gray-800 mb-1 flex items-center justify-center">
+                          <Crown className="w-4 h-4 mr-1 text-pink-600" />
+                          Lifetime
+                        </h4>
+                        <div className="text-3xl font-bold text-pink-600 mb-1">$299</div>
+                        <p className="text-sm text-gray-600">one-time</p>
+                        <p className="text-xs text-purple-600 font-semibold">Limited offer!</p>
+                      </div>
+                      <button
+                        onClick={() => redirectToStripePayment(STRIPE_PAYMENT_LINKS.lifetime)}
+                        disabled={!STRIPE_PAYMENT_LINKS.lifetime}
+                        className="w-full bg-gradient-to-r from-pink-500 to-purple-500 text-white py-2 rounded-lg hover:from-pink-600 hover:to-purple-600 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        {STRIPE_PAYMENT_LINKS.lifetime ? 'Get Lifetime Access' : 'Coming Soon'}
+                      </button>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -283,17 +338,66 @@ export default function SubscriptionManagement() {
 
             {isCancelled && (
               <div className="border-t border-gray-200 pt-8">
-                <div className="bg-gray-50 rounded-lg p-6 text-center">
-                  <h3 className="font-semibold text-gray-800 mb-2">Subscription Cancelled</h3>
-                  <p className="text-gray-600 mb-4">
-                    We're sorry to see you go! You can reactivate your subscription anytime.
+                <div className="bg-gray-50 rounded-lg p-6">
+                  <h3 className="font-semibold text-gray-800 mb-2 text-center">Subscription Cancelled</h3>
+                  <p className="text-gray-600 mb-6 text-center">
+                    We're sorry to see you go! You can reactivate your subscription anytime by choosing a plan below.
                   </p>
-                  <button
-                    onClick={() => navigate('/pricing')}
-                    className="bg-gradient-to-r from-amber-500 to-teal-500 text-white px-8 py-3 rounded-lg hover:from-amber-600 hover:to-teal-600 transition-colors font-semibold"
-                  >
-                    Reactivate Subscription
-                  </button>
+
+                  <div className="grid md:grid-cols-3 gap-4">
+                    <div className="border border-gray-200 rounded-lg p-4 hover:border-amber-500 transition-colors bg-white">
+                      <div className="text-center mb-3">
+                        <h4 className="font-semibold text-gray-800 mb-1">Monthly</h4>
+                        <div className="text-3xl font-bold text-amber-600 mb-1">$19</div>
+                        <p className="text-sm text-gray-600">per month</p>
+                      </div>
+                      <button
+                        onClick={() => redirectToStripePayment(STRIPE_PAYMENT_LINKS.monthly)}
+                        disabled={!STRIPE_PAYMENT_LINKS.monthly}
+                        className="w-full bg-amber-500 text-white py-2 rounded-lg hover:bg-amber-600 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        {STRIPE_PAYMENT_LINKS.monthly ? 'Reactivate Monthly' : 'Coming Soon'}
+                      </button>
+                    </div>
+
+                    <div className="border-2 border-teal-500 rounded-lg p-4 hover:border-teal-600 transition-colors bg-white relative">
+                      <div className="absolute -top-2 left-1/2 transform -translate-x-1/2 bg-teal-500 text-white px-3 py-1 rounded-full text-xs font-medium">
+                        BEST VALUE
+                      </div>
+                      <div className="text-center mb-3 mt-2">
+                        <h4 className="font-semibold text-gray-800 mb-1">Annual</h4>
+                        <div className="text-3xl font-bold text-teal-600 mb-1">$180</div>
+                        <p className="text-sm text-gray-600">per year</p>
+                        <p className="text-xs text-pink-600 font-semibold">Save $48!</p>
+                      </div>
+                      <button
+                        onClick={() => redirectToStripePayment(STRIPE_PAYMENT_LINKS.annual)}
+                        disabled={!STRIPE_PAYMENT_LINKS.annual}
+                        className="w-full bg-teal-600 text-white py-2 rounded-lg hover:bg-teal-700 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        {STRIPE_PAYMENT_LINKS.annual ? 'Reactivate Annual' : 'Coming Soon'}
+                      </button>
+                    </div>
+
+                    <div className="border border-pink-200 rounded-lg p-4 hover:border-pink-500 transition-colors bg-gradient-to-br from-pink-50 to-purple-50">
+                      <div className="text-center mb-3">
+                        <h4 className="font-semibold text-gray-800 mb-1 flex items-center justify-center">
+                          <Crown className="w-4 h-4 mr-1 text-pink-600" />
+                          Lifetime
+                        </h4>
+                        <div className="text-3xl font-bold text-pink-600 mb-1">$299</div>
+                        <p className="text-sm text-gray-600">one-time</p>
+                        <p className="text-xs text-purple-600 font-semibold">Limited offer!</p>
+                      </div>
+                      <button
+                        onClick={() => redirectToStripePayment(STRIPE_PAYMENT_LINKS.lifetime)}
+                        disabled={!STRIPE_PAYMENT_LINKS.lifetime}
+                        className="w-full bg-gradient-to-r from-pink-500 to-purple-500 text-white py-2 rounded-lg hover:from-pink-600 hover:to-purple-600 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        {STRIPE_PAYMENT_LINKS.lifetime ? 'Get Lifetime Access' : 'Coming Soon'}
+                      </button>
+                    </div>
+                  </div>
                 </div>
               </div>
             )}

@@ -1,5 +1,5 @@
 import { X, Crown, Check } from 'lucide-react';
-import { STRIPE_PAYMENT_LINKS, redirectToStripePayment } from '../lib/stripe';
+import { useNavigate } from 'react-router-dom';
 
 interface PaywallModalProps {
   isOpen: boolean;
@@ -7,8 +7,10 @@ interface PaywallModalProps {
 }
 
 export default function PaywallModal({ isOpen, onClose }: PaywallModalProps) {
-  const handleSubscribe = (paymentLink: string) => {
-    redirectToStripePayment(paymentLink);
+  const navigate = useNavigate();
+
+  const handleSubscribe = () => {
+    navigate('/account/subscription');
   };
 
   if (!isOpen) return null;
@@ -57,11 +59,10 @@ export default function PaywallModal({ isOpen, onClose }: PaywallModalProps) {
               ))}
             </ul>
             <button
-              onClick={() => handleSubscribe(STRIPE_PAYMENT_LINKS.monthly)}
-              disabled={!STRIPE_PAYMENT_LINKS.monthly}
-              className="w-full bg-amber-500 text-white py-2 px-4 rounded-lg hover:bg-amber-600 transition-colors mt-4 font-medium disabled:opacity-50"
+              onClick={handleSubscribe}
+              className="w-full bg-amber-500 text-white py-2 px-4 rounded-lg hover:bg-amber-600 transition-colors mt-4 font-medium"
             >
-              {!STRIPE_PAYMENT_LINKS.monthly ? 'Coming Soon' : 'Choose Monthly'}
+              Choose Monthly
             </button>
           </div>
 
@@ -78,11 +79,10 @@ export default function PaywallModal({ isOpen, onClose }: PaywallModalProps) {
             </div>
             <p className="text-sm text-gray-600 mb-3">AUD per year (Save $48!)</p>
             <button
-              onClick={() => handleSubscribe(STRIPE_PAYMENT_LINKS.annual)}
-              disabled={!STRIPE_PAYMENT_LINKS.annual}
-              className="w-full bg-emerald-600 text-white py-2 px-4 rounded-lg hover:bg-emerald-700 transition-colors font-medium disabled:opacity-50"
+              onClick={handleSubscribe}
+              className="w-full bg-emerald-600 text-white py-2 px-4 rounded-lg hover:bg-emerald-700 transition-colors font-medium"
             >
-              {!STRIPE_PAYMENT_LINKS.annual ? 'Coming Soon' : 'Choose Annual'}
+              Choose Annual
             </button>
           </div>
 
@@ -96,11 +96,10 @@ export default function PaywallModal({ isOpen, onClose }: PaywallModalProps) {
             </div>
             <p className="text-sm text-gray-600 mb-3">One-time payment • First 50 users only</p>
             <button
-              onClick={() => handleSubscribe(STRIPE_PAYMENT_LINKS.lifetime)}
-              disabled={!STRIPE_PAYMENT_LINKS.lifetime}
-              className="w-full bg-purple-500 text-white py-2 px-4 rounded-lg hover:bg-purple-600 transition-colors font-medium disabled:opacity-50"
+              onClick={handleSubscribe}
+              className="w-full bg-purple-500 text-white py-2 px-4 rounded-lg hover:bg-purple-600 transition-colors font-medium"
             >
-              {!STRIPE_PAYMENT_LINKS.lifetime ? 'Coming Soon' : 'Get Lifetime Access'}
+              Get Lifetime Access
             </button>
           </div>
         </div>
