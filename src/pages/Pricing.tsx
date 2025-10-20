@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Check, ArrowLeft } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
 import { api } from '../lib/api';
-import { STRIPE_PRICES } from '../lib/stripe';
+import { STRIPE_PRICES, STRIPE_PAYMENT_LINKS } from '../lib/stripe';
 import PublicHeader from '../components/PublicHeader';
 import PublicFooter from '../components/PublicFooter';
 
@@ -90,10 +90,24 @@ export default function Pricing() {
             </ul>
 
             <button
-              onClick={() => window.location.href = 'https://buy.stripe.com/test_eVq4gz0SU0Ah3TO4oQgrS01'}
-              className="w-full bg-amber-500 text-white py-3 px-6 rounded-lg hover:bg-amber-600 transition-colors font-semibold"
+              onClick={() => {
+                if (STRIPE_PAYMENT_LINKS.monthly) {
+                  window.location.href = STRIPE_PAYMENT_LINKS.monthly;
+                } else {
+                  handleSubscribe(STRIPE_PRICES.monthly, 'subscription');
+                }
+              }}
+              disabled={!STRIPE_PAYMENT_LINKS.monthly && loading === STRIPE_PRICES.monthly}
+              className="w-full bg-amber-500 text-white py-3 px-6 rounded-lg hover:bg-amber-600 transition-colors font-semibold disabled:opacity-50"
             >
-              Start Monthly Plan
+              {!STRIPE_PAYMENT_LINKS.monthly && loading === STRIPE_PRICES.monthly ? (
+                <div className="flex items-center justify-center space-x-2">
+                  <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
+                  <span>Processing...</span>
+                </div>
+              ) : (
+                'Start Monthly Plan'
+              )}
             </button>
           </div>
 
