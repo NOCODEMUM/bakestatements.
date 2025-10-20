@@ -1,39 +1,21 @@
-import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Check, ArrowLeft } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
-import { api } from '../lib/api';
-import { STRIPE_PRICES, STRIPE_PAYMENT_LINKS } from '../lib/stripe';
+import { STRIPE_PAYMENT_LINKS, redirectToStripePayment } from '../lib/stripe';
 import PublicHeader from '../components/PublicHeader';
 import PublicFooter from '../components/PublicFooter';
 
 export default function Pricing() {
   const navigate = useNavigate();
   const { user } = useAuth();
-  const [loading, setLoading] = useState<string | null>(null);
 
-  const handleSubscribe = async (priceId: string, mode: string = 'subscription') => {
+  const handleSubscribe = (paymentLink: string) => {
     if (!user) {
       navigate('/auth');
       return;
     }
 
-    setLoading(priceId);
-
-    try {
-      const { url }: any = await api.stripe.createCheckout('', priceId, mode);
-
-      if (url) {
-        window.location.href = url;
-      } else {
-        throw new Error('Failed to get checkout URL');
-      }
-    } catch (error: any) {
-      console.error('Error:', error);
-      alert(`Something went wrong: ${error.message}. Please try again.`);
-    } finally {
-      setLoading(null);
-    }
+    redirectToStripePayment(paymentLink);
   };
 
   const features = [
@@ -90,24 +72,11 @@ export default function Pricing() {
             </ul>
 
             <button
-              onClick={() => {
-                if (STRIPE_PAYMENT_LINKS.monthly) {
-                  window.location.href = STRIPE_PAYMENT_LINKS.monthly;
-                } else {
-                  handleSubscribe(STRIPE_PRICES.monthly, 'subscription');
-                }
-              }}
-              disabled={!STRIPE_PAYMENT_LINKS.monthly && loading === STRIPE_PRICES.monthly}
+              onClick={() => handleSubscribe(STRIPE_PAYMENT_LINKS.monthly)}
+              disabled={!STRIPE_PAYMENT_LINKS.monthly}
               className="w-full bg-amber-500 text-white py-3 px-6 rounded-lg hover:bg-amber-600 transition-colors font-semibold disabled:opacity-50"
             >
-              {!STRIPE_PAYMENT_LINKS.monthly && loading === STRIPE_PRICES.monthly ? (
-                <div className="flex items-center justify-center space-x-2">
-                  <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
-                  <span>Processing...</span>
-                </div>
-              ) : (
-                'Start Monthly Plan'
-              )}
+              {!STRIPE_PAYMENT_LINKS.monthly ? 'Coming Soon' : 'Start Monthly Plan'}
             </button>
           </div>
 
@@ -138,18 +107,11 @@ export default function Pricing() {
             </ul>
 
             <button
-              onClick={() => handleSubscribe(STRIPE_PRICES.annual, 'subscription')}
-              disabled={loading === STRIPE_PRICES.annual}
+              onClick={() => handleSubscribe(STRIPE_PAYMENT_LINKS.annual)}
+              disabled={!STRIPE_PAYMENT_LINKS.annual}
               className="w-full bg-teal-600 text-white py-3 px-6 rounded-lg hover:bg-teal-700 transition-colors font-semibold disabled:opacity-50"
             >
-              {loading === STRIPE_PRICES.annual ? (
-                <div className="flex items-center justify-center space-x-2">
-                  <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
-                  <span>Processing...</span>
-                </div>
-              ) : (
-                'Start Annual Plan'
-              )}
+              {!STRIPE_PAYMENT_LINKS.annual ? 'Coming Soon' : 'Start Annual Plan'}
             </button>
           </div>
 
@@ -179,18 +141,11 @@ export default function Pricing() {
             </ul>
 
             <button
-              onClick={() => handleSubscribe(STRIPE_PRICES.lifetime, 'payment')}
-              disabled={loading === STRIPE_PRICES.lifetime}
+              onClick={() => handleSubscribe(STRIPE_PAYMENT_LINKS.lifetime)}
+              disabled={!STRIPE_PAYMENT_LINKS.lifetime}
               className="w-full bg-pink-600 text-white py-3 px-6 rounded-lg hover:bg-pink-700 transition-colors font-semibold disabled:opacity-50"
             >
-              {loading === STRIPE_PRICES.lifetime ? (
-                <div className="flex items-center justify-center space-x-2">
-                  <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
-                  <span>Processing...</span>
-                </div>
-              ) : (
-                'Get Lifetime Access'
-              )}
+              {!STRIPE_PAYMENT_LINKS.lifetime ? 'Coming Soon' : 'Get Lifetime Access'}
             </button>
           </div>
         </div>
