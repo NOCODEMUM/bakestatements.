@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { ChefHat, ArrowLeft, Mail } from 'lucide-react'
 import { Link } from 'react-router-dom'
-import { api } from '../lib/api'
+import { supabase } from '../lib/supabase'
 
 export default function ForgotPassword() {
   const [email, setEmail] = useState('')
@@ -15,9 +15,16 @@ export default function ForgotPassword() {
     setMessage('')
 
     try {
-      await api.auth.forgotPassword(email)
-      setIsSuccess(true)
-      setMessage('Check your email for a password reset link. The link will expire in 1 hour.')
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: `${window.location.origin}/reset-password`,
+      })
+
+      if (error) {
+        setMessage(error.message || 'An error occurred. Please try again.')
+      } else {
+        setIsSuccess(true)
+        setMessage('Check your email for a password reset link. The link will expire in 1 hour.')
+      }
     } catch (error: any) {
       setMessage(error.message || 'An error occurred. Please try again.')
     } finally {
@@ -51,7 +58,7 @@ export default function ForgotPassword() {
             <div className="w-16 h-16 bg-amber-100 rounded-2xl flex items-center justify-center mx-auto mb-6">
               <Mail className="w-8 h-8 text-amber-600" />
             </div>
-
+            
             <h1 className="text-2xl md:text-3xl font-bold text-gray-800 mb-2">
               Forgot Your Password?
             </h1>
@@ -92,12 +99,12 @@ export default function ForgotPassword() {
                 </div>
                 <h3 className="text-lg font-semibold text-green-800 mb-2">Reset Link Sent!</h3>
                 <p className="text-green-700">
-                  We've sent a password reset link to <strong>{email}</strong>.
+                  We've sent a password reset link to <strong>{email}</strong>. 
                   Check your email and click the link to reset your password.
                 </p>
               </div>
-
-              <Link
+              
+              <Link 
                 to="/auth"
                 className="inline-block bg-gray-100 text-gray-700 px-6 py-3 rounded-lg hover:bg-gray-200 transition-colors font-medium"
               >
