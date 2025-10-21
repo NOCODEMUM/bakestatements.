@@ -15,9 +15,9 @@ import { Success } from './pages/Success';
 import LandingPage from './pages/LandingPage'
 import AboutUs from './pages/AboutUs'
 import PrivacyTerms from './pages/PrivacyTerms'
-    )
-  }
 
+function AppContent() {
+  const { user, isTrialExpired, showPaywall, setShowPaywall } = useAuth()
 
   return (
     <Router>
@@ -77,6 +77,12 @@ import PrivacyTerms from './pages/PrivacyTerms'
           onClose={() => setShowPaywall(false)} 
         />
       )}
+    </Router>
+  )
+}
+
+function App() {
+  return (
     <AuthProvider>
       <Router>
         <Routes>
