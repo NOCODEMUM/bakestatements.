@@ -22,7 +22,6 @@ import ForgotPassword from './pages/ForgotPassword'
 import ResetPassword from './pages/ResetPassword'
 import MyLandingPage from './pages/MyLandingPage'
 import BakerLandingPage from './pages/BakerLandingPage'
-import SubscriptionManagement from './pages/SubscriptionManagement'
 import { useState, useEffect } from 'react'
 import { supabase } from './lib/supabase'
 
@@ -96,9 +95,6 @@ function AppContent() {
 
         {/* Baker Landing Pages - accessible to everyone */}
         <Route path="/baker/:slug" element={<BakerLandingPage />} />
-
-        {/* Subscription Management - accessible to everyone (Stripe cancel redirect) */}
-        <Route path="/account/subscription" element={<SubscriptionManagement />} />
 
         {/* Password Reset Flow - accessible to everyone */}
         <Route path="/forgot-password" element={<ForgotPassword />} />

@@ -1,6 +1,7 @@
 import { useNavigate } from 'react-router-dom';
 import { Check, ArrowLeft } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
+import { STRIPE_PAYMENT_LINKS, redirectToStripePayment } from '../lib/stripe';
 import PublicHeader from '../components/PublicHeader';
 import PublicFooter from '../components/PublicFooter';
 
@@ -8,13 +9,13 @@ export default function Pricing() {
   const navigate = useNavigate();
   const { user } = useAuth();
 
-  const handleSubscribe = () => {
+  const handleSubscribe = (paymentLink: string) => {
     if (!user) {
       navigate('/auth');
       return;
     }
 
-    navigate('/account/subscription');
+    redirectToStripePayment(paymentLink);
   };
 
   const features = [
@@ -71,10 +72,11 @@ export default function Pricing() {
             </ul>
 
             <button
-              onClick={handleSubscribe}
-              className="w-full bg-amber-500 text-white py-3 px-6 rounded-lg hover:bg-amber-600 transition-colors font-semibold"
+              onClick={() => handleSubscribe(STRIPE_PAYMENT_LINKS.monthly)}
+              disabled={!STRIPE_PAYMENT_LINKS.monthly}
+              className="w-full bg-amber-500 text-white py-3 px-6 rounded-lg hover:bg-amber-600 transition-colors font-semibold disabled:opacity-50"
             >
-              Start Monthly Plan
+              {!STRIPE_PAYMENT_LINKS.monthly ? 'Coming Soon' : 'Start Monthly Plan'}
             </button>
           </div>
 
@@ -105,10 +107,11 @@ export default function Pricing() {
             </ul>
 
             <button
-              onClick={handleSubscribe}
-              className="w-full bg-teal-600 text-white py-3 px-6 rounded-lg hover:bg-teal-700 transition-colors font-semibold"
+              onClick={() => handleSubscribe(STRIPE_PAYMENT_LINKS.annual)}
+              disabled={!STRIPE_PAYMENT_LINKS.annual}
+              className="w-full bg-teal-600 text-white py-3 px-6 rounded-lg hover:bg-teal-700 transition-colors font-semibold disabled:opacity-50"
             >
-              Start Annual Plan
+              {!STRIPE_PAYMENT_LINKS.annual ? 'Coming Soon' : 'Start Annual Plan'}
             </button>
           </div>
 
@@ -138,10 +141,11 @@ export default function Pricing() {
             </ul>
 
             <button
-              onClick={handleSubscribe}
-              className="w-full bg-pink-600 text-white py-3 px-6 rounded-lg hover:bg-pink-700 transition-colors font-semibold"
+              onClick={() => handleSubscribe(STRIPE_PAYMENT_LINKS.lifetime)}
+              disabled={!STRIPE_PAYMENT_LINKS.lifetime}
+              className="w-full bg-pink-600 text-white py-3 px-6 rounded-lg hover:bg-pink-700 transition-colors font-semibold disabled:opacity-50"
             >
-              Get Lifetime Access
+              {!STRIPE_PAYMENT_LINKS.lifetime ? 'Coming Soon' : 'Get Lifetime Access'}
             </button>
           </div>
         </div>
