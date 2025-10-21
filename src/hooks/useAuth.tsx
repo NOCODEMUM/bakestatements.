@@ -23,8 +23,6 @@ interface AuthContextType {
   isTrialExpired: boolean;
   hasActiveSubscription: boolean;
   updateProfile: (data: any) => Promise<void>;
-  showPaywall: boolean;
-  setShowPaywall: (show: boolean) => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -35,7 +33,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
   const [isTrialExpired, setIsTrialExpired] = useState(false);
   const [hasActiveSubscription, setHasActiveSubscription] = useState(false);
-  const [showPaywall, setShowPaywall] = useState(false);
 
   const fetchUserProfile = async (userId: string) => {
     const { data, error } = await supabase
@@ -184,8 +181,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         isTrialExpired,
         hasActiveSubscription,
         updateProfile,
-        showPaywall,
-        setShowPaywall,
       }}
     >
       {children}

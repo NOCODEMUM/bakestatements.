@@ -61,6 +61,18 @@ export default function Layout({ children }: LayoutProps) {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-teal-50 to-amber-50 dark:bg-gray-900">
+      {/* Trial Expired Banner */}
+      {isTrialExpired && (
+        <div className="bg-gradient-to-r from-amber-600 to-amber-700 text-white px-6 py-3 relative z-50">
+          <div className="flex items-center justify-center space-x-2">
+            <Crown className="w-5 h-5" />
+            <span className="font-medium">Your free trial has expired. Upgrade to continue using BakeStatements!</span>
+            <button className="bg-white text-amber-600 px-4 py-1 rounded-full text-sm font-medium hover:bg-gray-100 transition-colors">
+              Upgrade Now - $19/month
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Mobile Header */}
       <header className="md:hidden bg-white dark:bg-gray-800 shadow-sm border-b border-gray-200 dark:border-gray-700 px-4 py-3 flex items-center justify-between relative z-40">
@@ -149,7 +161,7 @@ export default function Layout({ children }: LayoutProps) {
               </div>
               <p className="font-medium text-gray-800 dark:text-gray-100 text-xs truncate">{user?.email}</p>
               <p className="text-xs text-gray-500 dark:text-gray-400">
-                {user?.subscription_status === 'active' || user?.subscription_status === 'lifetime' ? 'Active Subscriber' : 'Free Trial'}
+                {isTrialExpired ? 'Trial Expired' : 'Free Trial Active'}
               </p>
             </div>
             
