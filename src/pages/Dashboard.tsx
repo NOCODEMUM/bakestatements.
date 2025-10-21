@@ -150,7 +150,7 @@ export default function Dashboard() {
           title="New Enquiries"
           value={stats.newEnquiries}
           icon={Mail}
-          color="bg-purple-500"
+          color="bg-pink-500"
         />
       </div>
 
@@ -177,7 +177,7 @@ export default function Dashboard() {
                       <span className={`px-2 py-1 rounded-full text-xs font-medium ${
                         order.status === 'Confirmed' ? 'bg-green-100 text-green-800' :
                         order.status === 'Baking' ? 'bg-blue-100 text-blue-800' :
-                        order.status === 'Ready' ? 'bg-purple-100 text-purple-800' :
+                        order.status === 'Ready' ? 'bg-teal-100 text-teal-800' :
                         'bg-gray-100 text-gray-800'
                       }`}>
                         {order.status}

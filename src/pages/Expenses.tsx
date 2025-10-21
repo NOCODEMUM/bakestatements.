@@ -140,6 +140,48 @@ export default function Expenses() {
     window.URL.revokeObjectURL(url)
   }
 
+  const exportATOReport = () => {
+    const reportContent = `BakeStatements - ATO Tax Report
+Generated: ${format(new Date(), 'dd/MM/yyyy HH:mm')}
+
+EXPENSE SUMMARY BY ATO CATEGORY
+================================
+
+${ATO_CATEGORIES.map(category => {
+  const categoryTotal = categoryTotals[category]
+  const categoryExpenses = expenses.filter(e => e.category === category)
+
+  return `${category}
+Total: $${categoryTotal.toFixed(2)}
+Count: ${categoryExpenses.length} expense(s)
+
+${categoryExpenses.length > 0 ? categoryExpenses.map(e =>
+  `  ${format(new Date(e.date), 'dd/MM/yyyy')} - ${e.description} - $${e.amount.toFixed(2)}`
+).join('\n') : '  No expenses in this category'}
+
+`
+}).join('\n')}
+
+GRAND TOTAL
+===========
+Total Expenses: $${totalExpenses.toFixed(2)}
+Total Items: ${expenses.length}
+
+---
+This report is formatted for Australian Taxation Office (ATO) compliance.
+Please consult with your accountant for proper tax filing.`
+
+    const blob = new Blob([reportContent], { type: 'text/plain' })
+    const url = window.URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `bakestatements-ato-report-${format(new Date(), 'yyyy-MM-dd')}.txt`
+    document.body.appendChild(a)
+    a.click()
+    document.body.removeChild(a)
+    window.URL.revokeObjectURL(url)
+  }
+
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
@@ -156,6 +198,13 @@ export default function Expenses() {
           <p className="text-gray-600">ATO-compliant expense tracking for your bakery</p>
         </div>
         <div className="flex space-x-3">
+          <button
+            onClick={exportATOReport}
+            className="bg-teal-600 text-white px-4 py-2 rounded-lg hover:bg-teal-700 transition-colors flex items-center space-x-2"
+          >
+            <Receipt className="w-5 h-5" />
+            <span>ATO Report</span>
+          </button>
           <button
             onClick={exportToCSV}
             className="bg-emerald-600 text-white px-4 py-2 rounded-lg hover:bg-emerald-700 transition-colors flex items-center space-x-2"

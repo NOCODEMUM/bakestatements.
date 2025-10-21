@@ -171,7 +171,7 @@ export default function Settings() {
             <div>
               <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Account Status</h3>
               {user?.subscription_status === 'lifetime' ? (
-                <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200">
+                <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-200">
                   <Crown className="w-3 h-3 mr-1" />
                   Lifetime Member
                 </span>
@@ -202,7 +202,7 @@ export default function Settings() {
               <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Subscription Plan</h3>
               <p className="text-sm text-gray-600 dark:text-gray-400">
                 {user?.subscription_status === 'lifetime' ? (
-                  <span className="font-semibold text-purple-600 dark:text-purple-400">
+                  <span className="font-semibold text-amber-600 dark:text-amber-400">
                     Founder's Lifetime Access
                   </span>
                 ) : user?.subscription_tier === 'annual' ? (
@@ -239,7 +239,7 @@ export default function Settings() {
                   </p>
                   <button
                     onClick={() => navigate('/pricing')}
-                    className="w-full flex items-center justify-center space-x-2 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors text-sm font-medium"
+                    className="w-full flex items-center justify-center space-x-2 px-4 py-2 bg-pink-600 text-white rounded-lg hover:bg-pink-700 transition-colors text-sm font-medium"
                   >
                     <Crown className="w-4 h-4" />
                     <span>Upgrade to Lifetime</span>
@@ -260,7 +260,7 @@ export default function Settings() {
                   </button>
                   <button
                     onClick={() => navigate('/pricing')}
-                    className="w-full flex items-center justify-center space-x-2 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors text-sm font-medium"
+                    className="w-full flex items-center justify-center space-x-2 px-4 py-2 bg-pink-600 text-white rounded-lg hover:bg-pink-700 transition-colors text-sm font-medium"
                   >
                     <Crown className="w-4 h-4" />
                     <span>Get Lifetime Access</span>

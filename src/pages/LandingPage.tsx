@@ -228,7 +228,7 @@ export default function LandingPage() {
 
               {/* Customer Enquiries */}
               <div className="bg-white/80 backdrop-blur-sm border border-gray-200 rounded-2xl p-6 md:p-8 text-center hover:shadow-xl transition-all duration-300 hover:scale-105">
-                <div className="w-16 h-16 md:w-20 md:h-20 bg-purple-100 rounded-2xl flex items-center justify-center mx-auto mb-6 text-2xl md:text-3xl">
+                <div className="w-16 h-16 md:w-20 md:h-20 bg-rose-100 rounded-2xl flex items-center justify-center mx-auto mb-6 text-2xl md:text-3xl">
                   ✉️
                 </div>
                 <h3 className="text-xl md:text-2xl font-bold text-gray-800 mb-4">Customer Enquiry Forms</h3>
@@ -236,7 +236,7 @@ export default function LandingPage() {
                   Share your branded enquiry form and receive customer requests directly. 
                   No more missed emails or lost opportunities.
                 </p>
-                <div className="bg-purple-50 border border-purple-200 rounded-lg p-4 text-purple-700 font-semibold text-sm">
+                <div className="bg-rose-50 border border-rose-200 rounded-lg p-4 text-rose-700 font-semibold text-sm">
                   Streamline customer communication and capture every opportunity
                 </div>
               </div>
@@ -284,6 +284,38 @@ export default function LandingPage() {
                 </div>
                 
                 <ul className="space-y-3 mb-8">
+                  <li className="flex items-start space-x-2">
+                    <span className="text-green-500 mt-1">✓</span>
+                    <span className="text-gray-700">Unlimited orders & recipes</span>
+                  </li>
+                  <li className="flex items-start space-x-2">
+                    <span className="text-green-500 mt-1">✓</span>
+                    <span className="text-gray-700">ATO-ready expense tracking</span>
+                  </li>
+                  <li className="flex items-start space-x-2">
+                    <span className="text-green-500 mt-1">✓</span>
+                    <span className="text-gray-700">Professional invoicing with ABN</span>
+                  </li>
+                  <li className="flex items-start space-x-2">
+                    <span className="text-green-500 mt-1">✓</span>
+                    <span className="text-gray-700">Recipe costing calculator</span>
+                  </li>
+                  <li className="flex items-start space-x-2">
+                    <span className="text-green-500 mt-1">✓</span>
+                    <span className="text-gray-700">Customer enquiry forms</span>
+                  </li>
+                  <li className="flex items-start space-x-2">
+                    <span className="text-green-500 mt-1">✓</span>
+                    <span className="text-gray-700">Calendar & order tracking</span>
+                  </li>
+                  <li className="flex items-start space-x-2">
+                    <span className="text-green-500 mt-1">✓</span>
+                    <span className="text-gray-700">CSV/PDF exports</span>
+                  </li>
+                  <li className="flex items-start space-x-2">
+                    <span className="text-green-500 mt-1">✓</span>
+                    <span className="text-gray-700">Email support</span>
+                  </li>
                 </ul>
                 
                 <button
@@ -317,6 +349,38 @@ export default function LandingPage() {
                 </div>
                 
                 <ul className="space-y-3 mb-8">
+                  <li className="flex items-start space-x-2">
+                    <span className="text-green-500 mt-1">✓</span>
+                    <span className="text-gray-700">Unlimited orders & recipes</span>
+                  </li>
+                  <li className="flex items-start space-x-2">
+                    <span className="text-green-500 mt-1">✓</span>
+                    <span className="text-gray-700">ATO-ready expense tracking</span>
+                  </li>
+                  <li className="flex items-start space-x-2">
+                    <span className="text-green-500 mt-1">✓</span>
+                    <span className="text-gray-700">Professional invoicing with ABN</span>
+                  </li>
+                  <li className="flex items-start space-x-2">
+                    <span className="text-green-500 mt-1">✓</span>
+                    <span className="text-gray-700">Recipe costing calculator</span>
+                  </li>
+                  <li className="flex items-start space-x-2">
+                    <span className="text-green-500 mt-1">✓</span>
+                    <span className="text-gray-700">Customer enquiry forms</span>
+                  </li>
+                  <li className="flex items-start space-x-2">
+                    <span className="text-green-500 mt-1">✓</span>
+                    <span className="text-gray-700">Calendar & order tracking</span>
+                  </li>
+                  <li className="flex items-start space-x-2">
+                    <span className="text-green-500 mt-1">✓</span>
+                    <span className="text-gray-700">CSV/PDF exports</span>
+                  </li>
+                  <li className="flex items-start space-x-2">
+                    <span className="text-green-500 mt-1">✓</span>
+                    <span className="text-gray-700">Email support</span>
+                  </li>
                 </ul>
                 
                 <button
@@ -346,6 +410,38 @@ export default function LandingPage() {
                 </div>
                 
                 <ul className="space-y-3 mb-8">
+                  <li className="flex items-start space-x-2">
+                    <span className="text-green-500 mt-1">✓</span>
+                    <span className="text-gray-700">Unlimited orders & recipes</span>
+                  </li>
+                  <li className="flex items-start space-x-2">
+                    <span className="text-green-500 mt-1">✓</span>
+                    <span className="text-gray-700">ATO-ready expense tracking</span>
+                  </li>
+                  <li className="flex items-start space-x-2">
+                    <span className="text-green-500 mt-1">✓</span>
+                    <span className="text-gray-700">Professional invoicing with ABN</span>
+                  </li>
+                  <li className="flex items-start space-x-2">
+                    <span className="text-green-500 mt-1">✓</span>
+                    <span className="text-gray-700">Recipe costing calculator</span>
+                  </li>
+                  <li className="flex items-start space-x-2">
+                    <span className="text-green-500 mt-1">✓</span>
+                    <span className="text-gray-700">Customer enquiry forms</span>
+                  </li>
+                  <li className="flex items-start space-x-2">
+                    <span className="text-green-500 mt-1">✓</span>
+                    <span className="text-gray-700">Calendar & order tracking</span>
+                  </li>
+                  <li className="flex items-start space-x-2">
+                    <span className="text-green-500 mt-1">✓</span>
+                    <span className="text-gray-700">CSV/PDF exports</span>
+                  </li>
+                  <li className="flex items-start space-x-2">
+                    <span className="text-green-500 mt-1">✓</span>
+                    <span className="text-gray-700">Email support</span>
+                  </li>
                 </ul>
                 
                 <button

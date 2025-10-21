@@ -77,9 +77,11 @@ export default function Layout({ children }: LayoutProps) {
       {/* Mobile Header */}
       <header className="md:hidden bg-white dark:bg-gray-800 shadow-sm border-b border-gray-200 dark:border-gray-700 px-4 py-3 flex items-center justify-between relative z-40">
         <div className="flex items-center space-x-3">
-          <div className="bg-amber-50 dark:bg-amber-900/20 p-2 rounded-lg">
-            <ChefHat className="w-5 h-5 text-amber-500" />
-          </div>
+          <img
+            src="/20250821_1326_Baking Koala_remix_01k35afawhfm8tcpx1kf95gj8h.png"
+            alt="BakeStatements Koala"
+            className="w-10 h-10 rounded-lg object-cover"
+          />
           <div>
             <h1 className="text-lg font-bold text-gray-800 dark:text-gray-100">BakeStatements</h1>
           </div>
@@ -116,9 +118,11 @@ export default function Layout({ children }: LayoutProps) {
               <X className="w-5 h-5" />
             </button>
             <div className="flex items-center space-x-3">
-              <div className="bg-amber-50 dark:bg-amber-900/20 p-2 rounded-lg">
-                <ChefHat className="w-6 h-6 text-amber-500" />
-              </div>
+              <img
+                src="/20250821_1326_Baking Koala_remix_01k35afawhfm8tcpx1kf95gj8h.png"
+                alt="BakeStatements Koala"
+                className="w-12 h-12 rounded-lg object-cover"
+              />
               <div>
                 <h1 className="text-xl font-bold text-gray-800 dark:text-gray-100">BakeStatements</h1>
                 <p className="text-sm text-gray-500 dark:text-gray-400">Professional Bakery</p>
