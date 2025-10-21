@@ -1,5 +1,6 @@
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 import { supabase } from '../lib/supabase';
+import type { User as SupabaseUser } from '@supabase/supabase-js';
 
 interface UserProfile {
   id: string;
@@ -14,6 +15,7 @@ interface UserProfile {
 
 interface AuthContextType {
   user: UserProfile | null;
+  supabaseUser: SupabaseUser | null;
   loading: boolean;
   signUp: (email: string, password: string, businessName?: string) => Promise<void>;
   signIn: (email: string, password: string) => Promise<void>;
@@ -21,32 +23,33 @@ interface AuthContextType {
   isTrialExpired: boolean;
   hasActiveSubscription: boolean;
   updateProfile: (data: any) => Promise<void>;
-  accessToken: string | null;
+  showPaywall: boolean;
+  setShowPaywall: (show: boolean) => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<UserProfile | null>(null);
+  const [supabaseUser, setSupabaseUser] = useState<SupabaseUser | null>(null);
   const [loading, setLoading] = useState(true);
   const [isTrialExpired, setIsTrialExpired] = useState(false);
   const [hasActiveSubscription, setHasActiveSubscription] = useState(false);
-  const [accessToken, setAccessToken] = useState<string | null>(null);
+  const [showPaywall, setShowPaywall] = useState(false);
 
   const fetchUserProfile = async (userId: string) => {
-    try {
-      const { data, error } = await supabase
-        .from('user_profiles')
-        .select('*')
-        .eq('id', userId)
-        .maybeSingle();
+    const { data, error } = await supabase
+      .from('profiles')
+      .select('*')
+      .eq('id', userId)
+      .maybeSingle();
 
-      if (error) throw error;
-      return data;
-    } catch (error) {
+    if (error) {
       console.error('Error fetching profile:', error);
       return null;
     }
+
+    return data;
   };
 
   const checkTrialStatus = (userData: UserProfile) => {
@@ -60,27 +63,25 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   useEffect(() => {
-    const initAuth = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSupabaseUser(session?.user ?? null);
       if (session?.user) {
-        setAccessToken(session.access_token);
-        const profile = await fetchUserProfile(session.user.id);
-        if (profile) {
-          setUser(profile);
-          checkTrialStatus(profile);
-        }
+        fetchUserProfile(session.user.id).then((profile) => {
+          if (profile) {
+            setUser(profile);
+            checkTrialStatus(profile);
+          }
+          setLoading(false);
+        });
+      } else {
+        setLoading(false);
       }
-
-      setLoading(false);
-    };
-
-    initAuth();
+    });
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       (async () => {
+        setSupabaseUser(session?.user ?? null);
         if (session?.user) {
-          setAccessToken(session.access_token);
           const profile = await fetchUserProfile(session.user.id);
           if (profile) {
             setUser(profile);
@@ -88,7 +89,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           }
         } else {
           setUser(null);
-          setAccessToken(null);
           setIsTrialExpired(false);
           setHasActiveSubscription(false);
         }
@@ -99,88 +99,79 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const signUp = async (email: string, password: string, businessName?: string) => {
-    try {
-      const { data, error } = await supabase.auth.signUp({
-        email,
-        password,
-      });
+    const { data, error } = await supabase.auth.signUp({
+      email,
+      password,
+    });
 
-      if (error) throw error;
+    if (error) {
+      throw new Error(error.message);
+    }
 
-      if (data.user) {
-        await new Promise(resolve => setTimeout(resolve, 1000));
+    if (data.user) {
+      const { error: profileError } = await supabase
+        .from('profiles')
+        .insert({
+          id: data.user.id,
+          email: data.user.email!,
+          business_name: businessName || null,
+        });
 
-        if (businessName) {
-          await supabase
-            .from('user_profiles')
-            .update({ business_name: businessName })
-            .eq('id', data.user.id);
-        }
-
-        const profile = await fetchUserProfile(data.user.id);
-        if (profile) {
-          setUser(profile);
-          checkTrialStatus(profile);
-        }
+      if (profileError) {
+        console.error('Error creating profile:', profileError);
       }
-    } catch (error: any) {
-      throw new Error(error.message || 'Registration failed');
-    }
-  };
 
-  const signIn = async (email: string, password: string) => {
-    try {
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      });
-
-      if (error) throw error;
-
-      if (data.session) {
-        setAccessToken(data.session.access_token);
-        const profile = await fetchUserProfile(data.user.id);
-        if (profile) {
-          setUser(profile);
-          checkTrialStatus(profile);
-        }
-      }
-    } catch (error: any) {
-      throw new Error(error.message || 'Login failed');
-    }
-  };
-
-  const signOut = async () => {
-    try {
-      await supabase.auth.signOut();
-    } catch (error) {
-      console.error('Logout error:', error);
-    } finally {
-      setUser(null);
-      setAccessToken(null);
-      setIsTrialExpired(false);
-      setHasActiveSubscription(false);
-    }
-  };
-
-  const updateProfile = async (data: any) => {
-    try {
-      if (!user) throw new Error('No user logged in');
-
-      const { error } = await supabase
-        .from('user_profiles')
-        .update(data)
-        .eq('id', user.id);
-
-      if (error) throw error;
-
-      const profile = await fetchUserProfile(user.id);
+      const profile = await fetchUserProfile(data.user.id);
       if (profile) {
         setUser(profile);
         checkTrialStatus(profile);
       }
-    } catch (error: any) {
-      throw new Error(error.message || 'Profile update failed');
+    }
+  };
+
+  const signIn = async (email: string, password: string) => {
+    const { data, error } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    });
+
+    if (error) {
+      throw new Error(error.message);
+    }
+
+    if (data.user) {
+      const profile = await fetchUserProfile(data.user.id);
+      if (profile) {
+        setUser(profile);
+        checkTrialStatus(profile);
+      }
+    }
+  };
+
+  const signOut = async () => {
+    await supabase.auth.signOut();
+    setUser(null);
+    setSupabaseUser(null);
+    setIsTrialExpired(false);
+    setHasActiveSubscription(false);
+  };
+
+  const updateProfile = async (data: any) => {
+    if (!supabaseUser) throw new Error('Not authenticated');
+
+    const { error } = await supabase
+      .from('profiles')
+      .update(data)
+      .eq('id', supabaseUser.id);
+
+    if (error) {
+      throw new Error(error.message);
+    }
+
+    const profile = await fetchUserProfile(supabaseUser.id);
+    if (profile) {
+      setUser(profile);
+      checkTrialStatus(profile);
     }
   };
 
@@ -188,6 +179,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     <AuthContext.Provider
       value={{
         user,
+        supabaseUser,
         loading,
         signUp,
         signIn,
@@ -195,7 +187,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         isTrialExpired,
         hasActiveSubscription,
         updateProfile,
-        accessToken,
+        showPaywall,
+        setShowPaywall,
       }}
     >
       {children}
