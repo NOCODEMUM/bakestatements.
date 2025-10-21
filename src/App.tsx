@@ -73,14 +73,7 @@ function AppContent() {
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-amber-600"></div>
       </div>
     )
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import { ProtectedRoute } from './components/auth/ProtectedRoute';
-import { LoginPage } from './pages/LoginPage';
-import { SignupPage } from './pages/SignupPage';
-import { DashboardPage } from './pages/DashboardPage';
-import { PricingPage } from './pages/PricingPage';
-import { SuccessPage } from './pages/SuccessPage';
-
+  }
 
   return (
     <>
@@ -116,15 +109,24 @@ import { SuccessPage } from './pages/SuccessPage';
         {/* Protected Routes - for authenticated users */}
         <Route path="/*" element={
           user ? (
-        <Route path="/" element={<Navigate to="/dashboard" replace />} />
-        <Route path="/login" element={<LoginPage />} />
-        <Route path="/signup" element={<SignupPage />} />
-        <Route path="/pricing" element={<PricingPage />} />
-        <Route path="/success" element={<SuccessPage />} />
-        <Route path="/dashboard" element={
-          <ProtectedRoute>
-            <DashboardPage />
-          </ProtectedRoute>
+            <Layout>
+              <Routes>
+                <Route path="/" element={<Navigate to="/dashboard" replace />} />
+                <Route path="/dashboard" element={<Dashboard />} />
+                <Route path="/orders" element={<Orders />} />
+                <Route path="/calendar" element={<Calendar />} />
+                <Route path="/recipes" element={<Recipes />} />
+                <Route path="/invoices" element={<Invoices />} />
+                <Route path="/expenses" element={<Expenses />} />
+                <Route path="/equipment" element={<Equipment />} />
+                <Route path="/settings" element={<Settings />} />
+                <Route path="/enquiries" element={<Enquiries />} />
+                <Route path="/my-landing-page" element={<MyLandingPage />} />
+              </Routes>
+            </Layout>
+          ) : (
+            <Navigate to="/auth" replace />
+          )
         } />
       </Routes>
       
