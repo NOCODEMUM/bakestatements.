@@ -25,7 +25,18 @@ import Settings from './pages/Settings'
 import { Success } from './pages/Success'
 
 function AppContent() {
-  const { user, isTrialExpired, showPaywall, setShowPaywall } = useAuth()
+  const { user, isTrialExpired, showPaywall, setShowPaywall, loading } = useAuth()
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-teal-50 to-amber-50">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-16 w-16 border-b-4 border-amber-600 mx-auto mb-4"></div>
+          <p className="text-gray-600 font-medium">Loading BakeStatements...</p>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <Router>
@@ -44,30 +55,39 @@ function AppContent() {
 
         <Route path="/*" element={
           user ? (
-            <Layout>
-              <Routes>
-                <Route path="/" element={<Dashboard />} />
-                <Route path="/orders" element={<Orders />} />
-                <Route path="/calendar" element={<Calendar />} />
-                <Route path="/recipes" element={<Recipes />} />
-                <Route path="/equipment" element={<Equipment />} />
-                <Route path="/invoices" element={<Invoices />} />
-                <Route path="/expenses" element={<Expenses />} />
-                <Route path="/enquiries" element={<Enquiries />} />
-                <Route path="/my-landing-page" element={<MyLandingPage />} />
-                <Route path="/settings" element={<Settings />} />
-                <Route path="*" element={<Navigate to="/" replace />} />
-              </Routes>
-            </Layout>
+            isTrialExpired ? (
+              <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-teal-50 to-amber-50">
+                <PaywallModal
+                  isOpen={true}
+                  onClose={() => {}}
+                />
+              </div>
+            ) : (
+              <Layout>
+                <Routes>
+                  <Route path="/" element={<Dashboard />} />
+                  <Route path="/orders" element={<Orders />} />
+                  <Route path="/calendar" element={<Calendar />} />
+                  <Route path="/recipes" element={<Recipes />} />
+                  <Route path="/equipment" element={<Equipment />} />
+                  <Route path="/invoices" element={<Invoices />} />
+                  <Route path="/expenses" element={<Expenses />} />
+                  <Route path="/enquiries" element={<Enquiries />} />
+                  <Route path="/my-landing-page" element={<MyLandingPage />} />
+                  <Route path="/settings" element={<Settings />} />
+                  <Route path="*" element={<Navigate to="/" replace />} />
+                </Routes>
+              </Layout>
+            )
           ) : (
             <Navigate to="/landing" replace />
           )
         } />
       </Routes>
 
-      {user && (
+      {user && !isTrialExpired && showPaywall && (
         <PaywallModal
-          isOpen={isTrialExpired || showPaywall}
+          isOpen={showPaywall}
           onClose={() => setShowPaywall(false)}
         />
       )}

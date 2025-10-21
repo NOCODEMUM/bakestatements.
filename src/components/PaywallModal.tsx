@@ -10,7 +10,7 @@ interface PaywallModalProps {
 }
 
 export default function PaywallModal({ isOpen, onClose }: PaywallModalProps) {
-  const { user } = useAuth();
+  const { user, isTrialExpired } = useAuth();
   const [loading, setLoading] = useState<string | null>(null);
 
   const handleSubscribe = async (priceId: string, mode: string = 'subscription') => {
@@ -37,25 +37,41 @@ export default function PaywallModal({ isOpen, onClose }: PaywallModalProps) {
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-start justify-center z-50 p-4 overflow-y-auto">
-      <div className="bg-white rounded-2xl shadow-xl max-w-md w-full p-6 my-8 max-h-[calc(100vh-4rem)]">
+    <div
+      className="fixed inset-0 bg-black bg-opacity-50 flex items-start justify-center z-50 p-4 overflow-y-auto"
+      onClick={isTrialExpired ? undefined : onClose}
+    >
+      <div
+        className="bg-white rounded-2xl shadow-xl max-w-md w-full p-6 my-8 max-h-[calc(100vh-4rem)]"
+        onClick={(e) => e.stopPropagation()}
+      >
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center space-x-2">
             <Crown className="w-6 h-6 text-amber-600" />
-            <h2 className="text-xl font-bold text-gray-800">Upgrade Required</h2>
+            <h2 className="text-xl font-bold text-gray-800">{isTrialExpired ? 'Trial Expired' : 'Upgrade Required'}</h2>
           </div>
-          <button
-            onClick={onClose}
-            className="p-1 text-gray-400 hover:text-gray-600"
-          >
-            <X className="w-5 h-5" />
-          </button>
+          {!isTrialExpired && (
+            <button
+              onClick={onClose}
+              className="p-1 text-gray-400 hover:text-gray-600"
+            >
+              <X className="w-5 h-5" />
+            </button>
+          )}
         </div>
 
         <div className="text-center mb-6">
           <p className="text-gray-600 mb-4">
-            Your free trial has ended. Upgrade to continue managing your bakery with BakeStatements.
+            {isTrialExpired
+              ? 'Your free trial has ended. You must upgrade to continue managing your bakery with BakeStatements.'
+              : 'Upgrade to unlock premium features and continue managing your bakery with BakeStatements.'
+            }
           </p>
+          {isTrialExpired && (
+            <div className="bg-red-50 border border-red-200 rounded-lg p-3 text-sm text-red-800 font-medium">
+              Access blocked until subscription is active
+            </div>
+          )}
         </div>
 
         <div className="space-y-4 mb-6 overflow-y-auto max-h-[calc(100vh-20rem)]">
