@@ -85,7 +85,7 @@ Deno.serve(async (req: Request) => {
         .eq("id", user.id);
     }
 
-    const frontendUrl = Deno.env.get("FRONTEND_URL") || "http://localhost:5173";
+    const frontendUrl = Deno.env.get("FRONTEND_URL") || "https://bakestatements.com";
 
     const session = await stripe.checkout.sessions.create({
       customer: customerId,

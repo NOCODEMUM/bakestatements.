@@ -23,8 +23,6 @@ interface AuthContextType {
   isTrialExpired: boolean;
   hasActiveSubscription: boolean;
   updateProfile: (data: any) => Promise<void>;
-  showPaywall: boolean;
-  setShowPaywall: (show: boolean) => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -35,7 +33,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
   const [isTrialExpired, setIsTrialExpired] = useState(false);
   const [hasActiveSubscription, setHasActiveSubscription] = useState(false);
-  const [showPaywall, setShowPaywall] = useState(false);
 
   const fetchUserProfile = async (userId: string) => {
     const { data, error } = await supabase
@@ -71,28 +68,25 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             setUser(profile);
             checkTrialStatus(profile);
           }
-          setLoading(false);
         });
-      } else {
-        setLoading(false);
       }
+      setLoading(false);
     });
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      (async () => {
-        setSupabaseUser(session?.user ?? null);
-        if (session?.user) {
-          const profile = await fetchUserProfile(session.user.id);
+      setSupabaseUser(session?.user ?? null);
+      if (session?.user) {
+        fetchUserProfile(session.user.id).then((profile) => {
           if (profile) {
             setUser(profile);
             checkTrialStatus(profile);
           }
-        } else {
-          setUser(null);
-          setIsTrialExpired(false);
-          setHasActiveSubscription(false);
-        }
-      })();
+        });
+      } else {
+        setUser(null);
+        setIsTrialExpired(false);
+        setHasActiveSubscription(false);
+      }
     });
 
     return () => subscription.unsubscribe();
@@ -187,8 +181,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         isTrialExpired,
         hasActiveSubscription,
         updateProfile,
-        showPaywall,
-        setShowPaywall,
       }}
     >
       {children}

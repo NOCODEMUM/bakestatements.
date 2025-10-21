@@ -1,8 +1,5 @@
 import { X, Crown, Check } from 'lucide-react';
-import { useAuth } from '../hooks/useAuth';
-import { api } from '../lib/api';
-import { STRIPE_PRICES } from '../lib/stripe';
-import { useState } from 'react';
+import { STRIPE_PAYMENT_LINKS, redirectToStripePayment } from '../lib/stripe';
 
 interface PaywallModalProps {
   isOpen: boolean;
@@ -10,68 +7,32 @@ interface PaywallModalProps {
 }
 
 export default function PaywallModal({ isOpen, onClose }: PaywallModalProps) {
-  const { user, isTrialExpired } = useAuth();
-  const [loading, setLoading] = useState<string | null>(null);
-
-  const handleSubscribe = async (priceId: string, mode: string = 'subscription') => {
-    if (!user) return;
-
-    setLoading(priceId);
-
-    try {
-      const { url }: any = await api.stripe.createCheckout('', priceId, mode);
-
-      if (url) {
-        window.location.href = url;
-      } else {
-        throw new Error('Failed to get checkout URL');
-      }
-    } catch (error: any) {
-      console.error('Error:', error);
-      alert(`Something went wrong: ${error.message}. Please try again.`);
-    } finally {
-      setLoading(null);
-    }
+  const handleSubscribe = (paymentLink: string) => {
+    redirectToStripePayment(paymentLink);
   };
 
   if (!isOpen) return null;
 
   return (
-    <div
-      className="fixed inset-0 bg-black bg-opacity-50 flex items-start justify-center z-50 p-4 overflow-y-auto"
-      onClick={isTrialExpired ? undefined : onClose}
-    >
-      <div
-        className="bg-white rounded-2xl shadow-xl max-w-md w-full p-6 my-8 max-h-[calc(100vh-4rem)]"
-        onClick={(e) => e.stopPropagation()}
-      >
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-start justify-center z-50 p-4 overflow-y-auto">
+      <div className="bg-white rounded-2xl shadow-xl max-w-md w-full p-6 my-8 max-h-[calc(100vh-4rem)]">
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center space-x-2">
             <Crown className="w-6 h-6 text-amber-600" />
-            <h2 className="text-xl font-bold text-gray-800">{isTrialExpired ? 'Trial Expired' : 'Upgrade Required'}</h2>
+            <h2 className="text-xl font-bold text-gray-800">Upgrade Required</h2>
           </div>
-          {!isTrialExpired && (
-            <button
-              onClick={onClose}
-              className="p-1 text-gray-400 hover:text-gray-600"
-            >
-              <X className="w-5 h-5" />
-            </button>
-          )}
+          <button
+            onClick={onClose}
+            className="p-1 text-gray-400 hover:text-gray-600"
+          >
+            <X className="w-5 h-5" />
+          </button>
         </div>
 
         <div className="text-center mb-6">
           <p className="text-gray-600 mb-4">
-            {isTrialExpired
-              ? 'Your free trial has ended. You must upgrade to continue managing your bakery with BakeStatements.'
-              : 'Upgrade to unlock premium features and continue managing your bakery with BakeStatements.'
-            }
+            Your free trial has ended. Upgrade to continue managing your bakery with BakeStatements.
           </p>
-          {isTrialExpired && (
-            <div className="bg-red-50 border border-red-200 rounded-lg p-3 text-sm text-red-800 font-medium">
-              Access blocked until subscription is active
-            </div>
-          )}
         </div>
 
         <div className="space-y-4 mb-6 overflow-y-auto max-h-[calc(100vh-20rem)]">
@@ -96,18 +57,11 @@ export default function PaywallModal({ isOpen, onClose }: PaywallModalProps) {
               ))}
             </ul>
             <button
-              onClick={() => handleSubscribe(STRIPE_PRICES.monthly, 'subscription')}
-              disabled={loading === STRIPE_PRICES.monthly}
+              onClick={() => handleSubscribe(STRIPE_PAYMENT_LINKS.monthly)}
+              disabled={!STRIPE_PAYMENT_LINKS.monthly}
               className="w-full bg-amber-500 text-white py-2 px-4 rounded-lg hover:bg-amber-600 transition-colors mt-4 font-medium disabled:opacity-50"
             >
-              {loading === STRIPE_PRICES.monthly ? (
-                <div className="flex items-center justify-center space-x-2">
-                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                  <span>Processing...</span>
-                </div>
-              ) : (
-                'Choose Monthly'
-              )}
+              {!STRIPE_PAYMENT_LINKS.monthly ? 'Coming Soon' : 'Choose Monthly'}
             </button>
           </div>
 
@@ -124,18 +78,11 @@ export default function PaywallModal({ isOpen, onClose }: PaywallModalProps) {
             </div>
             <p className="text-sm text-gray-600 mb-3">AUD per year (Save $48!)</p>
             <button
-              onClick={() => handleSubscribe(STRIPE_PRICES.annual, 'subscription')}
-              disabled={loading === STRIPE_PRICES.annual}
+              onClick={() => handleSubscribe(STRIPE_PAYMENT_LINKS.annual)}
+              disabled={!STRIPE_PAYMENT_LINKS.annual}
               className="w-full bg-emerald-600 text-white py-2 px-4 rounded-lg hover:bg-emerald-700 transition-colors font-medium disabled:opacity-50"
             >
-              {loading === STRIPE_PRICES.annual ? (
-                <div className="flex items-center justify-center space-x-2">
-                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                  <span>Processing...</span>
-                </div>
-              ) : (
-                'Choose Annual'
-              )}
+              {!STRIPE_PAYMENT_LINKS.annual ? 'Coming Soon' : 'Choose Annual'}
             </button>
           </div>
 
@@ -149,18 +96,11 @@ export default function PaywallModal({ isOpen, onClose }: PaywallModalProps) {
             </div>
             <p className="text-sm text-gray-600 mb-3">One-time payment • First 50 users only</p>
             <button
-              onClick={() => handleSubscribe(STRIPE_PRICES.lifetime, 'payment')}
-              disabled={loading === STRIPE_PRICES.lifetime}
+              onClick={() => handleSubscribe(STRIPE_PAYMENT_LINKS.lifetime)}
+              disabled={!STRIPE_PAYMENT_LINKS.lifetime}
               className="w-full bg-purple-500 text-white py-2 px-4 rounded-lg hover:bg-purple-600 transition-colors font-medium disabled:opacity-50"
             >
-              {loading === STRIPE_PRICES.lifetime ? (
-                <div className="flex items-center justify-center space-x-2">
-                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                  <span>Processing...</span>
-                </div>
-              ) : (
-                'Get Lifetime Access'
-              )}
+              {!STRIPE_PAYMENT_LINKS.lifetime ? 'Coming Soon' : 'Get Lifetime Access'}
             </button>
           </div>
         </div>
