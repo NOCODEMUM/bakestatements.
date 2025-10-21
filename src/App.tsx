@@ -73,7 +73,13 @@ function AppContent() {
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-amber-600"></div>
       </div>
     )
-  }
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { ProtectedRoute } from './components/auth/ProtectedRoute';
+import { LoginPage } from './pages/LoginPage';
+import { SignupPage } from './pages/SignupPage';
+import { DashboardPage } from './pages/DashboardPage';
+import { PricingPage } from './pages/PricingPage';
+import { SuccessPage } from './pages/SuccessPage';
 
 
   return (
@@ -110,24 +116,15 @@ function AppContent() {
         {/* Protected Routes - for authenticated users */}
         <Route path="/*" element={
           user ? (
-            <Layout>
-              <Routes>
-                <Route path="/" element={<Dashboard />} />
-                <Route path="/orders" element={<Orders />} />
-                <Route path="/calendar" element={<Calendar />} />
-                <Route path="/recipes" element={<Recipes />} />
-                <Route path="/equipment" element={<Equipment />} />
-                <Route path="/invoices" element={<Invoices />} />
-                <Route path="/expenses" element={<Expenses />} />
-                <Route path="/enquiries" element={<Enquiries />} />
-                <Route path="/my-landing-page" element={<MyLandingPage />} />
-                <Route path="/settings" element={<Settings />} />
-                <Route path="*" element={<Navigate to="/" replace />} />
-              </Routes>
-            </Layout>
-          ) : (
-            <Navigate to="/landing" replace />
-          )
+        <Route path="/" element={<Navigate to="/dashboard" replace />} />
+        <Route path="/login" element={<LoginPage />} />
+        <Route path="/signup" element={<SignupPage />} />
+        <Route path="/pricing" element={<PricingPage />} />
+        <Route path="/success" element={<SuccessPage />} />
+        <Route path="/dashboard" element={
+          <ProtectedRoute>
+            <DashboardPage />
+          </ProtectedRoute>
         } />
       </Routes>
       

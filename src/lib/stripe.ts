@@ -1,15 +1,48 @@
-export const STRIPE_PAYMENT_LINKS = {
-  monthly: import.meta.env.VITE_STRIPE_PAYMENT_LINK_MONTHLY || '',
-  annual: import.meta.env.VITE_STRIPE_PAYMENT_LINK_ANNUAL || '',
-  lifetime: import.meta.env.VITE_STRIPE_PAYMENT_LINK_LIFETIME || ''
-};
+import { supabase } from './supabase';
 
-export const redirectToStripePayment = (link: string) => {
-  if (!link) {
-    console.error('Stripe payment link is not configured');
-    alert('Payment link not configured. Please contact support.');
-    return;
+interface CreateCheckoutSessionParams {
+  priceId: string;
+  mode: 'payment' | 'subscription';
+  successUrl: string;
+  cancelUrl: string;
+}
+
+export async function createCheckoutSession({
+  priceId,
+  mode,
+  successUrl,
+  cancelUrl,
+}: CreateCheckoutSessionParams) {
+  const { data: { session } } = await supabase.auth.getSession();
+  
+  if (!session) {
+    throw new Error('User not authenticated');
   }
 
-  window.location.replace(link);
-};
+  const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/stripe-checkout`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${session.access_token}`,
+    },
+    body: JSON.stringify({
+      price_id: priceId,
+      mode,
+      success_url: successUrl,
+      cancel_url: cancelUrl,
+    }),
+  });
+
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(error.error || 'Failed to create checkout session');
+  }
+
+  const { url } = await response.json();
+  
+  if (url) {
+    window.location.href = url;
+  } else {
+    throw new Error('No checkout URL received');
+  }
+}
