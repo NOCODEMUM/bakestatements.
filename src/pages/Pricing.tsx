@@ -90,10 +90,18 @@ export default function Pricing() {
             </ul>
 
             <button
-              onClick={() => window.location.href = 'https://buy.stripe.com/test_eVq4gz0SU0Ah3TO4oQgrS01'}
-              className="w-full bg-amber-500 text-white py-3 px-6 rounded-lg hover:bg-amber-600 transition-colors font-semibold"
+              onClick={() => handleSubscribe(STRIPE_PRICES.monthly, 'subscription')}
+              disabled={loading === STRIPE_PRICES.monthly}
+              className="w-full bg-amber-500 text-white py-3 px-6 rounded-lg hover:bg-amber-600 transition-colors font-semibold disabled:opacity-50"
             >
-              Start Monthly Plan
+              {loading === STRIPE_PRICES.monthly ? (
+                <div className="flex items-center justify-center space-x-2">
+                  <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
+                  <span>Processing...</span>
+                </div>
+              ) : (
+                'Start Monthly Plan'
+              )}
             </button>
           </div>
 
