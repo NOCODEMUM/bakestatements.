@@ -77,7 +77,7 @@ function AppContent() {
 
 
   return (
-    <Router>
+    <>
       <Routes>
         {/* Landing Page - accessible to everyone */}
         <Route path="/landing" element={<LandingPage />} />
@@ -151,7 +151,7 @@ function AppContent() {
           </div>
         </div>
       )}
-    </Router>
+    </>
   )
 }
 
@@ -159,7 +159,9 @@ export default function App() {
   return (
     <ThemeProvider>
       <AuthProvider>
-        <AppContent />
+        <Router>
+          <AppContent />
+        </Router>
       </AuthProvider>
     </ThemeProvider>
   )
