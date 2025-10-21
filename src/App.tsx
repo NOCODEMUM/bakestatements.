@@ -51,7 +51,7 @@ function AppContent() {
         <Route path="/reset-password" element={<ResetPassword />} />
         <Route path="/success" element={<Success />} />
 
-        <Route path="/auth" element={!user ? <Auth /> : <Navigate to="/" replace />} />
+        <Route path="/auth" element={<Auth />} />
 
         <Route path="/*" element={
           user ? (

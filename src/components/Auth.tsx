@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { Link, useSearchParams } from 'react-router-dom'
+import { Link, useSearchParams, useNavigate } from 'react-router-dom'
 import { useAuth } from '../hooks/useAuth'
 import { ChefHat, Eye, EyeOff } from 'lucide-react'
 
@@ -12,8 +12,9 @@ export default function Auth() {
   const [isSuccess, setIsSuccess] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
   const [isRedirecting, setIsRedirecting] = useState(false)
-  const { signUp, signIn } = useAuth()
+  const { signUp, signIn, user } = useAuth()
   const [searchParams] = useSearchParams()
+  const navigate = useNavigate()
 
   useEffect(() => {
     const urlMessage = searchParams.get('message')
@@ -23,6 +24,12 @@ export default function Auth() {
       setIsSignUp(false)
     }
   }, [searchParams])
+
+  useEffect(() => {
+    if (user && isRedirecting) {
+      navigate('/', { replace: true })
+    }
+  }, [user, isRedirecting, navigate])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()

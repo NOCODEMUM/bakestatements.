@@ -71,25 +71,28 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             setUser(profile);
             checkTrialStatus(profile);
           }
+          setLoading(false);
         });
+      } else {
+        setLoading(false);
       }
-      setLoading(false);
     });
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      setSupabaseUser(session?.user ?? null);
-      if (session?.user) {
-        fetchUserProfile(session.user.id).then((profile) => {
+      (async () => {
+        setSupabaseUser(session?.user ?? null);
+        if (session?.user) {
+          const profile = await fetchUserProfile(session.user.id);
           if (profile) {
             setUser(profile);
             checkTrialStatus(profile);
           }
-        });
-      } else {
-        setUser(null);
-        setIsTrialExpired(false);
-        setHasActiveSubscription(false);
-      }
+        } else {
+          setUser(null);
+          setIsTrialExpired(false);
+          setHasActiveSubscription(false);
+        }
+      })();
     });
 
     return () => subscription.unsubscribe();
