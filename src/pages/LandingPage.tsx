@@ -248,11 +248,41 @@ export default function LandingPage() {
                 </div>
                 <h3 className="text-xl md:text-2xl font-bold text-gray-800 mb-4">Visual Calendar View</h3>
                 <p className="text-gray-600 mb-6 leading-relaxed">
-                  See your entire baking schedule at a glance. Plan ahead, avoid overbooking, 
+                  See your entire baking schedule at a glance. Plan ahead, avoid overbooking,
                   and keep your kitchen organized.
                 </p>
                 <div className="bg-green-50 border border-green-200 rounded-lg p-4 text-green-700 font-semibold text-sm">
                   Never double-book again with clear visual planning tools
+                </div>
+              </div>
+
+              {/* Equipment Library */}
+              <div className="bg-white/80 backdrop-blur-sm border border-gray-200 rounded-2xl p-6 md:p-8 text-center hover:shadow-xl transition-all duration-300 hover:scale-105">
+                <div className="w-16 h-16 md:w-20 md:h-20 bg-orange-100 rounded-2xl flex items-center justify-center mx-auto mb-6 text-2xl md:text-3xl">
+                  🔧
+                </div>
+                <h3 className="text-xl md:text-2xl font-bold text-gray-800 mb-4">Equipment Library</h3>
+                <p className="text-gray-600 mb-6 leading-relaxed">
+                  Catalog all your baking tools, pans, and equipment with photos and details.
+                  Know what you have and plan purchases wisely.
+                </p>
+                <div className="bg-orange-50 border border-orange-200 rounded-lg p-4 text-orange-700 font-semibold text-sm">
+                  Keep track of your tools and never buy duplicates again
+                </div>
+              </div>
+
+              {/* Custom Landing Pages */}
+              <div className="bg-white/80 backdrop-blur-sm border border-gray-200 rounded-2xl p-6 md:p-8 text-center hover:shadow-xl transition-all duration-300 hover:scale-105">
+                <div className="w-16 h-16 md:w-20 md:h-20 bg-rose-100 rounded-2xl flex items-center justify-center mx-auto mb-6 text-2xl md:text-3xl">
+                  🌐
+                </div>
+                <h3 className="text-xl md:text-2xl font-bold text-gray-800 mb-4">Custom Landing Pages</h3>
+                <p className="text-gray-600 mb-6 leading-relaxed">
+                  Create your own branded website with custom URL, showcase your products,
+                  and attract new customers with a professional online presence.
+                </p>
+                <div className="bg-rose-50 border border-rose-200 rounded-lg p-4 text-rose-700 font-semibold text-sm">
+                  Build your bakery brand with a beautiful custom website
                 </div>
               </div>
             </div>

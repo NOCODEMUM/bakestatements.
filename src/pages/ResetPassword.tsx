@@ -1,7 +1,7 @@
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { useNavigate, useSearchParams, Link } from 'react-router-dom'
 import { ChefHat, Lock, Eye, EyeOff } from 'lucide-react'
-import { supabase } from '../lib/supabase'
+import { api } from '../lib/api'
 
 export default function ResetPassword() {
   const [password, setPassword] = useState('')
@@ -12,17 +12,8 @@ export default function ResetPassword() {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
   const [searchParams] = useSearchParams()
   const navigate = useNavigate()
-  const [isValidSession, setIsValidSession] = useState(false)
 
-  useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (session) {
-        setIsValidSession(true)
-      } else {
-        setMessage('Invalid reset link. Please request a new password reset.')
-      }
-    })
-  }, [searchParams])
+  const token = searchParams.get('token')
 
   const validatePassword = (password: string) => {
     if (password.length < 8) {
@@ -42,7 +33,7 @@ export default function ResetPassword() {
     setLoading(true)
     setMessage('')
 
-    if (!isValidSession) {
+    if (!token) {
       setMessage('Invalid reset link. Please request a new password reset.')
       setLoading(false)
       return
@@ -62,21 +53,14 @@ export default function ResetPassword() {
     }
 
     try {
-      const { error } = await supabase.auth.updateUser({
-        password: password
-      })
-
-      if (error) {
-        if (error.message.includes('expired') || error.message.includes('invalid')) {
-          setMessage('Link expired, request a new one')
-        } else {
-          setMessage(error.message || 'An error occurred. Please try again.')
-        }
-      } else {
-        navigate('/auth?message=password_updated')
-      }
+      await api.auth.resetPassword(token, password)
+      navigate('/auth?message=password_updated')
     } catch (error: any) {
-      setMessage(error.message || 'An error occurred. Please try again.')
+      if (error.message.includes('expired') || error.message.includes('invalid')) {
+        setMessage('Link expired, request a new one')
+      } else {
+        setMessage(error.message || 'An error occurred. Please try again.')
+      }
     } finally {
       setLoading(false)
     }
@@ -107,7 +91,7 @@ export default function ResetPassword() {
             <div className="w-16 h-16 bg-amber-100 rounded-2xl flex items-center justify-center mx-auto mb-6">
               <Lock className="w-8 h-8 text-amber-600" />
             </div>
-            
+
             <h1 className="text-2xl md:text-3xl font-bold text-gray-800 mb-2">
               Reset Your Password
             </h1>
@@ -178,14 +162,14 @@ export default function ResetPassword() {
           {/* Message */}
           {message && (
             <div className={`mt-6 p-4 rounded-lg text-sm ${
-              message.includes('Link expired') 
-                ? 'bg-red-50 border border-red-200 text-red-800' 
+              message.includes('Link expired')
+                ? 'bg-red-50 border border-red-200 text-red-800'
                 : 'bg-red-50 border border-red-200 text-red-800'
             }`}>
               {message}
               {message.includes('Link expired') && (
                 <div className="mt-3">
-                  <Link 
+                  <Link
                     to="/forgot-password"
                     className="inline-block bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition-colors text-sm font-medium"
                   >
