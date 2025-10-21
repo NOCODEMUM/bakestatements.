@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { Link, useSearchParams } from 'react-router-dom'
+import { Link, useSearchParams, useNavigate } from 'react-router-dom'
 import { useAuth } from '../hooks/useAuth'
 import { ChefHat, Eye, EyeOff } from 'lucide-react'
 
@@ -13,6 +13,7 @@ export default function Auth() {
   const [showPassword, setShowPassword] = useState(false)
   const { signUp, signIn } = useAuth()
   const [searchParams] = useSearchParams()
+  const navigate = useNavigate()
 
   useEffect(() => {
     const urlMessage = searchParams.get('message')
@@ -37,6 +38,7 @@ export default function Auth() {
         setIsSignUp(false)
       } else {
         await signIn(email, password)
+        navigate('/')
       }
     } catch (error: any) {
       console.error('Auth error:', error)
