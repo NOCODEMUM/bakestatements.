@@ -1,7 +1,7 @@
 import React from 'react';
 import { PricingPlans } from '../components/PricingPlans';
 import { SubscriptionStatus } from '../components/SubscriptionStatus';
-import { useAuth } from '../contexts/AuthContext';
+import { useAuth } from '../hooks/useAuth';
 
 export const Pricing: React.FC = () => {
   const { user } = useAuth();

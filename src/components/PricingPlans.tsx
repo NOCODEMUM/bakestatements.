@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Check, Zap, Crown, Infinity } from 'lucide-react';
 import { STRIPE_PRODUCTS, formatPrice } from '../stripe-config';
 import { supabase } from '../lib/supabase';
-import { useAuth } from '../contexts/AuthContext';
+import { useAuth } from '../hooks/useAuth';
 
 export const PricingPlans: React.FC = () => {
   const { user } = useAuth();

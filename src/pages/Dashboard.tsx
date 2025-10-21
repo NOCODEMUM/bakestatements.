@@ -1,9 +1,8 @@
 import React from 'react'
 import { SubscriptionStatus } from '../components/stripe/SubscriptionStatus'
-import { useAuth } from '../components/auth/AuthProvider'
+import { useAuth } from '../hooks/useAuth'
 import { signOut } from '../lib/auth'
 import { PlusCircle, DollarSign, FileText, ChefHat, CreditCard } from 'lucide-react';
-import { SubscriptionStatus } from '../components/SubscriptionStatus';
 
 export const Dashboard: React.FC = () => {
   const { user } = useAuth()
