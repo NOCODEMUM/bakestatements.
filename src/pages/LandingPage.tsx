@@ -1,11 +1,9 @@
 import React, { useState } from 'react'
-import { STRIPE_PRICES } from '../lib/stripe'
 import { Menu, X, Check, ChefHat } from 'lucide-react'
 import PublicFooter from '../components/PublicFooter'
 import './LandingPage.css'
 
 export default function LandingPage() {
-  const [loading, setLoading] = useState<string | null>(null)
   const [mailingEmail, setMailingEmail] = useState('')
   const [mailingSubmitted, setMailingSubmitted] = useState(false)
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
@@ -15,10 +13,10 @@ export default function LandingPage() {
     if (element) {
       element.scrollIntoView({ behavior: 'smooth' })
     }
-    setMobileMenuOpen(false) // Close mobile menu after navigation
+    setMobileMenuOpen(false)
   }
 
-  const handleSubscribe = async (priceId: string, mode: string = 'subscription') => {
+  const handleSubscribe = () => {
     window.location.href = '/auth';
   }
   const handleMailingSubmit = async (e: React.FormEvent) => {
@@ -287,18 +285,10 @@ export default function LandingPage() {
                 </ul>
                 
                 <button
-                  onClick={() => handleSubscribe('price_1RyA4CHruLrtRCwiXi8uqRWn', 'subscription')}
-                  disabled={loading === STRIPE_PRICES.monthly}
-                  className="w-full bg-amber-500 text-white py-3 md:py-4 rounded-lg font-bold text-lg hover:bg-amber-600 transition-colors disabled:opacity-50"
+                  onClick={handleSubscribe}
+                  className="w-full bg-amber-500 text-white py-3 md:py-4 rounded-lg font-bold text-lg hover:bg-amber-600 transition-colors"
                 >
-                  {loading === 'price_1RyA4CHruLrtRCwiXi8uqRWn' ? (
-                    <div className="flex items-center justify-center space-x-2">
-                      <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
-                      <span>Processing...</span>
-                    </div>
-                  ) : (
-                    'Start Monthly Plan'
-                  )}
+                  Start Monthly Plan
                 </button>
               </div>
               
@@ -320,18 +310,10 @@ export default function LandingPage() {
                 </ul>
                 
                 <button
-                  onClick={() => handleSubscribe('price_1RyA4CHruLrtRCwiZJlqpEt1', 'subscription')}
-                  disabled={loading === STRIPE_PRICES.annual}
-                  className="w-full bg-teal-600 text-white py-3 md:py-4 rounded-lg font-bold text-lg hover:bg-teal-700 transition-colors disabled:opacity-50"
+                  onClick={handleSubscribe}
+                  className="w-full bg-teal-600 text-white py-3 md:py-4 rounded-lg font-bold text-lg hover:bg-teal-700 transition-colors"
                 >
-                  {loading === 'price_1RyA4CHruLrtRCwiZJlqpEt1' ? (
-                    <div className="flex items-center justify-center space-x-2">
-                      <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
-                      <span>Processing...</span>
-                    </div>
-                  ) : (
-                    'Start Annual Plan'
-                  )}
+                  Start Annual Plan
                 </button>
               </div>
               
@@ -349,18 +331,10 @@ export default function LandingPage() {
                 </ul>
                 
                 <button
-                  onClick={() => handleSubscribe('price_1RyA4CHruLrtRCwi7inxZ3l2', 'payment')}
-                  disabled={loading === STRIPE_PRICES.lifetime}
-                  className="w-full bg-pink-600 text-white py-3 md:py-4 rounded-lg font-bold text-lg hover:bg-pink-700 transition-colors disabled:opacity-50"
+                  onClick={handleSubscribe}
+                  className="w-full bg-pink-600 text-white py-3 md:py-4 rounded-lg font-bold text-lg hover:bg-pink-700 transition-colors"
                 >
-                  {loading === 'price_1RyA4CHruLrtRCwi7inxZ3l2' ? (
-                    <div className="flex items-center justify-center space-x-2">
-                      <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
-                      <span>Processing...</span>
-                    </div>
-                  ) : (
-                    'Get Lifetime Access'
-                  )}
+                  Get Lifetime Access
                 </button>
               </div>
             </div>
