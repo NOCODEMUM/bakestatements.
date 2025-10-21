@@ -2,7 +2,8 @@ import React from 'react'
 import { SubscriptionStatus } from '../components/stripe/SubscriptionStatus'
 import { useAuth } from '../components/auth/AuthProvider'
 import { signOut } from '../lib/auth'
-import { Button } from '../components/ui/Button'
+import { PlusCircle, DollarSign, FileText, ChefHat, CreditCard } from 'lucide-react';
+import { SubscriptionStatus } from '../components/SubscriptionStatus';
 
 export const Dashboard: React.FC = () => {
   const { user } = useAuth()
@@ -42,6 +43,10 @@ export const Dashboard: React.FC = () => {
         </div>
       </div>
 
+      <div className="mb-8">
+        <SubscriptionStatus />
+      </div>
+
       <div className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
         <div className="px-4 py-6 sm:px-0">
           <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
@@ -74,6 +79,19 @@ export const Dashboard: React.FC = () => {
             </div>
           </div>
         </div>
+
+        <Link
+          to="/pricing"
+          className="bg-gradient-to-br from-pink-50 to-purple-50 p-6 rounded-lg shadow-md hover:shadow-lg transition-shadow group border-2 border-pink-200"
+        >
+          <div className="flex items-center mb-4">
+            <CreditCard className="h-8 w-8 text-pink-600 group-hover:text-pink-700 mr-3" />
+            <h3 className="text-lg font-semibold text-gray-900">Subscription</h3>
+          </div>
+          <p className="text-gray-600">
+            Manage your subscription plan and billing details.
+          </p>
+        </Link>
       </div>
     </div>
   )

@@ -1,5 +1,11 @@
 import { supabase } from './supabase'
 
+export const STRIPE_PRICES = {
+  monthly: import.meta.env.VITE_STRIPE_PRICE_MONTHLY || '',
+  annual: import.meta.env.VITE_STRIPE_PRICE_ANNUAL || '',
+  lifetime: import.meta.env.VITE_STRIPE_PRICE_LIFETIME || ''
+}
+
 export interface CheckoutSessionRequest {
   price_id: string
   success_url: string
