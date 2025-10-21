@@ -423,8 +423,12 @@ export const api = {
 
   stripe: {
     createCheckout: async (_token: string, priceId: string, mode: string = 'subscription') => {
+      const { data: { session } } = await supabase.auth.getSession();
       const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error('Not authenticated');
+
+      if (!user || !session?.access_token) {
+        throw new Error('Not authenticated');
+      }
 
       const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
       const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
@@ -433,13 +437,10 @@ export const api = {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${supabaseAnonKey}`,
+          'Authorization': `Bearer ${session.access_token}`,
+          'apikey': supabaseAnonKey,
         },
-        body: JSON.stringify({
-          priceId,
-          mode,
-          userId: user.id,
-        }),
+        body: JSON.stringify({ priceId, mode }),
       });
 
       if (!response.ok) {
@@ -447,8 +448,7 @@ export const api = {
         throw new Error(error.message || 'Failed to create checkout session');
       }
 
-      const data = await response.json();
-      return data;
+      return response.json();
     },
 
     getSubscriptionStatus: async (_token: string) => {
