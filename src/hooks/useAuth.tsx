@@ -1,5 +1,6 @@
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
-import { api } from '../lib/api';
+import { supabase } from '../lib/supabase';
+import type { User as SupabaseUser } from '@supabase/supabase-js';
 
 interface UserProfile {
   id: string;
@@ -14,6 +15,7 @@ interface UserProfile {
 
 interface AuthContextType {
   user: UserProfile | null;
+  supabaseUser: SupabaseUser | null;
   loading: boolean;
   signUp: (email: string, password: string, businessName?: string) => Promise<void>;
   signIn: (email: string, password: string) => Promise<void>;
@@ -21,26 +23,30 @@ interface AuthContextType {
   isTrialExpired: boolean;
   hasActiveSubscription: boolean;
   updateProfile: (data: any) => Promise<void>;
-  accessToken: string | null;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<UserProfile | null>(null);
+  const [supabaseUser, setSupabaseUser] = useState<SupabaseUser | null>(null);
   const [loading, setLoading] = useState(true);
   const [isTrialExpired, setIsTrialExpired] = useState(false);
   const [hasActiveSubscription, setHasActiveSubscription] = useState(false);
-  const [accessToken, setAccessToken] = useState<string | null>(null);
 
-  const fetchUserProfile = async () => {
-    try {
-      const { user: profile } = await api.auth.getProfile();
-      return profile;
-    } catch (error) {
+  const fetchUserProfile = async (userId: string) => {
+    const { data, error } = await supabase
+      .from('profiles')
+      .select('*')
+      .eq('id', userId)
+      .maybeSingle();
+
+    if (error) {
       console.error('Error fetching profile:', error);
       return null;
     }
+
+    return data;
   };
 
   const checkTrialStatus = (userData: UserProfile) => {
@@ -54,93 +60,112 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   useEffect(() => {
-    const initAuth = async () => {
-      const token = localStorage.getItem('accessToken');
-
-      if (token) {
-        setAccessToken(token);
-        try {
-          const profile = await fetchUserProfile();
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSupabaseUser(session?.user ?? null);
+      if (session?.user) {
+        fetchUserProfile(session.user.id).then((profile) => {
           if (profile) {
             setUser(profile);
             checkTrialStatus(profile);
-          } else {
-            localStorage.removeItem('accessToken');
-            localStorage.removeItem('refreshToken');
-            setAccessToken(null);
           }
-        } catch (error) {
-          console.error('Auth initialization error:', error);
-          localStorage.removeItem('accessToken');
-          localStorage.removeItem('refreshToken');
-          setAccessToken(null);
-        }
+        });
       }
-
       setLoading(false);
-    };
+    });
 
-    initAuth();
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setSupabaseUser(session?.user ?? null);
+      if (session?.user) {
+        fetchUserProfile(session.user.id).then((profile) => {
+          if (profile) {
+            setUser(profile);
+            checkTrialStatus(profile);
+          }
+        });
+      } else {
+        setUser(null);
+        setIsTrialExpired(false);
+        setHasActiveSubscription(false);
+      }
+    });
+
+    return () => subscription.unsubscribe();
   }, []);
 
   const signUp = async (email: string, password: string, businessName?: string) => {
-    try {
-      const data = await api.auth.register(email, password, businessName);
+    const { data, error } = await supabase.auth.signUp({
+      email,
+      password,
+    });
 
-      const token = localStorage.getItem('accessToken');
-      setAccessToken(token);
+    if (error) {
+      throw new Error(error.message);
+    }
 
-      const profile = await fetchUserProfile();
+    if (data.user) {
+      const { error: profileError } = await supabase
+        .from('profiles')
+        .insert({
+          id: data.user.id,
+          email: data.user.email!,
+          business_name: businessName || null,
+        });
+
+      if (profileError) {
+        console.error('Error creating profile:', profileError);
+      }
+
+      const profile = await fetchUserProfile(data.user.id);
       if (profile) {
         setUser(profile);
         checkTrialStatus(profile);
       }
-    } catch (error: any) {
-      throw new Error(error.message || 'Registration failed');
     }
   };
 
   const signIn = async (email: string, password: string) => {
-    try {
-      const data = await api.auth.login(email, password);
+    const { data, error } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    });
 
-      const token = localStorage.getItem('accessToken');
-      setAccessToken(token);
+    if (error) {
+      throw new Error(error.message);
+    }
 
-      const profile = await fetchUserProfile();
+    if (data.user) {
+      const profile = await fetchUserProfile(data.user.id);
       if (profile) {
         setUser(profile);
         checkTrialStatus(profile);
       }
-    } catch (error: any) {
-      throw new Error(error.message || 'Login failed');
     }
   };
 
   const signOut = async () => {
-    try {
-      await api.auth.logout();
-    } catch (error) {
-      console.error('Logout error:', error);
-    } finally {
-      setUser(null);
-      setAccessToken(null);
-      setIsTrialExpired(false);
-      setHasActiveSubscription(false);
-    }
+    await supabase.auth.signOut();
+    setUser(null);
+    setSupabaseUser(null);
+    setIsTrialExpired(false);
+    setHasActiveSubscription(false);
   };
 
   const updateProfile = async (data: any) => {
-    try {
-      await api.auth.updateProfile(data);
+    if (!supabaseUser) throw new Error('Not authenticated');
 
-      const profile = await fetchUserProfile();
-      if (profile) {
-        setUser(profile);
-        checkTrialStatus(profile);
-      }
-    } catch (error: any) {
-      throw new Error(error.message || 'Profile update failed');
+    const { error } = await supabase
+      .from('profiles')
+      .update(data)
+      .eq('id', supabaseUser.id);
+
+    if (error) {
+      throw new Error(error.message);
+    }
+
+    const profile = await fetchUserProfile(supabaseUser.id);
+    if (profile) {
+      setUser(profile);
+      checkTrialStatus(profile);
     }
   };
 
@@ -148,6 +173,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     <AuthContext.Provider
       value={{
         user,
+        supabaseUser,
         loading,
         signUp,
         signIn,
@@ -155,7 +181,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         isTrialExpired,
         hasActiveSubscription,
         updateProfile,
-        accessToken,
       }}
     >
       {children}
