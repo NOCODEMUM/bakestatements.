@@ -1,26 +1,23 @@
-import React from 'react'
-import { ProductCard } from '../components/stripe/ProductCard'
-import { stripeProducts } from '../stripe-config'
+import React from 'react';
+import { PricingPlans } from '../components/PricingPlans';
+import { SubscriptionStatus } from '../components/SubscriptionStatus';
+import { useAuth } from '../contexts/AuthContext';
 
 export const Pricing: React.FC = () => {
+  const { user } = useAuth();
+
   return (
-    <div className="min-h-screen bg-gray-50 py-12">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center">
-          <h2 className="text-3xl font-extrabold text-gray-900 sm:text-4xl">
-            Choose Your Plan
-          </h2>
-          <p className="mt-4 text-lg text-gray-600">
-            Get started with BakeStatements and simplify your bakery finances
-          </p>
-        </div>
+    <div className="min-h-screen bg-gray-50">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        {user && (
+          <div className="mb-8">
+            <h2 className="text-2xl font-bold text-gray-900 mb-4">Your Subscription</h2>
+            <SubscriptionStatus />
+          </div>
+        )}
         
-        <div className="mt-12 grid gap-8 lg:grid-cols-3 lg:gap-x-8">
-          {stripeProducts.map((product) => (
-            <ProductCard key={product.priceId} product={product} />
-          ))}
-        </div>
+        <PricingPlans />
       </div>
     </div>
-  )
-}
+  );
+};
