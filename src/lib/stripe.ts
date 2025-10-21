@@ -1,5 +1,57 @@
+import { supabase } from './supabase'
+
 export const STRIPE_PRICES = {
-  monthly: import.meta.env.VITE_STRIPE_PRICE_MONTHLY || 'price_1RyA4CHruLrtRCwiXi8uqRWn',
-  annual: import.meta.env.VITE_STRIPE_PRICE_ANNUAL || 'price_1RyA4CHruLrtRCwiZJlqpEt1',
-  lifetime: import.meta.env.VITE_STRIPE_PRICE_LIFETIME || 'price_1RyA4CHruLrtRCwi7inxZ3l2'
-};
+  monthly: import.meta.env.VITE_STRIPE_PRICE_MONTHLY || '',
+  annual: import.meta.env.VITE_STRIPE_PRICE_ANNUAL || '',
+  lifetime: import.meta.env.VITE_STRIPE_PRICE_LIFETIME || ''
+}
+
+export interface CheckoutSessionRequest {
+  price_id: string
+  success_url: string
+  cancel_url: string
+  mode: 'payment' | 'subscription'
+}
+
+export interface CheckoutSessionResponse {
+  sessionId: string
+  url: string
+}
+
+export const createCheckoutSession = async (request: CheckoutSessionRequest): Promise<CheckoutSessionResponse> => {
+  const { data: { session }, error: sessionError } = await supabase.auth.getSession()
+  
+  if (sessionError || !session?.access_token) {
+    throw new Error('User not authenticated')
+  }
+
+  const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/stripe-checkout`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${session.access_token}`
+    },
+    body: JSON.stringify(request)
+  })
+
+  if (!response.ok) {
+    const errorData = await response.json()
+    throw new Error(errorData.error || 'Failed to create checkout session')
+  }
+
+  return response.json()
+}
+
+export const getUserSubscription = async () => {
+  const { data, error } = await supabase
+    .from('stripe_user_subscriptions')
+    .select('*')
+    .maybeSingle()
+
+  if (error) {
+    console.error('Error fetching subscription:', error)
+    return null
+  }
+
+  return data
+}
