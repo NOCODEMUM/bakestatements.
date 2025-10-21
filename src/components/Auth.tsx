@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { Link, useSearchParams, useNavigate } from 'react-router-dom'
+import { Link, useSearchParams } from 'react-router-dom'
 import { useAuth } from '../hooks/useAuth'
 import { ChefHat, Eye, EyeOff } from 'lucide-react'
 
@@ -11,10 +11,8 @@ export default function Auth() {
   const [message, setMessage] = useState('')
   const [isSuccess, setIsSuccess] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
-  const [isRedirecting, setIsRedirecting] = useState(false)
-  const { signUp, signIn, user } = useAuth()
+  const { signUp, signIn } = useAuth()
   const [searchParams] = useSearchParams()
-  const navigate = useNavigate()
 
   useEffect(() => {
     const urlMessage = searchParams.get('message')
@@ -24,12 +22,6 @@ export default function Auth() {
       setIsSignUp(false)
     }
   }, [searchParams])
-
-  useEffect(() => {
-    if (user && isRedirecting) {
-      navigate('/', { replace: true })
-    }
-  }, [user, isRedirecting, navigate])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -43,13 +35,10 @@ export default function Auth() {
         setMessage('Account created successfully! You can now sign in.')
         setIsSuccess(true)
         setIsSignUp(false)
-        setLoading(false)
       } else {
         await signIn(email, password)
-        setIsRedirecting(true)
       }
     } catch (error: any) {
-      setLoading(false)
       if (error.message.includes('already registered') || error.message.includes('already exists')) {
         setMessage('Email already registered')
       } else if (error.message.includes('Invalid') || error.message.includes('credentials')) {
@@ -57,18 +46,9 @@ export default function Auth() {
       } else {
         setMessage(error.message || 'An error occurred')
       }
+    } finally {
+      setLoading(false)
     }
-  }
-
-  if (isRedirecting) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-teal-50 to-amber-50">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-16 w-16 border-b-4 border-amber-600 mx-auto mb-4"></div>
-          <p className="text-gray-600 font-medium">Signing you in...</p>
-        </div>
-      </div>
-    )
   }
 
   return (
