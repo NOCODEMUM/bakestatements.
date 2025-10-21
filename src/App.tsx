@@ -1,4 +1,4 @@
-import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom'
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom'
 import { AuthProvider, useAuth } from './hooks/useAuth'
 import { ThemeProvider } from './contexts/ThemeContext'
 import Auth from './components/Auth'
@@ -22,49 +22,11 @@ import ForgotPassword from './pages/ForgotPassword'
 import ResetPassword from './pages/ResetPassword'
 import MyLandingPage from './pages/MyLandingPage'
 import BakerLandingPage from './pages/BakerLandingPage'
-import { useState, useEffect } from 'react'
-import { supabase } from './lib/supabase'
+import { useState } from 'react'
 
 function AppContent() {
-  const { user, loading, isTrialExpired, refreshProfile } = useAuth()
+  const { user, loading, isTrialExpired } = useAuth()
   const [showPaywall, setShowPaywall] = useState(false)
-  const [showSuccess, setShowSuccess] = useState(false)
-  const location = useLocation()
-
-  useEffect(() => {
-    const searchParams = new URLSearchParams(location.search)
-    const sessionId = searchParams.get('session_id')
-    const cancelled = searchParams.get('cancelled')
-
-    if (cancelled === 'true') {
-      console.log('Payment cancelled by user')
-      return
-    }
-
-    if (sessionId && user) {
-      handlePaymentSuccess(sessionId)
-    }
-  }, [location.search, user])
-
-  const handlePaymentSuccess = async (sessionId: string) => {
-    try {
-      setShowSuccess(true)
-
-      await new Promise(resolve => setTimeout(resolve, 2000))
-
-      if (refreshProfile) {
-        await refreshProfile()
-      }
-
-      window.history.replaceState({}, '', '/')
-
-      setTimeout(() => {
-        setShowSuccess(false)
-      }, 3000)
-    } catch (error) {
-      console.error('Error handling payment success:', error)
-    }
-  }
 
   if (loading) {
     return (
@@ -128,24 +90,10 @@ function AppContent() {
       </Routes>
       
       {user && (
-        <PaywallModal
-          isOpen={isTrialExpired || showPaywall}
-          onClose={() => setShowPaywall(false)}
+        <PaywallModal 
+          isOpen={isTrialExpired || showPaywall} 
+          onClose={() => setShowPaywall(false)} 
         />
-      )}
-
-      {showSuccess && (
-        <div className="fixed top-4 right-4 bg-green-500 text-white px-6 py-4 rounded-lg shadow-lg z-50 animate-fade-in">
-          <div className="flex items-center space-x-3">
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-            </svg>
-            <div>
-              <p className="font-semibold">Payment Successful!</p>
-              <p className="text-sm">Your subscription is now active.</p>
-            </div>
-          </div>
-        </div>
       )}
     </Router>
   )
