@@ -1,110 +1,98 @@
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom'
-import { AuthProvider, useAuth } from './hooks/useAuth'
-import { ThemeProvider } from './contexts/ThemeContext'
-import Auth from './components/Auth'
-import Layout from './components/Layout'
-import PaywallModal from './components/PaywallModal'
-import LandingPage from './pages/LandingPage'
-import AboutUs from './pages/AboutUs'
-import PrivacyTerms from './pages/PrivacyTerms'
-import Pricing from './pages/Pricing'
-import Dashboard from './pages/Dashboard'
-import Orders from './pages/Orders'
-import Calendar from './pages/Calendar'
-import Recipes from './pages/Recipes'
-import Invoices from './pages/Invoices'
-import Expenses from './pages/Expenses'
-import Equipment from './pages/Equipment'
-import Settings from './pages/Settings'
-import Enquiries from './pages/Enquiries'
-import EnquiryForm from './pages/EnquiryForm'
-import ForgotPassword from './pages/ForgotPassword'
-import ResetPassword from './pages/ResetPassword'
-import MyLandingPage from './pages/MyLandingPage'
-import BakerLandingPage from './pages/BakerLandingPage'
-import { useState } from 'react'
+import React from 'react';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { useAuth } from './hooks/useAuth';
+import { LoginPage } from './pages/LoginPage';
+import { SignupPage } from './pages/SignupPage';
+import { PricingPage } from './pages/PricingPage';
+import { SuccessPage } from './pages/SuccessPage';
+import { Header } from './components/layout/Header';
 
-function AppContent() {
-  const { user, loading, isTrialExpired } = useAuth()
-  const [showPaywall, setShowPaywall] = useState(false)
-
+function ProtectedRoute({ children }: { children: React.ReactNode }) {
+  const { user, loading } = useAuth();
+  
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-amber-600"></div>
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-orange-600"></div>
       </div>
-    )
+    );
   }
+  
+  if (!user) {
+    return <Navigate to="/login" replace />;
+  }
+  
+  return <>{children}</>;
+}
 
+function Dashboard() {
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-pink-50 to-orange-50">
+      <Header />
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+        <div className="text-center">
+          <img
+            src="/20250821_1326_Baking Koala_remix_01k35afawhfm8tcpx1kf95gj8h.png"
+            alt="Baking Koala"
+            className="mx-auto h-32 w-auto mb-8"
+          />
+          <h1 className="text-4xl font-bold text-gray-900 mb-4">
+            Welcome to BakeStatements! 🍞
+          </h1>
+          <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+            Your financial co-pilot for home baking success. Track expenses, create invoices, 
+            and manage your bakery finances with ease.
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+}
 
+function App() {
   return (
     <Router>
       <Routes>
-        {/* Landing Page - accessible to everyone */}
-        <Route path="/landing" element={<LandingPage />} />
-
-        {/* About Us Page - accessible to everyone */}
-        <Route path="/about-us" element={<AboutUs />} />
-
-        {/* Privacy & Terms Page - accessible to everyone */}
-        <Route path="/privacy-terms" element={<PrivacyTerms />} />
-
-        {/* Pricing Page - accessible to everyone */}
-        <Route path="/pricing" element={<Pricing />} />
-
-        {/* Enquiry Form - accessible to everyone */}
-        <Route path="/enquiry" element={<EnquiryForm />} />
-
-        {/* Baker Landing Pages - accessible to everyone */}
-        <Route path="/baker/:slug" element={<BakerLandingPage />} />
-
-        {/* Password Reset Flow - accessible to everyone */}
-        <Route path="/forgot-password" element={<ForgotPassword />} />
-        <Route path="/reset-password" element={<ResetPassword />} />
-        
-        {/* Auth Page - for non-authenticated users */}
-        <Route path="/auth" element={!user ? <Auth /> : <Navigate to="/" replace />} />
-        
-        {/* Protected Routes - for authenticated users */}
-        <Route path="/*" element={
-          user ? (
-            <Layout>
-              <Routes>
-                <Route path="/" element={<Dashboard />} />
-                <Route path="/orders" element={<Orders />} />
-                <Route path="/calendar" element={<Calendar />} />
-                <Route path="/recipes" element={<Recipes />} />
-                <Route path="/equipment" element={<Equipment />} />
-                <Route path="/invoices" element={<Invoices />} />
-                <Route path="/expenses" element={<Expenses />} />
-                <Route path="/enquiries" element={<Enquiries />} />
-                <Route path="/my-landing-page" element={<MyLandingPage />} />
-                <Route path="/settings" element={<Settings />} />
-                <Route path="*" element={<Navigate to="/" replace />} />
-              </Routes>
-            </Layout>
-          ) : (
-            <Navigate to="/landing" replace />
-          )
-        } />
-      </Routes>
-      
-      {user && (
-        <PaywallModal 
-          isOpen={isTrialExpired || showPaywall} 
-          onClose={() => setShowPaywall(false)} 
+        <Route path="/login" element={<LoginPage />} />
+        <Route path="/signup" element={<SignupPage />} />
+        <Route path="/pricing" element={<PricingPage />} />
+        <Route path="/success" element={<SuccessPage />} />
+        <Route 
+          path="/dashboard" 
+          element={
+            <ProtectedRoute>
+              <Dashboard />
+            </ProtectedRoute>
+          } 
         />
-      )}
+        <Route 
+          path="/expenses" 
+          element={
+            <ProtectedRoute>
+              <Dashboard />
+            </ProtectedRoute>
+          } 
+        />
+        <Route 
+          path="/recipes" 
+          element={
+            <ProtectedRoute>
+              <Dashboard />
+            </ProtectedRoute>
+          } 
+        />
+        <Route 
+          path="/invoices" 
+          element={
+            <ProtectedRoute>
+              <Dashboard />
+            </ProtectedRoute>
+          } 
+        />
+        <Route path="/" element={<Navigate to="/dashboard" replace />} />
+      </Routes>
     </Router>
-  )
+  );
 }
 
-export default function App() {
-  return (
-    <ThemeProvider>
-      <AuthProvider>
-        <AppContent />
-      </AuthProvider>
-    </ThemeProvider>
-  )
-}
+export default App;
