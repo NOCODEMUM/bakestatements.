@@ -7,6 +7,20 @@ interface CreateCheckoutSessionParams {
   cancelUrl: string;
 }
 
+export const STRIPE_PAYMENT_LINKS = {
+  monthly: import.meta.env.VITE_STRIPE_PAYMENT_LINK_MONTHLY || '',
+  annual: import.meta.env.VITE_STRIPE_PAYMENT_LINK_ANNUAL || '',
+  lifetime: import.meta.env.VITE_STRIPE_PAYMENT_LINK_LIFETIME || '',
+};
+
+export function redirectToStripePayment(paymentLink: string) {
+  if (!paymentLink) {
+    alert('Payment link not configured. Please contact support.');
+    return;
+  }
+  window.location.href = paymentLink;
+}
+
 export async function createCheckoutSession({
   priceId,
   mode,
@@ -14,7 +28,7 @@ export async function createCheckoutSession({
   cancelUrl,
 }: CreateCheckoutSessionParams) {
   const { data: { session } } = await supabase.auth.getSession();
-  
+
   if (!session) {
     throw new Error('User not authenticated');
   }
@@ -39,7 +53,7 @@ export async function createCheckoutSession({
   }
 
   const { url } = await response.json();
-  
+
   if (url) {
     window.location.href = url;
   } else {
