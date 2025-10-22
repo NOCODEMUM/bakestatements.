@@ -90,11 +90,33 @@ function AppContent() {
       </Routes>
       
       {user && (
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { Home } from './pages/Home';
+import { Login } from './pages/Login';
+import { Signup } from './pages/Signup';
+import { Dashboard } from './pages/Dashboard';
+import { Pricing } from './pages/Pricing';
+import { Success } from './pages/Success';
+import { ProtectedRoute } from './components/auth/ProtectedRoute';
         <PaywallModal 
           isOpen={isTrialExpired || showPaywall} 
           onClose={() => setShowPaywall(false)} 
+    <Router>
+      <Routes>
+        <Route path="/" element={<Home />} />
+        <Route path="/login" element={<Login />} />
+        <Route path="/signup" element={<Signup />} />
+        <Route path="/pricing" element={<Pricing />} />
+        <Route path="/success" element={<Success />} />
+        <Route 
+          path="/dashboard" 
+          element={
+            <ProtectedRoute>
+              <Dashboard />
+            </ProtectedRoute>
+          } 
         />
-      )}
+      </Routes>
     </Router>
   )
 }

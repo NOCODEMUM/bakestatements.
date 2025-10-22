@@ -1,246 +1,38 @@
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Check, ArrowLeft } from 'lucide-react';
-import { useAuth } from '../hooks/useAuth';
-import { api } from '../lib/api';
-import { STRIPE_PRICES } from '../lib/stripe';
-import PublicHeader from '../components/PublicHeader';
-import PublicFooter from '../components/PublicFooter';
+import React from 'react'
+import { Header } from '../components/layout/Header'
+import { PricingCard } from '../components/pricing/PricingCard'
+import { stripeProducts } from '../stripe-config'
 
-export default function Pricing() {
-  const navigate = useNavigate();
-  const { user } = useAuth();
-  const [loading, setLoading] = useState<string | null>(null);
-  const [error, setError] = useState<string | null>(null);
-
-  const handleSubscribe = async (priceId: string, mode: string = 'subscription') => {
-    if (!user) {
-      navigate('/auth');
-      return;
-    }
-
-    setLoading(priceId);
-    setError(null);
-
-    try {
-      console.log('[Pricing] Starting checkout for:', { priceId, mode, userId: user.id });
-
-      const { url }: any = await api.stripe.createCheckout('', priceId, mode);
-
-      if (url) {
-        console.log('[Pricing] Redirecting to Stripe checkout');
-        window.location.href = url;
-      } else {
-        throw new Error('No checkout URL received. Please try again or contact support.');
-      }
-    } catch (error: any) {
-      console.error('[Pricing] Checkout error:', error);
-      const errorMessage = error.message || 'Something went wrong. Please try again.';
-      setError(errorMessage);
-
-      setTimeout(() => {
-        setError(null);
-      }, 8000);
-    } finally {
-      setLoading(null);
-    }
-  };
-
-  const features = [
-    'Unlimited orders & recipes',
-    'ATO-compliant expense tracking',
-    'Professional invoicing',
-    'Recipe costing calculator',
-    'Equipment management',
-    'Custom landing page',
-    'CSV/PDF exports',
-    'Email support'
-  ];
-
+export function Pricing() {
   return (
-    <div className="min-h-screen bg-gradient-to-b from-orange-50 to-white">
-      <PublicHeader />
-
-      <div className="max-w-6xl mx-auto px-4 py-12">
-        <button
-          onClick={() => navigate(-1)}
-          className="flex items-center text-gray-600 hover:text-gray-900 mb-8 transition-colors"
-        >
-          <ArrowLeft className="w-5 h-5 mr-2" />
-          Back
-        </button>
-
+    <div className="min-h-screen bg-gray-50">
+      <Header />
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <div className="text-center mb-12">
           <h1 className="text-4xl font-bold text-gray-900 mb-4">
             Choose Your Plan
           </h1>
-          <p className="text-xl text-gray-600">
-            Start your 7-day free trial today. No credit card required.
+          <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+            Start with our 7-day free trial, then choose the plan that works best for your bakery business.
           </p>
         </div>
 
-        {error && (
-          <div className="max-w-2xl mx-auto mb-8 bg-red-50 border border-red-200 rounded-lg p-4">
-            <div className="flex items-start">
-              <div className="flex-shrink-0">
-                <svg className="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
-                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
-                </svg>
-              </div>
-              <div className="ml-3 flex-1">
-                <h3 className="text-sm font-medium text-red-800">Payment Error</h3>
-                <p className="mt-1 text-sm text-red-700">{error}</p>
-                <p className="mt-2 text-xs text-red-600">
-                  If this issue persists, please check your browser console for more details or contact support.
-                </p>
-              </div>
-              <button
-                onClick={() => setError(null)}
-                className="ml-3 flex-shrink-0 text-red-400 hover:text-red-600"
-              >
-                <span className="sr-only">Close</span>
-                <svg className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                  <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
-                </svg>
-              </button>
-            </div>
-          </div>
-        )}
-
-        <div className="grid md:grid-cols-3 gap-8 mb-12">
-          <div className="bg-white rounded-2xl shadow-lg border-2 border-gray-200 p-8 flex flex-col">
-            <div className="text-center mb-6">
-              <h2 className="text-2xl font-bold text-gray-900 mb-2">Monthly</h2>
-              <div className="flex items-baseline justify-center">
-                <span className="text-5xl font-bold text-amber-600">$19</span>
-                <span className="text-gray-600 ml-2">/month</span>
-              </div>
-              <p className="text-sm text-gray-500 mt-2">Perfect for getting started</p>
-            </div>
-
-            <ul className="space-y-3 mb-8 flex-grow">
-              {features.map((feature) => (
-                <li key={feature} className="flex items-start">
-                  <Check className="w-5 h-5 text-green-500 mr-2 flex-shrink-0 mt-0.5" />
-                  <span className="text-gray-700">{feature}</span>
-                </li>
-              ))}
-            </ul>
-
-            <button
-              onClick={() => handleSubscribe(STRIPE_PRICES.monthly, 'subscription')}
-              disabled={loading === STRIPE_PRICES.monthly}
-              className="w-full bg-amber-500 text-white py-3 px-6 rounded-lg hover:bg-amber-600 transition-colors font-semibold disabled:opacity-50"
-            >
-              {loading === STRIPE_PRICES.monthly ? (
-                <div className="flex items-center justify-center space-x-2">
-                  <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
-                  <span>Processing...</span>
-                </div>
-              ) : (
-                'Start Monthly Plan'
-              )}
-            </button>
-          </div>
-
-          <div className="bg-white rounded-2xl shadow-xl border-2 border-teal-500 p-8 flex flex-col relative transform md:scale-105">
-            <div className="absolute -top-4 left-1/2 transform -translate-x-1/2 bg-teal-500 text-white px-4 py-1 rounded-full text-sm font-medium">
-              MOST POPULAR
-            </div>
-
-            <div className="text-center mb-6">
-              <h2 className="text-2xl font-bold text-gray-900 mb-2">Annual</h2>
-              <div className="flex items-baseline justify-center">
-                <span className="text-5xl font-bold text-teal-600">$180</span>
-                <span className="text-gray-600 ml-2">/year</span>
-              </div>
-              <p className="text-sm text-gray-500 mt-2">
-                <span className="line-through">$228</span>
-                <span className="text-pink-600 font-semibold ml-2">Save $48 compared to monthly!</span>
-              </p>
-            </div>
-
-            <ul className="space-y-3 mb-8 flex-grow">
-              {features.map((feature) => (
-                <li key={feature} className="flex items-start">
-                  <Check className="w-5 h-5 text-green-500 mr-2 flex-shrink-0 mt-0.5" />
-                  <span className="text-gray-700">{feature}</span>
-                </li>
-              ))}
-            </ul>
-
-            <button
-              onClick={() => handleSubscribe(STRIPE_PRICES.annual, 'subscription')}
-              disabled={loading === STRIPE_PRICES.annual}
-              className="w-full bg-teal-600 text-white py-3 px-6 rounded-lg hover:bg-teal-700 transition-colors font-semibold disabled:opacity-50"
-            >
-              {loading === STRIPE_PRICES.annual ? (
-                <div className="flex items-center justify-center space-x-2">
-                  <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
-                  <span>Processing...</span>
-                </div>
-              ) : (
-                'Start Annual Plan'
-              )}
-            </button>
-          </div>
-
-          <div className="bg-white rounded-2xl shadow-lg border-2 border-pink-200 p-8 flex flex-col">
-            <div className="text-center mb-6">
-              <h2 className="text-2xl font-bold text-gray-900 mb-2">Founder's Lifetime</h2>
-              <div className="flex items-baseline justify-center">
-                <span className="text-5xl font-bold text-pink-600">$299</span>
-                <span className="text-gray-600 ml-2">once</span>
-              </div>
-              <p className="text-sm text-pink-600 font-semibold mt-2">
-                Limited time - First 100 users only
-              </p>
-            </div>
-
-            <ul className="space-y-3 mb-8 flex-grow">
-              {features.map((feature) => (
-                <li key={feature} className="flex items-start">
-                  <Check className="w-5 h-5 text-green-500 mr-2 flex-shrink-0 mt-0.5" />
-                  <span className="text-gray-700">{feature}</span>
-                </li>
-              ))}
-              <li className="flex items-start">
-                <Check className="w-5 h-5 text-pink-500 mr-2 flex-shrink-0 mt-0.5" />
-                <span className="text-gray-700 font-semibold">Lifetime access - pay once, use forever</span>
-              </li>
-            </ul>
-
-            <button
-              onClick={() => handleSubscribe(STRIPE_PRICES.lifetime, 'payment')}
-              disabled={loading === STRIPE_PRICES.lifetime}
-              className="w-full bg-pink-600 text-white py-3 px-6 rounded-lg hover:bg-pink-700 transition-colors font-semibold disabled:opacity-50"
-            >
-              {loading === STRIPE_PRICES.lifetime ? (
-                <div className="flex items-center justify-center space-x-2">
-                  <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
-                  <span>Processing...</span>
-                </div>
-              ) : (
-                'Get Lifetime Access'
-              )}
-            </button>
-          </div>
+        <div className="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
+          {stripeProducts.map((product, index) => (
+            <PricingCard
+              key={product.priceId}
+              product={product}
+              featured={index === 1} // Make the annual plan featured
+            />
+          ))}
         </div>
 
-        <div className="text-center space-y-4">
-          <p className="text-gray-600">
-            All plans include a 7-day free trial
-          </p>
+        <div className="mt-12 text-center">
           <p className="text-sm text-gray-500">
-            30-day money-back guarantee • Cancel anytime
-          </p>
-          <p className="text-sm text-gray-500">
-            All prices in AUD (Australian Dollars)
+            All plans include expense tracking, invoice generation, recipe costing, and ATO reporting.
           </p>
         </div>
       </div>
-
-      <PublicFooter />
     </div>
-  );
+  )
 }
