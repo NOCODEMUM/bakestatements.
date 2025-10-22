@@ -50,7 +50,7 @@ export default function Calendar() {
       case 'Inquiry': return 'bg-gray-100 text-gray-800 border-gray-200'
       case 'Confirmed': return 'bg-green-100 text-green-800 border-green-200'
       case 'Baking': return 'bg-blue-100 text-blue-800 border-blue-200'
-      case 'Ready': return 'bg-teal-100 text-teal-800 border-teal-200'
+      case 'Ready': return 'bg-purple-100 text-purple-800 border-purple-200'
       case 'Delivered': return 'bg-emerald-100 text-emerald-800 border-emerald-200'
       default: return 'bg-gray-100 text-gray-800 border-gray-200'
     }
@@ -172,7 +172,7 @@ export default function Calendar() {
             <span>Baking</span>
           </div>
           <div className="flex items-center space-x-1">
-            <div className="w-3 h-3 bg-teal-100 border border-teal-200 rounded"></div>
+            <div className="w-3 h-3 bg-purple-100 border border-purple-200 rounded"></div>
             <span>Ready</span>
           </div>
           <div className="flex items-center space-x-1">

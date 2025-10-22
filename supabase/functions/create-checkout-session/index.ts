@@ -17,46 +17,18 @@ Deno.serve(async (req: Request) => {
   }
 
   try {
-    console.log("[Edge Function] Create checkout session started");
-
-    const stripeKey = Deno.env.get("STRIPE_SECRET_KEY");
-    if (!stripeKey) {
-      console.error("[Edge Function] Missing STRIPE_SECRET_KEY");
-      return new Response(
-        JSON.stringify({ error: "Stripe configuration error. Please contact support." }),
-        {
-          status: 500,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        }
-      );
-    }
-
-    const stripe = new Stripe(stripeKey, {
+    const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY") || "", {
       apiVersion: "2024-11-20.acacia",
     });
 
     const supabaseUrl = Deno.env.get("SUPABASE_URL") || "";
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") || "";
-
-    if (!supabaseUrl || !supabaseServiceKey) {
-      console.error("[Edge Function] Missing Supabase configuration");
-      return new Response(
-        JSON.stringify({ error: "Configuration error. Please contact support." }),
-        {
-          status: 500,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        }
-      );
-    }
-
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
     const authHeader = req.headers.get("Authorization");
-    console.log("[Edge Function] Auth header present:", !!authHeader);
-
     if (!authHeader) {
       return new Response(
-        JSON.stringify({ error: "No authorization header. Please sign in and try again." }),
+        JSON.stringify({ error: "No authorization header" }),
         {
           status: 401,
           headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -67,15 +39,9 @@ Deno.serve(async (req: Request) => {
     const token = authHeader.replace("Bearer ", "");
     const { data: { user }, error: userError } = await supabase.auth.getUser(token);
 
-    console.log("[Edge Function] User authentication:", {
-      hasUser: !!user,
-      userId: user?.id,
-      error: userError?.message
-    });
-
     if (userError || !user) {
       return new Response(
-        JSON.stringify({ error: "Unauthorized. Please sign in and try again." }),
+        JSON.stringify({ error: "Unauthorized" }),
         {
           status: 401,
           headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -83,13 +49,9 @@ Deno.serve(async (req: Request) => {
       );
     }
 
-    const requestBody = await req.json();
-    console.log("[Edge Function] Request body:", requestBody);
-
-    const { priceId, mode } = requestBody;
+    const { priceId, mode } = await req.json();
 
     if (!priceId) {
-      console.error("[Edge Function] Missing priceId in request");
       return new Response(
         JSON.stringify({ error: "Price ID is required" }),
         {
@@ -99,22 +61,15 @@ Deno.serve(async (req: Request) => {
       );
     }
 
-    console.log("[Edge Function] Fetching user profile");
     const { data: profile } = await supabase
       .from("profiles")
       .select("stripe_customer_id, business_name, email")
       .eq("id", user.id)
       .maybeSingle();
 
-    console.log("[Edge Function] Profile data:", {
-      hasProfile: !!profile,
-      hasStripeCustomer: !!profile?.stripe_customer_id
-    });
-
     let customerId = profile?.stripe_customer_id;
 
     if (!customerId) {
-      console.log("[Edge Function] Creating new Stripe customer");
       const customer = await stripe.customers.create({
         email: user.email,
         name: profile?.business_name || undefined,
@@ -123,7 +78,6 @@ Deno.serve(async (req: Request) => {
         },
       });
       customerId = customer.id;
-      console.log("[Edge Function] Created Stripe customer:", customerId);
 
       await supabase
         .from("profiles")
@@ -132,12 +86,6 @@ Deno.serve(async (req: Request) => {
     }
 
     const frontendUrl = Deno.env.get("FRONTEND_URL") || "https://bakestatements.com";
-    console.log("[Edge Function] Creating Stripe checkout session:", {
-      priceId,
-      mode,
-      customerId,
-      frontendUrl
-    });
 
     const session = await stripe.checkout.sessions.create({
       customer: customerId,
@@ -149,15 +97,13 @@ Deno.serve(async (req: Request) => {
         },
       ],
       mode: mode as "subscription" | "payment",
-      success_url: `${frontendUrl}/dashboard?session_id={CHECKOUT_SESSION_ID}`,
+      success_url: `${frontendUrl}/?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${frontendUrl}/pricing?cancelled=true`,
       metadata: {
         user_id: user.id,
       },
       allow_promotion_codes: true,
     });
-
-    console.log("[Edge Function] Checkout session created:", session.id);
 
     return new Response(
       JSON.stringify({
@@ -172,12 +118,9 @@ Deno.serve(async (req: Request) => {
       }
     );
   } catch (error: any) {
-    console.error("[Edge Function] Error:", error);
+    console.error("Create checkout session error:", error);
     return new Response(
-      JSON.stringify({
-        error: error.message || "Failed to create checkout session",
-        details: error.type || "Unknown error type"
-      }),
+      JSON.stringify({ error: error.message || "Failed to create checkout session" }),
       {
         status: 500,
         headers: { ...corsHeaders, "Content-Type": "application/json" },

@@ -123,11 +123,11 @@ export default function PaywallModal({ isOpen, onClose }: PaywallModalProps) {
             </button>
           </div>
 
-          <div className="border border-pink-200 rounded-lg p-4 bg-pink-50">
+          <div className="border border-purple-200 rounded-lg p-4 bg-purple-50">
             <div className="flex items-center justify-between mb-2">
               <h3 className="font-bold text-gray-800">Founder's Lifetime</h3>
               <div className="text-right">
-                <span className="text-2xl font-bold text-pink-600">$299</span>
+                <span className="text-2xl font-bold text-purple-500">$299</span>
                 <p className="text-xs text-gray-500 line-through">$499</p>
               </div>
             </div>
@@ -135,7 +135,7 @@ export default function PaywallModal({ isOpen, onClose }: PaywallModalProps) {
             <button
               onClick={() => handleSubscribe(STRIPE_PRICES.lifetime, 'payment')}
               disabled={loading === STRIPE_PRICES.lifetime}
-              className="w-full bg-pink-600 text-white py-2 px-4 rounded-lg hover:bg-pink-700 transition-colors font-medium disabled:opacity-50"
+              className="w-full bg-purple-500 text-white py-2 px-4 rounded-lg hover:bg-purple-600 transition-colors font-medium disabled:opacity-50"
             >
               {loading === STRIPE_PRICES.lifetime ? (
                 <div className="flex items-center justify-center space-x-2">

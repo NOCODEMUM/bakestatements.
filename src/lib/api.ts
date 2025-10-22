@@ -423,71 +423,32 @@ export const api = {
 
   stripe: {
     createCheckout: async (_token: string, priceId: string, mode: string = 'subscription') => {
-      console.log('[Stripe API] Creating checkout session:', { priceId, mode });
-
-      const { data: { session } } = await supabase.auth.getSession();
       const { data: { user } } = await supabase.auth.getUser();
-
-      console.log('[Stripe API] Auth check:', {
-        hasUser: !!user,
-        hasSession: !!session,
-        hasAccessToken: !!session?.access_token
-      });
-
-      if (!user || !session?.access_token) {
-        console.error('[Stripe API] Authentication failed');
-        throw new Error('Not authenticated. Please sign in and try again.');
-      }
+      if (!user) throw new Error('Not authenticated');
 
       const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
       const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
-      if (!supabaseUrl || !supabaseAnonKey) {
-        console.error('[Stripe API] Missing environment variables');
-        throw new Error('Configuration error. Please contact support.');
+      const response = await fetch(`${supabaseUrl}/functions/v1/create-checkout-session`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${supabaseAnonKey}`,
+        },
+        body: JSON.stringify({
+          priceId,
+          mode,
+          userId: user.id,
+        }),
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || 'Failed to create checkout session');
       }
 
-      const functionUrl = `${supabaseUrl}/functions/v1/create-checkout-session`;
-      console.log('[Stripe API] Calling function:', functionUrl);
-
-      try {
-        const response = await fetch(functionUrl, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${session.access_token}`,
-            'apikey': supabaseAnonKey,
-          },
-          body: JSON.stringify({ priceId, mode }),
-        });
-
-        console.log('[Stripe API] Response status:', response.status);
-
-        if (!response.ok) {
-          let errorMessage = 'Failed to create checkout session';
-          try {
-            const errorData = await response.json();
-            console.error('[Stripe API] Error response:', errorData);
-            errorMessage = errorData.error || errorData.message || errorMessage;
-          } catch (parseError) {
-            const textError = await response.text();
-            console.error('[Stripe API] Non-JSON error response:', textError);
-            errorMessage = textError || errorMessage;
-          }
-
-          throw new Error(errorMessage);
-        }
-
-        const data = await response.json();
-        console.log('[Stripe API] Success:', { hasUrl: !!data.url });
-        return data;
-      } catch (error: any) {
-        console.error('[Stripe API] Network or fetch error:', error);
-        if (error.message.includes('fetch')) {
-          throw new Error('Network error. Please check your internet connection and try again.');
-        }
-        throw error;
-      }
+      const data = await response.json();
+      return data;
     },
 
     getSubscriptionStatus: async (_token: string) => {

@@ -171,7 +171,7 @@ export default function Invoices() {
     switch (status) {
       case 'Confirmed': return 'bg-green-100 text-green-800'
       case 'Baking': return 'bg-blue-100 text-blue-800'
-      case 'Ready': return 'bg-teal-100 text-teal-800'
+      case 'Ready': return 'bg-purple-100 text-purple-800'
       case 'Delivered': return 'bg-emerald-100 text-emerald-800'
       default: return 'bg-gray-100 text-gray-800'
     }
@@ -220,7 +220,7 @@ export default function Invoices() {
 
         <div className="bg-white rounded-lg shadow-sm p-6 border border-gray-100">
           <div className="flex items-center space-x-3">
-            <Calendar className="w-8 h-8 text-blue-600" />
+            <Calendar className="w-8 h-8 text-purple-600" />
             <div>
               <p className="text-sm font-medium text-gray-600">Paid Invoices</p>
               <p className="text-2xl font-bold text-gray-900">
