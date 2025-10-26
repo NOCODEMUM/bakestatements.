@@ -332,7 +332,7 @@ export const api = {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('Not authenticated');
 
-      const { error} = await supabase
+      const { error } = await supabase
         .from('recipes')
         .delete()
         .eq('id', id)
@@ -427,13 +427,14 @@ export const api = {
       if (!user) throw new Error('Not authenticated');
 
       const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-      const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+      const { data: { session } } = await supabase.auth.getSession();
+      const accessToken = session?.access_token;
 
       const response = await fetch(`${supabaseUrl}/functions/v1/create-checkout-session`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${supabaseAnonKey}`,
+          ...(accessToken ? { 'Authorization': `Bearer ${accessToken}` } : {}),
         },
         body: JSON.stringify({
           priceId,
