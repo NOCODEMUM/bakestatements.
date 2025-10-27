@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'react'
 import { useAuth } from '../hooks/useAuth'
+import { usePermissions } from '../hooks/usePermissions'
 import { api } from '../lib/api'
 import { supabase } from '../lib/supabase'
-import { Plus, Calculator, Package, DollarSign, Edit, Trash2 } from 'lucide-react'
+import { Plus, Calculator, Package, DollarSign, Edit, Trash2, Lock } from 'lucide-react'
 
 interface Ingredient {
   id: string
@@ -34,6 +35,7 @@ interface RecipeIngredient {
 
 export default function Recipes() {
   const { user } = useAuth()
+  const { isReadOnly, canCreate, canEdit, canDelete } = usePermissions()
   const [recipes, setRecipes] = useState<Recipe[]>([])
   const [ingredients, setIngredients] = useState<Ingredient[]>([])
   const [loading, setLoading] = useState(true)
@@ -241,16 +243,22 @@ export default function Recipes() {
         </div>
         <div className="flex space-x-3">
           <button
-            onClick={() => setShowIngredientForm(true)}
-            className="bg-emerald-600 text-white px-4 py-2 rounded-lg hover:bg-emerald-700 transition-colors flex items-center space-x-2"
+            onClick={() => canCreate && setShowIngredientForm(true)}
+            disabled={!canCreate}
+            className="bg-emerald-600 text-white px-4 py-2 rounded-lg hover:bg-emerald-700 transition-colors flex items-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed disabled:bg-gray-400"
+            title={!canCreate ? 'Upgrade to add ingredients' : ''}
           >
+            {!canCreate && <Lock className="w-4 h-4" />}
             <Package className="w-5 h-5" />
             <span>Add Ingredient</span>
           </button>
           <button
-            onClick={() => setShowRecipeForm(true)}
-            className="bg-amber-500 text-white px-4 py-2 rounded-lg hover:bg-amber-600 transition-colors flex items-center space-x-2"
+            onClick={() => canCreate && setShowRecipeForm(true)}
+            disabled={!canCreate}
+            className="bg-amber-500 text-white px-4 py-2 rounded-lg hover:bg-amber-600 transition-colors flex items-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed disabled:bg-gray-400"
+            title={!canCreate ? 'Upgrade to create recipes' : ''}
           >
+            {!canCreate && <Lock className="w-4 h-4" />}
             <Plus className="w-5 h-5" />
             <span>New Recipe</span>
           </button>
