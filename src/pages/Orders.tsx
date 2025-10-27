@@ -1,8 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useAuth } from '../hooks/useAuth'
-import { usePermissions } from '../hooks/usePermissions'
 import { api } from '../lib/api'
-import { Plus, Search, Calendar, DollarSign, Edit, Clock, Trash2, Lock } from 'lucide-react'
+import { Plus, Search, Calendar, DollarSign, Edit, Clock, Trash2 } from 'lucide-react'
 import { format } from 'date-fns'
 
 interface Order {
@@ -17,7 +16,6 @@ interface Order {
 
 export default function Orders() {
   const { user } = useAuth()
-  const { isReadOnly, canCreate, canEdit, canDelete } = usePermissions()
   const [orders, setOrders] = useState<Order[]>([])
   const [loading, setLoading] = useState(true)
   const [showForm, setShowForm] = useState(false)
@@ -176,12 +174,9 @@ export default function Orders() {
           <p className="text-gray-600">Manage your customer orders and track their progress</p>
         </div>
         <button
-          onClick={() => canCreate && setShowForm(true)}
-          disabled={!canCreate}
-          className="bg-amber-500 text-white px-4 py-2 rounded-lg hover:bg-amber-600 transition-colors flex items-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed disabled:bg-gray-400"
-          title={!canCreate ? 'Upgrade to create orders' : ''}
+          onClick={() => setShowForm(true)}
+          className="bg-amber-500 text-white px-4 py-2 rounded-lg hover:bg-amber-600 transition-colors flex items-center space-x-2"
         >
-          {!canCreate && <Lock className="w-4 h-4" />}
           <Plus className="w-5 h-5" />
           <span>New Order</span>
         </button>
@@ -208,20 +203,18 @@ export default function Orders() {
                       </div>
                       <div className="flex items-center space-x-1">
                         <button
-                          onClick={() => canEdit && handleEditOrder(order)}
-                          disabled={!canEdit}
-                          className="p-1 text-amber-600 hover:text-amber-700 hover:bg-amber-50 rounded transition-colors disabled:opacity-50 disabled:cursor-not-allowed disabled:text-gray-400"
-                          title={canEdit ? "Edit order" : "Upgrade to edit"}
+                          onClick={() => handleEditOrder(order)}
+                          className="p-1 text-amber-600 hover:text-amber-700 hover:bg-amber-50 rounded transition-colors"
+                          title="Edit order"
                         >
-                          {!canEdit ? <Lock className="w-4 h-4" /> : <Edit className="w-4 h-4" />}
+                          <Edit className="w-4 h-4" />
                         </button>
                         <button
-                          onClick={() => canDelete && confirmDelete(order)}
-                          disabled={!canDelete}
-                          className="p-1 text-red-600 hover:text-red-700 hover:bg-red-50 rounded transition-colors disabled:opacity-50 disabled:cursor-not-allowed disabled:text-gray-400"
-                          title={canDelete ? "Delete order" : "Upgrade to delete"}
+                          onClick={() => confirmDelete(order)}
+                          className="p-1 text-red-600 hover:text-red-700 hover:bg-red-50 rounded transition-colors"
+                          title="Delete order"
                         >
-                          {!canDelete ? <Lock className="w-4 h-4" /> : <Trash2 className="w-4 h-4" />}
+                          <Trash2 className="w-4 h-4" />
                         </button>
                       </div>
                     </div>
@@ -232,11 +225,9 @@ export default function Orders() {
                       </div>
                       <select
                         value={order.status}
-                        onChange={(e) => canEdit && updateOrderStatus(order.id, e.target.value)}
-                        disabled={!canEdit}
-                        className="text-xs border border-gray-300 rounded px-2 py-1 focus:ring-2 focus:ring-amber-500 focus:border-transparent disabled:opacity-50 disabled:cursor-not-allowed disabled:bg-gray-100"
+                        onChange={(e) => updateOrderStatus(order.id, e.target.value)}
+                        className="text-xs border border-gray-300 rounded px-2 py-1 focus:ring-2 focus:ring-amber-500 focus:border-transparent"
                         onClick={(e) => e.stopPropagation()}
-                        title={!canEdit ? "Upgrade to change status" : ""}
                       >
                         <option value="Inquiry">Inquiry</option>
                         <option value="Confirmed">Confirmed</option>

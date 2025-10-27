@@ -1,8 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useAuth } from '../hooks/useAuth'
-import { usePermissions } from '../hooks/usePermissions'
 import { api } from '../lib/api'
-import { Plus, Download, PieChart, Edit, Receipt, Lock } from 'lucide-react'
+import { Plus, Download, PieChart, Edit, Receipt } from 'lucide-react'
 import { format } from 'date-fns'
 
 interface Expense {
@@ -27,7 +26,6 @@ const ATO_CATEGORIES = [
 
 export default function Expenses() {
   const { user } = useAuth()
-  const { isReadOnly, canCreate, canEdit, canExport } = usePermissions()
   const [expenses, setExpenses] = useState<Expense[]>([])
   const [loading, setLoading] = useState(true)
   const [showForm, setShowForm] = useState(false)
@@ -160,19 +158,15 @@ export default function Expenses() {
         <div className="flex space-x-3">
           <button
             onClick={exportToCSV}
-            disabled={!canExport}
-            className="bg-emerald-600 text-white px-4 py-2 rounded-lg hover:bg-emerald-700 transition-colors flex items-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="bg-emerald-600 text-white px-4 py-2 rounded-lg hover:bg-emerald-700 transition-colors flex items-center space-x-2"
           >
             <Download className="w-5 h-5" />
             <span>Export CSV</span>
           </button>
           <button
-            onClick={() => canCreate && setShowForm(true)}
-            disabled={!canCreate}
-            className="bg-amber-500 text-white px-4 py-2 rounded-lg hover:bg-amber-600 transition-colors flex items-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed disabled:bg-gray-400"
-            title={!canCreate ? 'Upgrade to add expenses' : ''}
+            onClick={() => setShowForm(true)}
+            className="bg-amber-500 text-white px-4 py-2 rounded-lg hover:bg-amber-600 transition-colors flex items-center space-x-2"
           >
-            {!canCreate && <Lock className="w-4 h-4" />}
             <Plus className="w-5 h-5" />
             <span>Add Expense</span>
           </button>
@@ -197,12 +191,11 @@ export default function Expenses() {
                       <div className="flex items-center justify-between">
                         <h3 className="font-medium text-gray-800 text-sm">{expense.description}</h3>
                         <button
-                          onClick={() => canEdit && handleEditExpense(expense)}
-                          disabled={!canEdit}
-                          className="p-1 text-amber-600 hover:text-amber-700 hover:bg-amber-50 rounded transition-colors disabled:opacity-50 disabled:cursor-not-allowed disabled:text-gray-400"
-                          title={canEdit ? "Edit expense" : "Upgrade to edit"}
+                          onClick={() => handleEditExpense(expense)}
+                          className="p-1 text-amber-600 hover:text-amber-700 hover:bg-amber-50 rounded transition-colors"
+                          title="Edit expense"
                         >
-                          {!canEdit ? <Lock className="w-4 h-4" /> : <Edit className="w-4 h-4" />}
+                          <Edit className="w-4 h-4" />
                         </button>
                       </div>
                       <div className="flex items-center justify-between mt-1">
@@ -307,12 +300,11 @@ export default function Expenses() {
                       <div className="flex items-center justify-end space-x-3">
                         <span className="font-medium text-gray-900">${expense.amount.toFixed(2)}</span>
                         <button
-                          onClick={() => canEdit && handleEditExpense(expense)}
-                          disabled={!canEdit}
-                          className="p-1 text-amber-600 hover:text-amber-700 hover:bg-amber-50 rounded transition-colors disabled:opacity-50 disabled:cursor-not-allowed disabled:text-gray-400"
-                          title={canEdit ? "Edit expense" : "Upgrade to edit"}
+                          onClick={() => handleEditExpense(expense)}
+                          className="p-1 text-amber-600 hover:text-amber-700 hover:bg-amber-50 rounded transition-colors"
+                          title="Edit expense"
                         >
-                          {!canEdit ? <Lock className="w-4 h-4" /> : <Edit className="w-4 h-4" />}
+                          <Edit className="w-4 h-4" />
                         </button>
                       </div>
                     </td>

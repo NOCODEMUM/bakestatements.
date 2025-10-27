@@ -7,10 +7,9 @@ import { useState } from 'react';
 interface PaywallModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onUpgradeClick?: () => void;
 }
 
-export default function PaywallModal({ isOpen, onClose, onUpgradeClick }: PaywallModalProps) {
+export default function PaywallModal({ isOpen, onClose }: PaywallModalProps) {
   const { user } = useAuth();
   const [loading, setLoading] = useState<string | null>(null);
 
@@ -54,11 +53,8 @@ export default function PaywallModal({ isOpen, onClose, onUpgradeClick }: Paywal
         </div>
 
         <div className="text-center mb-6">
-          <p className="text-gray-600 mb-2">
+          <p className="text-gray-600 mb-4">
             Your free trial has ended. Upgrade to continue managing your bakery with BakeStatements.
-          </p>
-          <p className="text-sm text-gray-500 italic">
-            Close this modal to browse your data in read-only mode
           </p>
         </div>
 

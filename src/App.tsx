@@ -27,7 +27,6 @@ import { useState } from 'react'
 function AppContent() {
   const { user, loading, isTrialExpired } = useAuth()
   const [showPaywall, setShowPaywall] = useState(false)
-  const [paywallDismissed, setPaywallDismissed] = useState(false)
 
   if (loading) {
     return (
@@ -69,10 +68,7 @@ function AppContent() {
         {/* Protected Routes - for authenticated users */}
         <Route path="/*" element={
           user ? (
-            <Layout onUpgradeClick={() => {
-              setPaywallDismissed(false)
-              setShowPaywall(true)
-            }}>
+            <Layout>
               <Routes>
                 <Route path="/" element={<Dashboard />} />
                 <Route path="/orders" element={<Orders />} />
@@ -94,16 +90,9 @@ function AppContent() {
       </Routes>
       
       {user && (
-        <PaywallModal
-          isOpen={(isTrialExpired && !paywallDismissed) || showPaywall}
-          onClose={() => {
-            setShowPaywall(false)
-            setPaywallDismissed(true)
-          }}
-          onUpgradeClick={() => {
-            setPaywallDismissed(false)
-            setShowPaywall(true)
-          }}
+        <PaywallModal 
+          isOpen={isTrialExpired || showPaywall} 
+          onClose={() => setShowPaywall(false)} 
         />
       )}
     </Router>

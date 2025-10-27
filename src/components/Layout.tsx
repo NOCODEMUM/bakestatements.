@@ -2,7 +2,6 @@ import { ReactNode, useState } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import { useAuth } from '../hooks/useAuth'
 import { useTheme } from '../contexts/ThemeContext'
-import ReadOnlyBanner from './ReadOnlyBanner'
 import {
   Home,
   ShoppingCart,
@@ -24,8 +23,7 @@ import {
 } from 'lucide-react'
 
 interface LayoutProps {
-  children: ReactNode;
-  onUpgradeClick: () => void;
+  children: ReactNode
 }
 
 const navigation = [
@@ -41,7 +39,7 @@ const navigation = [
   { name: 'Settings', href: '/settings', icon: Settings },
 ]
 
-export default function Layout({ children, onUpgradeClick }: LayoutProps) {
+export default function Layout({ children }: LayoutProps) {
   const location = useLocation()
   const { signOut, user, isTrialExpired } = useAuth()
   const { theme, toggleTheme } = useTheme()
@@ -63,8 +61,18 @@ export default function Layout({ children, onUpgradeClick }: LayoutProps) {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-teal-50 to-amber-50 dark:bg-gray-900">
-      {/* Read-Only Banner */}
-      <ReadOnlyBanner onUpgradeClick={onUpgradeClick} />
+      {/* Trial Expired Banner */}
+      {isTrialExpired && (
+        <div className="bg-gradient-to-r from-amber-600 to-amber-700 text-white px-6 py-3 relative z-50">
+          <div className="flex items-center justify-center space-x-2">
+            <Crown className="w-5 h-5" />
+            <span className="font-medium">Your free trial has expired. Upgrade to continue using BakeStatements!</span>
+            <button className="bg-white text-amber-600 px-4 py-1 rounded-full text-sm font-medium hover:bg-gray-100 transition-colors">
+              Upgrade Now - $19/month
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Mobile Header */}
       <header className="md:hidden bg-white dark:bg-gray-800 shadow-sm border-b border-gray-200 dark:border-gray-700 px-4 py-3 flex items-center justify-between relative z-40">

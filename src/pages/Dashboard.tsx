@@ -1,9 +1,8 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useAuth } from '../hooks/useAuth'
-import { usePermissions } from '../hooks/usePermissions'
 import { api } from '../lib/api'
-import { ShoppingCart, DollarSign, TrendingUp, Calendar, FileText, Mail, Wrench, Lock } from 'lucide-react'
+import { ShoppingCart, DollarSign, TrendingUp, Calendar, FileText, Mail, Wrench } from 'lucide-react'
 import { format } from 'date-fns'
 
 interface DashboardStats {
@@ -19,7 +18,6 @@ interface DashboardStats {
 
 export default function Dashboard() {
   const { user } = useAuth()
-  const { isReadOnly } = usePermissions()
   const [stats, setStats] = useState<DashboardStats>({
     totalOrders: 0,
     totalRevenue: 0,
@@ -234,48 +232,22 @@ export default function Dashboard() {
           </div>
           <div className="p-6">
             <div className="grid grid-cols-2 gap-4">
-              {isReadOnly ? (
-                <>
-                  <div className="p-4 bg-gray-100 border border-gray-300 rounded-lg cursor-not-allowed opacity-60 relative">
-                    <Lock className="w-4 h-4 text-gray-500 absolute top-2 right-2" />
-                    <ShoppingCart className="w-6 h-6 text-gray-500 mb-2" />
-                    <p className="text-sm font-medium text-gray-600">New Order</p>
-                  </div>
-                  <div className="p-4 bg-gray-100 border border-gray-300 rounded-lg cursor-not-allowed opacity-60 relative">
-                    <Lock className="w-4 h-4 text-gray-500 absolute top-2 right-2" />
-                    <DollarSign className="w-6 h-6 text-gray-500 mb-2" />
-                    <p className="text-sm font-medium text-gray-600">Add Expense</p>
-                  </div>
-                  <div className="p-4 bg-gray-100 border border-gray-300 rounded-lg cursor-not-allowed opacity-60 relative">
-                    <Lock className="w-4 h-4 text-gray-500 absolute top-2 right-2" />
-                    <Wrench className="w-6 h-6 text-gray-500 mb-2" />
-                    <p className="text-sm font-medium text-gray-600">Equipment</p>
-                  </div>
-                  <Link to="/enquiries" className="p-4 bg-rose-50 border border-rose-200 rounded-lg hover:bg-rose-100 transition-colors group">
-                    <Mail className="w-6 h-6 text-rose-600 mb-2 group-hover:scale-110 transition-transform" />
-                    <p className="text-sm font-medium text-gray-800">View Enquiries</p>
-                  </Link>
-                </>
-              ) : (
-                <>
-                  <Link to="/orders" className="p-4 bg-amber-50 border border-amber-200 rounded-lg hover:bg-amber-100 transition-colors group">
-                    <ShoppingCart className="w-6 h-6 text-amber-600 mb-2 group-hover:scale-110 transition-transform" />
-                    <p className="text-sm font-medium text-gray-800">New Order</p>
-                  </Link>
-                  <Link to="/expenses" className="p-4 bg-green-50 border border-green-200 rounded-lg hover:bg-green-100 transition-colors group">
-                    <DollarSign className="w-6 h-6 text-green-600 mb-2 group-hover:scale-110 transition-transform" />
-                    <p className="text-sm font-medium text-gray-800">Add Expense</p>
-                  </Link>
-                  <Link to="/equipment" className="p-4 bg-teal-50 border border-teal-200 rounded-lg hover:bg-teal-100 transition-colors group">
-                    <Wrench className="w-6 h-6 text-teal-600 mb-2 group-hover:scale-110 transition-transform" />
-                    <p className="text-sm font-medium text-gray-800">Equipment</p>
-                  </Link>
-                  <Link to="/enquiries" className="p-4 bg-rose-50 border border-rose-200 rounded-lg hover:bg-rose-100 transition-colors group">
-                    <Mail className="w-6 h-6 text-rose-600 mb-2 group-hover:scale-110 transition-transform" />
-                    <p className="text-sm font-medium text-gray-800">View Enquiries</p>
-                  </Link>
-                </>
-              )}
+              <Link to="/orders" className="p-4 bg-amber-50 border border-amber-200 rounded-lg hover:bg-amber-100 transition-colors group">
+                <ShoppingCart className="w-6 h-6 text-amber-600 mb-2 group-hover:scale-110 transition-transform" />
+                <p className="text-sm font-medium text-gray-800">New Order</p>
+              </Link>
+              <Link to="/expenses" className="p-4 bg-green-50 border border-green-200 rounded-lg hover:bg-green-100 transition-colors group">
+                <DollarSign className="w-6 h-6 text-green-600 mb-2 group-hover:scale-110 transition-transform" />
+                <p className="text-sm font-medium text-gray-800">Add Expense</p>
+              </Link>
+              <Link to="/equipment" className="p-4 bg-teal-50 border border-teal-200 rounded-lg hover:bg-teal-100 transition-colors group">
+                <Wrench className="w-6 h-6 text-teal-600 mb-2 group-hover:scale-110 transition-transform" />
+                <p className="text-sm font-medium text-gray-800">Equipment</p>
+              </Link>
+              <Link to="/enquiries" className="p-4 bg-rose-50 border border-rose-200 rounded-lg hover:bg-rose-100 transition-colors group">
+                <Mail className="w-6 h-6 text-rose-600 mb-2 group-hover:scale-110 transition-transform" />
+                <p className="text-sm font-medium text-gray-800">View Enquiries</p>
+              </Link>
             </div>
           </div>
         </div>
