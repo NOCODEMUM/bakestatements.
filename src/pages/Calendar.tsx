@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
+import { supabase } from '../lib/supabase'
 import { useAuth } from '../hooks/useAuth'
-import { api } from '../lib/api'
 import { Calendar as CalendarIcon, ChevronLeft, ChevronRight } from 'lucide-react'
 import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameDay, isSameMonth, addMonths, subMonths } from 'date-fns'
 
@@ -26,10 +26,15 @@ export default function Calendar() {
   }, [user])
 
   const fetchOrders = async () => {
-    if (!user) return
     try {
-      const response: any = await api.orders.getAll('')
-      setOrders(response.orders || [])
+      const { data, error } = await supabase
+        .from('orders')
+        .select('*')
+        .eq('user_id', user!.id)
+        .order('due_date')
+
+      if (error) throw error
+      setOrders(data || [])
     } catch (error) {
       console.error('Error fetching orders:', error)
     } finally {

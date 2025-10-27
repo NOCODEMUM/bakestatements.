@@ -7,21 +7,17 @@ import PaywallModal from './components/PaywallModal'
 import LandingPage from './pages/LandingPage'
 import AboutUs from './pages/AboutUs'
 import PrivacyTerms from './pages/PrivacyTerms'
-import Pricing from './pages/Pricing'
+import ForgotPassword from './pages/ForgotPassword'
+import ResetPassword from './pages/ResetPassword'
 import Dashboard from './pages/Dashboard'
 import Orders from './pages/Orders'
 import Calendar from './pages/Calendar'
 import Recipes from './pages/Recipes'
 import Invoices from './pages/Invoices'
 import Expenses from './pages/Expenses'
-import Equipment from './pages/Equipment'
 import Settings from './pages/Settings'
 import Enquiries from './pages/Enquiries'
 import EnquiryForm from './pages/EnquiryForm'
-import ForgotPassword from './pages/ForgotPassword'
-import ResetPassword from './pages/ResetPassword'
-import MyLandingPage from './pages/MyLandingPage'
-import BakerLandingPage from './pages/BakerLandingPage'
 import { useState } from 'react'
 
 function AppContent() {
@@ -42,23 +38,17 @@ function AppContent() {
       <Routes>
         {/* Landing Page - accessible to everyone */}
         <Route path="/landing" element={<LandingPage />} />
-
+        
         {/* About Us Page - accessible to everyone */}
         <Route path="/about-us" element={<AboutUs />} />
-
+        
         {/* Privacy & Terms Page - accessible to everyone */}
         <Route path="/privacy-terms" element={<PrivacyTerms />} />
-
-        {/* Pricing Page - accessible to everyone */}
-        <Route path="/pricing" element={<Pricing />} />
-
+        
         {/* Enquiry Form - accessible to everyone */}
         <Route path="/enquiry" element={<EnquiryForm />} />
-
-        {/* Baker Landing Pages - accessible to everyone */}
-        <Route path="/baker/:slug" element={<BakerLandingPage />} />
-
-        {/* Password Reset Flow - accessible to everyone */}
+        
+        {/* Password Reset Pages - accessible to everyone */}
         <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/reset-password" element={<ResetPassword />} />
         
@@ -74,11 +64,9 @@ function AppContent() {
                 <Route path="/orders" element={<Orders />} />
                 <Route path="/calendar" element={<Calendar />} />
                 <Route path="/recipes" element={<Recipes />} />
-                <Route path="/equipment" element={<Equipment />} />
                 <Route path="/invoices" element={<Invoices />} />
                 <Route path="/expenses" element={<Expenses />} />
                 <Route path="/enquiries" element={<Enquiries />} />
-                <Route path="/my-landing-page" element={<MyLandingPage />} />
                 <Route path="/settings" element={<Settings />} />
                 <Route path="*" element={<Navigate to="/" replace />} />
               </Routes>

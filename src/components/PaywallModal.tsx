@@ -1,44 +1,53 @@
-import { X, Crown, Check } from 'lucide-react';
-import { useAuth } from '../hooks/useAuth';
-import { api } from '../lib/api';
-import { STRIPE_PRICES } from '../lib/stripe';
-import { useState } from 'react';
+import { X, Crown, Check } from 'lucide-react'
+import { stripePromise } from '../lib/stripe'
+import { supabase } from '../lib/supabase'
+import { useAuth } from '../hooks/useAuth'
+import { useState } from 'react'
 
 interface PaywallModalProps {
-  isOpen: boolean;
-  onClose: () => void;
+  isOpen: boolean
+  onClose: () => void
 }
 
 export default function PaywallModal({ isOpen, onClose }: PaywallModalProps) {
-  const { user } = useAuth();
-  const [loading, setLoading] = useState<string | null>(null);
+  const { user } = useAuth()
+  const [loading, setLoading] = useState<string | null>(null)
 
   const handleSubscribe = async (priceId: string, mode: string = 'subscription') => {
-    if (!user) return;
-
-    setLoading(priceId);
-
+    if (!user) return
+    
+    setLoading(priceId)
+    
     try {
-      const { url }: any = await api.stripe.createCheckout('', priceId, mode);
+      const { data, error } = await supabase.functions.invoke('create-checkout', {
+        body: {
+          priceId: priceId,
+          mode: mode
+        },
+        headers: {
+          Authorization: `Bearer ${(await supabase.auth.getSession()).data.session?.access_token}`,
+        },
+      })
 
-      if (url) {
-        window.location.href = url;
-      } else {
-        throw new Error('Failed to get checkout URL');
+      if (error) throw error
+
+      const stripe = await stripePromise
+      if (stripe && data.url) {
+        window.location.href = data.url
       }
-    } catch (error: any) {
-      console.error('Error:', error);
-      alert(`Something went wrong: ${error.message}. Please try again.`);
+    } catch (error) {
+      console.error('Error:', error)
+      alert('Something went wrong. Please try again.')
     } finally {
-      setLoading(null);
+      setLoading(null)
     }
-  };
+  }
 
-  if (!isOpen) return null;
+  if (!isOpen) return null
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-start justify-center z-50 p-4 overflow-y-auto">
-      <div className="bg-white rounded-2xl shadow-xl max-w-md w-full p-6 my-8 max-h-[calc(100vh-4rem)]">
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+      <div className="bg-white rounded-2xl shadow-xl max-w-md w-full p-6">
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center space-x-2">
             <Crown className="w-6 h-6 text-amber-600" />
@@ -52,13 +61,13 @@ export default function PaywallModal({ isOpen, onClose }: PaywallModalProps) {
           </button>
         </div>
 
-        <div className="text-center mb-6">
+        <div className="text-center mb-8">
           <p className="text-gray-600 mb-4">
             Your free trial has ended. Upgrade to continue managing your bakery with BakeStatements.
           </p>
         </div>
 
-        <div className="space-y-4 mb-6 overflow-y-auto max-h-[calc(100vh-20rem)]">
+        <div className="space-y-4 mb-8">
           <div className="border border-amber-200 rounded-lg p-4 bg-amber-50">
             <div className="flex items-center justify-between mb-2">
               <h3 className="font-bold text-gray-800">Monthly Plan</h3>
@@ -79,12 +88,8 @@ export default function PaywallModal({ isOpen, onClose }: PaywallModalProps) {
                 </li>
               ))}
             </ul>
-            <button
-              onClick={() => handleSubscribe(STRIPE_PRICES.monthly, 'subscription')}
-              disabled={loading === STRIPE_PRICES.monthly}
-              className="w-full bg-amber-500 text-white py-2 px-4 rounded-lg hover:bg-amber-600 transition-colors mt-4 font-medium disabled:opacity-50"
-            >
-              {loading === STRIPE_PRICES.monthly ? (
+            <button className="w-full bg-amber-500 text-white py-2 px-4 rounded-lg hover:bg-amber-600 transition-colors mt-4 font-medium">
+              {loading === 'monthly' ? (
                 <div className="flex items-center justify-center space-x-2">
                   <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
                   <span>Processing...</span>
@@ -107,12 +112,8 @@ export default function PaywallModal({ isOpen, onClose }: PaywallModalProps) {
               </div>
             </div>
             <p className="text-sm text-gray-600 mb-3">AUD per year (Save $48!)</p>
-            <button
-              onClick={() => handleSubscribe(STRIPE_PRICES.annual, 'subscription')}
-              disabled={loading === STRIPE_PRICES.annual}
-              className="w-full bg-emerald-600 text-white py-2 px-4 rounded-lg hover:bg-emerald-700 transition-colors font-medium disabled:opacity-50"
-            >
-              {loading === STRIPE_PRICES.annual ? (
+            <button className="w-full bg-emerald-600 text-white py-2 px-4 rounded-lg hover:bg-emerald-700 transition-colors font-medium">
+              {loading === 'annual' ? (
                 <div className="flex items-center justify-center space-x-2">
                   <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
                   <span>Processing...</span>
@@ -132,12 +133,8 @@ export default function PaywallModal({ isOpen, onClose }: PaywallModalProps) {
               </div>
             </div>
             <p className="text-sm text-gray-600 mb-3">One-time payment • First 50 users only</p>
-            <button
-              onClick={() => handleSubscribe(STRIPE_PRICES.lifetime, 'payment')}
-              disabled={loading === STRIPE_PRICES.lifetime}
-              className="w-full bg-purple-500 text-white py-2 px-4 rounded-lg hover:bg-purple-600 transition-colors font-medium disabled:opacity-50"
-            >
-              {loading === STRIPE_PRICES.lifetime ? (
+            <button className="w-full bg-purple-500 text-white py-2 px-4 rounded-lg hover:bg-purple-600 transition-colors font-medium">
+              {loading === 'lifetime' ? (
                 <div className="flex items-center justify-center space-x-2">
                   <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
                   <span>Processing...</span>
@@ -162,5 +159,5 @@ export default function PaywallModal({ isOpen, onClose }: PaywallModalProps) {
         </div>
       </div>
     </div>
-  );
+  )
 }

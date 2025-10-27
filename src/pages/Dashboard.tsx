@@ -1,8 +1,7 @@
 import { useEffect, useState } from 'react'
-import { Link } from 'react-router-dom'
+import { supabase } from '../lib/supabase'
 import { useAuth } from '../hooks/useAuth'
-import { api } from '../lib/api'
-import { ShoppingCart, DollarSign, TrendingUp, Calendar, FileText, Mail, Wrench } from 'lucide-react'
+import { ShoppingCart, DollarSign, TrendingUp, Calendar, FileText, Mail } from 'lucide-react'
 import { format } from 'date-fns'
 
 interface DashboardStats {
@@ -37,36 +36,49 @@ export default function Dashboard() {
   }, [user])
 
   const fetchDashboardData = async () => {
-    if (!user) return
-
     try {
-      const ordersResponse: any = await api.orders.getAll('')
-      const expensesResponse: any = await api.expenses.getAll('')
-      const enquiriesResponse: any = await api.enquiries.getAll('')
+      // Fetch orders
+      const { data: orders } = await supabase
+        .from('orders')
+        .select('*')
+        .eq('user_id', user!.id)
 
-      const orders = ordersResponse.orders || []
-      const expenses = expensesResponse.expenses || []
-      const enquiries = enquiriesResponse.enquiries || []
+      // Fetch expenses
+      const { data: expenses } = await supabase
+        .from('expenses')
+        .select('*')
+        .eq('user_id', user!.id)
 
-      const totalOrders = orders.length
-      const totalRevenue = orders.reduce((sum: number, order: any) => sum + (order.amount || 0), 0)
-      const totalExpenses = expenses.reduce((sum: number, expense: any) => sum + expense.amount, 0)
+      // Fetch enquiries
+      const { data: enquiries } = await supabase
+        .from('enquiries')
+        .select('*')
+        .eq('user_id', user!.id)
+        .eq('status', 'New')
+
+      // Calculate stats
+      const totalOrders = orders?.length || 0
+      const totalRevenue = orders?.reduce((sum, order) => sum + (order.amount || 0), 0) || 0
+      const totalExpenses = expenses?.reduce((sum, expense) => sum + expense.amount, 0) || 0
       const netProfit = totalRevenue - totalExpenses
-
-      const pendingOrders = orders.filter((order: any) => order.status !== 'Delivered')
+      
+      // Calculate pending invoices (orders that are not delivered)
+      const pendingOrders = orders?.filter(order => order.status !== 'Delivered') || []
       const pendingInvoices = pendingOrders.length
-      const pendingInvoicesValue = pendingOrders.reduce((sum: number, order: any) => sum + (order.amount || 0), 0)
+      const pendingInvoicesValue = pendingOrders.reduce((sum, order) => sum + (order.amount || 0), 0)
+      
+      // Count new enquiries
+      const newEnquiries = enquiries?.length || 0
 
-      const newEnquiries = enquiries.filter((e: any) => e.status === 'New').length
-
+      // Get upcoming orders (next 7 days)
       const nextWeek = new Date()
       nextWeek.setDate(nextWeek.getDate() + 7)
-
-      const upcomingOrders = orders.filter((order: any) => {
+      
+      const upcomingOrders = orders?.filter(order => {
         const dueDate = new Date(order.due_date)
         const today = new Date()
         return dueDate >= today && dueDate <= nextWeek
-      }).slice(0, 5)
+      }).slice(0, 5) || []
 
       setStats({
         totalOrders,
@@ -232,22 +244,22 @@ export default function Dashboard() {
           </div>
           <div className="p-6">
             <div className="grid grid-cols-2 gap-4">
-              <Link to="/orders" className="p-4 bg-amber-50 border border-amber-200 rounded-lg hover:bg-amber-100 transition-colors group">
+              <button className="p-4 bg-amber-50 border border-amber-200 rounded-lg hover:bg-amber-100 transition-colors group">
                 <ShoppingCart className="w-6 h-6 text-amber-600 mb-2 group-hover:scale-110 transition-transform" />
                 <p className="text-sm font-medium text-gray-800">New Order</p>
-              </Link>
-              <Link to="/expenses" className="p-4 bg-green-50 border border-green-200 rounded-lg hover:bg-green-100 transition-colors group">
+              </button>
+              <button className="p-4 bg-green-50 border border-green-200 rounded-lg hover:bg-green-100 transition-colors group">
                 <DollarSign className="w-6 h-6 text-green-600 mb-2 group-hover:scale-110 transition-transform" />
                 <p className="text-sm font-medium text-gray-800">Add Expense</p>
-              </Link>
-              <Link to="/equipment" className="p-4 bg-teal-50 border border-teal-200 rounded-lg hover:bg-teal-100 transition-colors group">
-                <Wrench className="w-6 h-6 text-teal-600 mb-2 group-hover:scale-110 transition-transform" />
-                <p className="text-sm font-medium text-gray-800">Equipment</p>
-              </Link>
-              <Link to="/enquiries" className="p-4 bg-rose-50 border border-rose-200 rounded-lg hover:bg-rose-100 transition-colors group">
-                <Mail className="w-6 h-6 text-rose-600 mb-2 group-hover:scale-110 transition-transform" />
+              </button>
+              <button className="p-4 bg-purple-50 border border-purple-200 rounded-lg hover:bg-purple-100 transition-colors group">
+                <Mail className="w-6 h-6 text-purple-600 mb-2 group-hover:scale-110 transition-transform" />
                 <p className="text-sm font-medium text-gray-800">View Enquiries</p>
-              </Link>
+              </button>
+              <button className="p-4 bg-blue-50 border border-blue-200 rounded-lg hover:bg-blue-100 transition-colors group">
+                <Calendar className="w-6 h-6 text-blue-600 mb-2 group-hover:scale-110 transition-transform" />
+                <p className="text-sm font-medium text-gray-800">View Calendar</p>
+              </button>
             </div>
           </div>
         </div>

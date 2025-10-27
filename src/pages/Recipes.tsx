@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react'
-import { useAuth } from '../hooks/useAuth'
-import { api } from '../lib/api'
 import { supabase } from '../lib/supabase'
+import { useAuth } from '../hooks/useAuth'
 import { Plus, Calculator, Package, DollarSign, Edit, Trash2 } from 'lucide-react'
 
 interface Ingredient {
@@ -40,8 +39,6 @@ export default function Recipes() {
   const [showIngredientForm, setShowIngredientForm] = useState(false)
   const [showRecipeForm, setShowRecipeForm] = useState(false)
   const [selectedRecipe, setSelectedRecipe] = useState<Recipe | null>(null)
-  const [editingIngredient, setEditingIngredient] = useState<Ingredient | null>(null)
-  const [editingRecipe, setEditingRecipe] = useState<Recipe | null>(null)
 
   const [ingredientForm, setIngredientForm] = useState({
     name: '',
@@ -62,13 +59,32 @@ export default function Recipes() {
   }, [user])
 
   const fetchData = async () => {
-    if (!user) return
     try {
-      const ingredientsResponse: any = await api.ingredients.getAll('')
-      const recipesResponse: any = await api.recipes.getAll('')
+      // Fetch ingredients
+      const { data: ingredientsData } = await supabase
+        .from('ingredients')
+        .select('*')
+        .eq('user_id', user!.id)
+        .order('name')
 
-      const ingredientsData = ingredientsResponse.ingredients || []
-      const recipesData = recipesResponse.recipes || []
+      // Fetch recipes with ingredients
+      const { data: recipesData } = await supabase
+        .from('recipes')
+        .select(`
+          *,
+          recipe_ingredients (
+            id,
+            quantity,
+            ingredient:ingredients (
+              id,
+              name,
+              cost_per_unit,
+              unit_type
+            )
+          )
+        `)
+        .eq('user_id', user!.id)
+        .order('name')
 
       setIngredients(ingredientsData || [])
       
@@ -104,103 +120,57 @@ export default function Recipes() {
   const handleIngredientSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     try {
-      if (!user) return
+      const { error } = await supabase
+        .from('ingredients')
+        .insert([{ ...ingredientForm, user_id: user!.id }])
 
-      if (editingIngredient) {
-        await api.ingredients.update('', editingIngredient.id, ingredientForm)
-      } else {
-        await api.ingredients.create('', ingredientForm)
-      }
+      if (error) throw error
 
       setIngredientForm({ name: '', cost_per_unit: 0, unit_type: 'kg' })
       setShowIngredientForm(false)
-      setEditingIngredient(null)
       fetchData()
     } catch (error) {
-      console.error('Error saving ingredient:', error)
+      console.error('Error creating ingredient:', error)
     }
-  }
-
-  const handleEditIngredient = (ingredient: Ingredient) => {
-    setEditingIngredient(ingredient)
-    setIngredientForm({
-      name: ingredient.name,
-      cost_per_unit: ingredient.cost_per_unit,
-      unit_type: ingredient.unit_type
-    })
-    setShowIngredientForm(true)
-  }
-
-  const handleCancelIngredient = () => {
-    setShowIngredientForm(false)
-    setEditingIngredient(null)
-    setIngredientForm({ name: '', cost_per_unit: 0, unit_type: 'kg' })
   }
 
   const handleRecipeSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     try {
-      if (!user) return
-
-      if (editingRecipe) {
-        await api.recipes.update('', editingRecipe.id, {
-          name: recipeForm.name,
-          batch_size: recipeForm.batch_size
-        })
-
-        const { data: { user: currentUser } } = await supabase.auth.getUser()
-        if (!currentUser) throw new Error('Not authenticated')
-
-        await supabase
-          .from('recipe_ingredients')
-          .delete()
-          .eq('recipe_id', editingRecipe.id)
-
-        if (recipeForm.ingredients && recipeForm.ingredients.length > 0) {
-          const recipeIngredients = recipeForm.ingredients.map((ing: any) => ({
-            recipe_id: editingRecipe.id,
-            ingredient_id: ing.ingredient_id,
-            quantity: ing.quantity,
-          }))
-
-          await supabase
-            .from('recipe_ingredients')
-            .insert(recipeIngredients)
-        }
-      } else {
-        await api.recipes.create('', {
-          name: recipeForm.name,
+      // Insert recipe
+      const { data: recipeData, error: recipeError } = await supabase
+        .from('recipes')
+        .insert([{ 
+          name: recipeForm.name, 
           batch_size: recipeForm.batch_size,
-          ingredients: recipeForm.ingredients
-        })
+          user_id: user!.id 
+        }])
+        .select()
+        .single()
+
+      if (recipeError) throw recipeError
+
+      // Insert recipe ingredients
+      if (recipeForm.ingredients.length > 0) {
+        const { error: ingredientsError } = await supabase
+          .from('recipe_ingredients')
+          .insert(
+            recipeForm.ingredients.map(ingredient => ({
+              recipe_id: recipeData.id,
+              ingredient_id: ingredient.ingredient_id,
+              quantity: ingredient.quantity
+            }))
+          )
+
+        if (ingredientsError) throw ingredientsError
       }
 
       setRecipeForm({ name: '', batch_size: 1, ingredients: [] })
       setShowRecipeForm(false)
-      setEditingRecipe(null)
       fetchData()
     } catch (error) {
-      console.error('Error saving recipe:', error)
+      console.error('Error creating recipe:', error)
     }
-  }
-
-  const handleEditRecipe = (recipe: Recipe) => {
-    setEditingRecipe(recipe)
-    setRecipeForm({
-      name: recipe.name,
-      batch_size: recipe.batch_size,
-      ingredients: recipe.ingredients?.map(ing => ({
-        ingredient_id: ing.ingredient.id,
-        quantity: ing.quantity
-      })) || []
-    })
-    setShowRecipeForm(true)
-  }
-
-  const handleCancelRecipe = () => {
-    setShowRecipeForm(false)
-    setEditingRecipe(null)
-    setRecipeForm({ name: '', batch_size: 1, ingredients: [] })
   }
 
   const addIngredientToRecipe = () => {
@@ -277,13 +247,6 @@ export default function Recipes() {
                         ${ingredient.cost_per_unit.toFixed(2)} per {ingredient.unit_type}
                       </p>
                     </div>
-                    <button
-                      onClick={() => handleEditIngredient(ingredient)}
-                      className="p-2 text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50 rounded-lg transition-colors"
-                      title="Edit ingredient"
-                    >
-                      <Edit className="w-4 h-4" />
-                    </button>
                   </div>
                 ))}
               </div>
@@ -317,16 +280,7 @@ export default function Recipes() {
                   <div key={recipe.id} className="border border-gray-200 rounded-lg p-4">
                     <div className="flex items-center justify-between mb-3">
                       <h3 className="text-lg font-semibold text-gray-800">{recipe.name}</h3>
-                      <div className="flex items-center space-x-2">
-                        <span className="text-sm text-gray-500">Batch size: {recipe.batch_size}</span>
-                        <button
-                          onClick={() => handleEditRecipe(recipe)}
-                          className="p-2 text-amber-600 hover:text-amber-700 hover:bg-amber-50 rounded-lg transition-colors"
-                          title="Edit recipe"
-                        >
-                          <Edit className="w-4 h-4" />
-                        </button>
-                      </div>
+                      <span className="text-sm text-gray-500">Batch size: {recipe.batch_size}</span>
                     </div>
                     
                     <div className="grid grid-cols-3 gap-4 mb-4">
@@ -388,9 +342,7 @@ export default function Recipes() {
       {showIngredientForm && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-lg shadow-xl max-w-md w-full p-6">
-            <h2 className="text-xl font-bold text-gray-800 mb-6">
-              {editingIngredient ? 'Edit Ingredient' : 'Add Ingredient'}
-            </h2>
+            <h2 className="text-xl font-bold text-gray-800 mb-6">Add Ingredient</h2>
             <form onSubmit={handleIngredientSubmit} className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -441,11 +393,11 @@ export default function Recipes() {
                   type="submit"
                   className="flex-1 bg-emerald-600 text-white py-2 px-4 rounded-lg hover:bg-emerald-700 transition-colors"
                 >
-                  {editingIngredient ? 'Update Ingredient' : 'Add Ingredient'}
+                  Add Ingredient
                 </button>
                 <button
                   type="button"
-                  onClick={handleCancelIngredient}
+                  onClick={() => setShowIngredientForm(false)}
                   className="flex-1 bg-gray-300 text-gray-700 py-2 px-4 rounded-lg hover:bg-gray-400 transition-colors"
                 >
                   Cancel
@@ -460,9 +412,7 @@ export default function Recipes() {
       {showRecipeForm && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto p-6">
-            <h2 className="text-xl font-bold text-gray-800 mb-6">
-              {editingRecipe ? 'Edit Recipe' : 'Create Recipe'}
-            </h2>
+            <h2 className="text-xl font-bold text-gray-800 mb-6">Create Recipe</h2>
             <form onSubmit={handleRecipeSubmit} className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -547,11 +497,11 @@ export default function Recipes() {
                   type="submit"
                   className="flex-1 bg-amber-500 text-white py-2 px-4 rounded-lg hover:bg-amber-600 transition-colors"
                 >
-                  {editingRecipe ? 'Update Recipe' : 'Create Recipe'}
+                  Create Recipe
                 </button>
                 <button
                   type="button"
-                  onClick={handleCancelRecipe}
+                  onClick={() => setShowRecipeForm(false)}
                   className="flex-1 bg-gray-300 text-gray-700 py-2 px-4 rounded-lg hover:bg-gray-400 transition-colors"
                 >
                   Cancel

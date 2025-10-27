@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
-import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../hooks/useAuth'
-import { User, Building, Hash, Phone, Save, CheckCircle, Crown, ArrowUpRight } from 'lucide-react'
+import { supabase } from '../lib/supabase'
+import { User, Building, Hash, Phone, Save, CheckCircle } from 'lucide-react'
 
 interface ProfileData {
   business_name: string | null
@@ -10,8 +10,7 @@ interface ProfileData {
 }
 
 export default function Settings() {
-  const navigate = useNavigate()
-  const { user, isTrialExpired, updateProfile } = useAuth()
+  const { user, isTrialExpired } = useAuth()
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [saved, setSaved] = useState(false)
@@ -23,22 +22,46 @@ export default function Settings() {
 
   useEffect(() => {
     if (user) {
-      setProfileData({
-        business_name: user.business_name || '',
-        phone_number: user.phone_number || '',
-        abn: user.abn || ''
-      })
-      setLoading(false)
+      fetchProfile()
     }
   }, [user])
 
+  const fetchProfile = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('business_name, phone_number, abn')
+        .eq('id', user!.id)
+        .single()
+
+      if (error && error.code !== 'PGRST116') throw error // PGRST116 means no rows found
+      
+      if (data) {
+        setProfileData({
+          business_name: data.business_name || '',
+          phone_number: data.phone_number || '',
+          abn: data.abn || ''
+        })
+      }
+    } catch (error) {
+      console.error('Error fetching profile:', error)
+    } finally {
+      setLoading(false)
+    }
+  }
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-
     setSaving(true)
 
     try {
-      await updateProfile(profileData)
+      const { error } = await supabase
+        .from('profiles')
+        .update(profileData)
+        .eq('id', user!.id)
+
+      if (error) throw error
+
       setSaved(true)
       setTimeout(() => setSaved(false), 3000)
     } catch (error) {
@@ -166,34 +189,17 @@ export default function Settings() {
           <div className="p-6 border-b border-gray-100 dark:border-gray-700">
             <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-100">Account Information</h2>
           </div>
-
+          
           <div className="p-6 space-y-4">
             <div>
               <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Account Status</h3>
-              {user?.subscription_status === 'lifetime' ? (
-                <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200">
-                  <Crown className="w-3 h-3 mr-1" />
-                  Lifetime Member
-                </span>
-              ) : user?.subscription_status === 'active' ? (
-                <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">
-                  Active
-                </span>
-              ) : user?.subscription_status === 'past_due' ? (
-                <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200">
-                  Payment Due
-                </span>
-              ) : user?.subscription_status === 'cancelled' ? (
-                <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200">
-                  Cancelled
-                </span>
-              ) : isTrialExpired ? (
-                <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200">
+              {isTrialExpired ? (
+                <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200">
                   Trial Expired
                 </span>
               ) : (
-                <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">
-                  Active Trial
+                <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">
+                  Active
                 </span>
               )}
             </div>
@@ -201,90 +207,8 @@ export default function Settings() {
             <div>
               <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Subscription Plan</h3>
               <p className="text-sm text-gray-600 dark:text-gray-400">
-                {user?.subscription_status === 'lifetime' ? (
-                  <span className="font-semibold text-purple-600 dark:text-purple-400">
-                    Founder's Lifetime Access
-                  </span>
-                ) : user?.subscription_tier === 'annual' ? (
-                  <span className="font-semibold text-teal-600 dark:text-teal-400">
-                    Annual Plan ($180/year)
-                  </span>
-                ) : user?.subscription_tier === 'monthly' ? (
-                  <span className="font-semibold text-amber-600 dark:text-amber-400">
-                    Monthly Plan ($19/month)
-                  </span>
-                ) : (
-                  '7-Day Free Trial'
-                )}
+                {isTrialExpired ? 'Upgrade Required' : '7-Day Free Trial'}
               </p>
-              {user?.trial_end_date && !user?.subscription_tier && (
-                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                  Trial ends: {new Date(user.trial_end_date).toLocaleDateString()}
-                </p>
-              )}
-            </div>
-
-            {/* Upgrade Options */}
-            <div className="pt-4 border-t border-gray-100 dark:border-gray-700 space-y-2">
-              {user?.subscription_status === 'lifetime' ? (
-                <div className="text-center py-2">
-                  <p className="text-sm text-gray-600 dark:text-gray-400">
-                    You have lifetime access! Thank you for being a founding member.
-                  </p>
-                </div>
-              ) : user?.subscription_tier === 'annual' ? (
-                <>
-                  <p className="text-xs text-gray-600 dark:text-gray-400 mb-3">
-                    Want to secure lifetime access? Upgrade to our Founder's plan.
-                  </p>
-                  <button
-                    onClick={() => navigate('/pricing')}
-                    className="w-full flex items-center justify-center space-x-2 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors text-sm font-medium"
-                  >
-                    <Crown className="w-4 h-4" />
-                    <span>Upgrade to Lifetime</span>
-                    <ArrowUpRight className="w-4 h-4" />
-                  </button>
-                </>
-              ) : user?.subscription_tier === 'monthly' ? (
-                <>
-                  <p className="text-xs text-gray-600 dark:text-gray-400 mb-3">
-                    Save $48/year with annual billing, or get lifetime access!
-                  </p>
-                  <button
-                    onClick={() => navigate('/pricing')}
-                    className="w-full flex items-center justify-center space-x-2 px-4 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700 transition-colors text-sm font-medium"
-                  >
-                    <span>Upgrade to Annual</span>
-                    <ArrowUpRight className="w-4 h-4" />
-                  </button>
-                  <button
-                    onClick={() => navigate('/pricing')}
-                    className="w-full flex items-center justify-center space-x-2 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors text-sm font-medium"
-                  >
-                    <Crown className="w-4 h-4" />
-                    <span>Get Lifetime Access</span>
-                    <ArrowUpRight className="w-4 h-4" />
-                  </button>
-                </>
-              ) : (
-                <>
-                  <p className="text-xs text-gray-600 dark:text-gray-400 mb-3">
-                    {isTrialExpired
-                      ? 'Your trial has ended. Choose a plan to continue.'
-                      : 'Enjoying BakeStatements? Upgrade anytime to continue after your trial.'
-                    }
-                  </p>
-                  <button
-                    onClick={() => navigate('/pricing')}
-                    className="w-full flex items-center justify-center space-x-2 px-4 py-2 bg-gradient-to-r from-amber-500 to-teal-500 text-white rounded-lg hover:from-amber-600 hover:to-teal-600 transition-colors text-sm font-medium"
-                  >
-                    <Crown className="w-4 h-4" />
-                    <span>View Plans & Pricing</span>
-                    <ArrowUpRight className="w-4 h-4" />
-                  </button>
-                </>
-              )}
             </div>
 
             <div className="pt-4 border-t border-gray-100 dark:border-gray-700">

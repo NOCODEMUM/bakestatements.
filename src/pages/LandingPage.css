@@ -1,126 +1,123 @@
-/* Hero Section Styles */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+
+/* Use system fonts for consistency with dashboard */
+.landing-page {
+  font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+}
+
+/* Smooth scrolling for anchor links */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Mobile menu animations */
+.mobile-menu-enter {
+  transform: translateX(-100%);
+}
+
+.mobile-menu-enter-active {
+  transform: translateX(0);
+  transition: transform 0.3s ease-in-out;
+}
+
+.mobile-menu-exit {
+  transform: translateX(0);
+}
+
+.mobile-menu-exit-active {
+  transform: translateX(-100%);
+  transition: transform 0.3s ease-in-out;
+}
+
+/* Prevent horizontal scroll */
+.landing-page {
+  overflow-x: hidden;
+}
+
+/* Hero Section */
 .hero {
-  position: relative;
-  height: 100vh;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  overflow: hidden;
-}
-
-.hero__image-container {
-  position: absolute;
-  inset: 0;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 0;
-}
-
-.hero__image {
   width: 100%;
-  height: 100%;
-  object-fit: contain;
-  object-position: center;
+  min-height: clamp(420px, 70vh, 680px);
+  position: relative;
+  overflow: hidden;
+  background-image: url('/20250821_1326_Baking Koala_remix_01k35afawhfm8tcpx1kf95gj8h.png');
+  background-size: contain;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-color: #f8fdfb;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  box-shadow: none;
+  border-radius: 0;
 }
 
 .hero__overlay {
   position: absolute;
   inset: 0;
-  background: rgba(0, 0, 0, 0.3);
-  z-index: 1;
-}
-
-.hero__fade-overlay {
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  height: 150px;
-  background: linear-gradient(to top, #f8fdfb, transparent);
-  z-index: 2;
+  background:
+    linear-gradient(180deg, rgba(0,0,0,0.18) 0%, rgba(0,0,0,0.00) 50%),
+    linear-gradient(0deg, rgba(248,253,251,1) 0%, rgba(248,253,251,0) 25%);
+  pointer-events: none;
 }
 
 .hero__content {
   position: relative;
-  z-index: 3;
-  text-align: center;
-  color: white;
-  max-width: 4xl;
+  z-index: 10;
+  max-width: 1200px;
   margin: 0 auto;
-  padding: 0 1rem;
+  color: #1F1F1F;
+}
+
+@media (max-width: 640px) {
+  .hero__content {
+  }
 }
 
 .hero__content h1 {
-  font-size: 3rem;
-  font-weight: bold;
-  margin-bottom: 1rem;
-  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+  font-size: clamp(28px, 5vw, 56px);
+  line-height: 1.1;
+  font-weight: 800;
 }
 
 .hero__content p {
-  font-size: 1.25rem;
-  margin-bottom: 2rem;
-  opacity: 0.9;
-  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+  margin-top: 0.75rem;
+  font-size: clamp(16px, 2.4vw, 20px);
+  color: rgba(0,0,0,0.72);
+  max-width: 640px;
 }
 
 .btn-primary {
   display: inline-block;
-  background-color: #f59e0b;
-  color: white;
-  padding: 1rem 2rem;
-  border-radius: 9999px;
-  font-weight: bold;
-  font-size: 1.125rem;
+  margin-top: 1.5rem;
+  background: #FF9F45;
+  color: #fff;
+  border-radius: 12px;
+  padding: 12px 20px;
+  font-weight: 700;
   text-decoration: none;
-  transition: all 0.3s ease;
-  box-shadow: 0 10px 25px rgba(245, 158, 11, 0.3);
 }
 
 .btn-primary:hover {
-  background-color: #d97706;
-  transform: translateY(-2px);
-  box-shadow: 0 15px 35px rgba(245, 158, 11, 0.4);
+  filter: brightness(0.95);
 }
 
-/* Header Styles */
+/* Ensure no fixed positioning conflicts */
 .header-fixed {
   position: fixed;
   top: 0;
   left: 0;
   right: 0;
   z-index: 50;
-  background: rgba(255, 255, 255, 0.95);
-  backdrop-filter: blur(10px);
-  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
 }
 
-/* Responsive Styles */
-@media (max-width: 768px) {
-  .hero__content h1 {
-    font-size: 2.5rem;
-  }
-  
-  .hero__content p {
-    font-size: 1.125rem;
-  }
-  
-  .hero__fade-overlay {
-    height: 120px;
-  }
+/* Hero padding to account for fixed header */
+.hero-section {
+  padding-top: 5rem;
 }
 
-@media (max-width: 480px) {
-  .hero__content h1 {
-    font-size: 2rem;
-  }
-  
-  .hero__content p {
-    font-size: 1rem;
-  }
-  
-  .hero__fade-overlay {
-    height: 100px;
+@media (min-width: 768px) {
+  .hero-section {
+    padding-top: 6rem;
   }
 }
