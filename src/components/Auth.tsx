@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import { useAuth } from '../hooks/useAuth'
-import { ChefHat, Eye, EyeOff } from 'lucide-react'
+import { ChefHat, Eye, EyeOff, Mail, Clock } from 'lucide-react'
 
 export default function Auth() {
   const [loading, setLoading] = useState(false)
@@ -11,7 +11,11 @@ export default function Auth() {
   const [message, setMessage] = useState('')
   const [isSuccess, setIsSuccess] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
-  const { signUp, signIn } = useAuth()
+  const [showConfirmationBanner, setShowConfirmationBanner] = useState(false)
+  const [pendingConfirmationEmail, setPendingConfirmationEmail] = useState('')
+  const [resendCooldown, setResendCooldown] = useState(0)
+  const [resendMessage, setResendMessage] = useState('')
+  const { signUp, signIn, resendConfirmationEmail } = useAuth()
   const [searchParams] = useSearchParams()
 
   useEffect(() => {
@@ -21,31 +25,81 @@ export default function Auth() {
       setIsSuccess(true)
       setIsSignUp(false)
     }
+
+    const storedEmail = sessionStorage.getItem('pendingConfirmationEmail')
+    if (storedEmail) {
+      setPendingConfirmationEmail(storedEmail)
+      setShowConfirmationBanner(true)
+      setIsSignUp(false)
+    }
   }, [searchParams])
+
+  useEffect(() => {
+    let timer: NodeJS.Timeout
+    if (resendCooldown > 0) {
+      timer = setTimeout(() => setResendCooldown(resendCooldown - 1), 1000)
+    }
+    return () => clearTimeout(timer)
+  }, [resendCooldown])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setLoading(true)
     setMessage('')
     setIsSuccess(false)
+    setResendMessage('')
 
     try {
       if (isSignUp) {
-        await signUp(email, password)
-        setMessage('Account created successfully! You can now sign in.')
-        setIsSuccess(true)
-        setIsSignUp(false)
+        const result = await signUp(email, password)
+        if (result.needsConfirmation) {
+          setPendingConfirmationEmail(email)
+          sessionStorage.setItem('pendingConfirmationEmail', email)
+          setShowConfirmationBanner(true)
+          setIsSignUp(false)
+          setPassword('')
+        } else {
+          setMessage('Account created successfully! You can now sign in.')
+          setIsSuccess(true)
+          setIsSignUp(false)
+        }
       } else {
         await signIn(email, password)
+        sessionStorage.removeItem('pendingConfirmationEmail')
+        setShowConfirmationBanner(false)
+        setPendingConfirmationEmail('')
       }
     } catch (error: any) {
       if (error.message.includes('already registered') || error.message.includes('already exists')) {
         setMessage('Email already registered')
       } else if (error.message.includes('Invalid') || error.message.includes('credentials')) {
         setMessage('Email or password didn\'t match')
+      } else if (error.message.includes('Email not confirmed') || error.message.includes('email_not_confirmed')) {
+        setMessage('Please confirm your email address first. Check your inbox for the confirmation link.')
+        if (!showConfirmationBanner && email) {
+          setPendingConfirmationEmail(email)
+          setShowConfirmationBanner(true)
+        }
       } else {
         setMessage(error.message || 'An error occurred')
       }
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const handleResendConfirmation = async () => {
+    if (resendCooldown > 0 || !pendingConfirmationEmail) return
+
+    setResendMessage('')
+    setLoading(true)
+
+    try {
+      await resendConfirmationEmail(pendingConfirmationEmail)
+      setResendMessage('Confirmation email sent! Check your inbox.')
+      setResendCooldown(60)
+    } catch (error: any) {
+      setResendMessage(error.message || 'Failed to resend email. Please try again.')
     } finally {
       setLoading(false)
     }
@@ -85,6 +139,63 @@ export default function Auth() {
               Professional bakery management for Australian bakers
             </p>
           </div>
+
+          {/* Confirmation Banner */}
+          {showConfirmationBanner && pendingConfirmationEmail && (
+            <div className="mb-6 bg-blue-50 border-2 border-blue-200 rounded-lg p-6">
+              <div className="flex items-start">
+                <div className="flex-shrink-0">
+                  <Mail className="w-6 h-6 text-blue-600" />
+                </div>
+                <div className="ml-3 flex-1">
+                  <h3 className="text-lg font-semibold text-blue-900 mb-2">
+                    Check your email to get started!
+                  </h3>
+                  <p className="text-sm text-blue-800 mb-1">
+                    We've sent a confirmation email to <strong>{pendingConfirmationEmail}</strong>
+                  </p>
+                  <p className="text-sm text-blue-700 mb-4">
+                    Click the link in the email to activate your account. Don't forget to check your spam folder!
+                  </p>
+                  <div className="flex items-center space-x-3">
+                    <button
+                      type="button"
+                      onClick={handleResendConfirmation}
+                      disabled={resendCooldown > 0 || loading}
+                      className="text-sm font-medium text-blue-700 hover:text-blue-800 disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
+                    >
+                      {resendCooldown > 0 ? (
+                        <>
+                          <Clock className="w-4 h-4 mr-1" />
+                          Resend available in {resendCooldown}s
+                        </>
+                      ) : (
+                        'Resend confirmation email'
+                      )}
+                    </button>
+                  </div>
+                  {resendMessage && (
+                    <p className={`text-sm mt-2 ${
+                      resendMessage.includes('sent') ? 'text-green-700' : 'text-red-700'
+                    }`}>
+                      {resendMessage}
+                    </p>
+                  )}
+                </div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowConfirmationBanner(false)
+                    sessionStorage.removeItem('pendingConfirmationEmail')
+                    setPendingConfirmationEmail('')
+                  }}
+                  className="ml-2 text-blue-400 hover:text-blue-600"
+                >
+                  ×
+                </button>
+              </div>
+            </div>
+          )}
 
           {/* Auth Form */}
           <form onSubmit={handleSubmit} className="space-y-4">
