@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
-import { supabase } from '../lib/supabase'
 import { useAuth } from '../hooks/useAuth'
+import { api } from '../lib/api'
 import { FileText, Download, Eye, DollarSign, Calendar, User } from 'lucide-react'
 import { format } from 'date-fns'
 
@@ -31,16 +31,14 @@ export default function Invoices() {
   }, [user])
 
   const fetchOrders = async () => {
+    if (!user) return
     try {
-      const { data, error } = await supabase
-        .from('orders')
-        .select('*')
-        .eq('user_id', user!.id)
-        .in('status', ['Confirmed', 'Baking', 'Ready', 'Delivered'])
-        .order('created_at', { ascending: false })
-
-      if (error) throw error
-      setOrders(data || [])
+      const response: any = await api.orders.getAll('')
+      const allOrders = response.orders || []
+      const invoiceOrders = allOrders.filter((o: any) =>
+        ['Confirmed', 'Baking', 'Ready', 'Delivered'].includes(o.status)
+      )
+      setOrders(invoiceOrders)
     } catch (error) {
       console.error('Error fetching orders:', error)
     } finally {
@@ -49,33 +47,27 @@ export default function Invoices() {
   }
 
   const fetchUserProfile = async () => {
+    if (!user) return
     try {
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('business_name, abn, phone_number')
-        .eq('id', user!.id)
-        .single()
-
-      if (error && error.code !== 'PGRST116') throw error
-      setUserProfile(data)
+      const response: any = await api.auth.getProfile()
+      if (response && response.user) {
+        setUserProfile({
+          business_name: response.user.business_name,
+          abn: response.user.abn,
+          phone_number: response.user.phone_number
+        })
+      }
     } catch (error) {
       console.error('Error fetching user profile:', error)
     }
   }
 
   const togglePaymentStatus = async (orderId: string, currentStatus: boolean) => {
+    if (!user) return
     try {
-      // For now, we'll use a custom field. In a real app, you'd have a separate invoices table
-      const { error } = await supabase
-        .from('orders')
-        .update({ 
-          // We can't add is_paid directly to orders table without migration
-          // So we'll use the status field for payment tracking
-          status: currentStatus ? 'Ready' : 'Delivered' 
-        })
-        .eq('id', orderId)
-
-      if (error) throw error
+      await api.orders.update('', orderId, {
+        status: currentStatus ? 'Ready' : 'Delivered'
+      })
       fetchOrders()
     } catch (error) {
       console.error('Error updating payment status:', error)

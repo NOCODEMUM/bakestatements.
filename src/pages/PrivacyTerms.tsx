@@ -1,5 +1,6 @@
 import React from 'react'
 import { ChefHat } from 'lucide-react'
+import PublicFooter from '../components/PublicFooter'
 
 export default function PrivacyTerms() {
   return (
@@ -361,36 +362,7 @@ export default function PrivacyTerms() {
         </div>
       </main>
 
-      {/* Acknowledgement of Country */}
-      <section className="py-12 md:py-16 px-4 bg-white/80">
-        <div className="max-w-4xl mx-auto text-center">
-          <div className="text-2xl mb-4 flex justify-center space-x-2">
-            <span>🖤</span>
-            <span>💛</span>
-            <span>❤️</span>
-          </div>
-          <p className="text-gray-600 leading-relaxed">
-            Developed on Dharawal Country, in Macquarie Fields, NSW. We acknowledge the Traditional Custodians of this land
-            <br />
-            and pay our respects to Elders past and present.
-          </p>
-        </div>
-      </section>
-
-      {/* Footer */}
-      <footer className="py-8 px-4 bg-white/50">
-        <div className="max-w-4xl mx-auto text-center">
-          <div className="flex items-center justify-center space-x-3 mb-4">
-            <div className="bg-amber-100 p-2 rounded-lg">
-              <ChefHat className="w-5 h-5 text-amber-600" />
-            </div>
-            <span className="text-lg font-bold text-gray-800">BakeStatements by PIX3L</span>
-          </div>
-          <p className="text-sm text-gray-500">
-            © 2025 PIX3L. Made with ❤️ in Sydney, Australia.
-          </p>
-        </div>
-      </footer>
+      <PublicFooter />
     </div>
   )
 }

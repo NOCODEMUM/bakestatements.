@@ -1,11 +1,5 @@
-import { loadStripe } from '@stripe/stripe-js'
-
-const stripePromise = loadStripe('pk_live_51HQu3YHruLrtRCwicQwk5bRfrvR38kdh5R73SmRBSQ12oKzMkkGjPVZ2ZbnSezrwiqjSX5ZHMvTKadLRio4Y4dX900XvrIf0N9')
-
-export { stripePromise }
-
 export const STRIPE_PRICES = {
-  monthly: 'price_monthly_plan_id', // Replace with actual Monthly Plan Price ID from Stripe Dashboard
-  annual: 'price_annual_plan_id',   // Replace with actual Annual Plan Price ID from Stripe Dashboard  
-  lifetime: 'price_lifetime_plan_id' // Replace with actual Lifetime Plan Price ID from Stripe Dashboard
-}
+  monthly: import.meta.env.VITE_STRIPE_PRICE_MONTHLY || 'price_1RyA4CHruLrtRCwiXi8uqRWn',
+  annual: import.meta.env.VITE_STRIPE_PRICE_ANNUAL || 'price_1RyA4CHruLrtRCwiZJlqpEt1',
+  lifetime: import.meta.env.VITE_STRIPE_PRICE_LIFETIME || 'price_1RyA4CHruLrtRCwi7inxZ3l2'
+};

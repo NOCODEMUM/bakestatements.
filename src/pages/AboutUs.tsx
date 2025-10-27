@@ -1,14 +1,19 @@
-import React from 'react'
+import PublicHeader from '../components/PublicHeader'
+import PublicFooter from '../components/PublicFooter'
 
 export default function AboutUs() {
   return (
-    <div className="space-y-8">
-      <div>
-        <h1 className="text-3xl font-bold text-gray-800 mb-2">About Us</h1>
-        <p className="text-gray-600">Our story and journey with BakeStatements</p>
-      </div>
+    <div className="min-h-screen bg-gradient-to-br from-teal-50 to-amber-50">
+      <PublicHeader />
 
-      <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-8">
+      <main className="pt-8 pb-16 px-4">
+        <div className="max-w-4xl mx-auto">
+          <div className="mb-8">
+            <h1 className="text-3xl font-bold text-gray-800 mb-2">About Us</h1>
+            <p className="text-gray-600">Our story and journey with BakeStatements</p>
+          </div>
+
+          <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl border border-gray-200 p-8">
         <div className="max-w-4xl mx-auto prose prose-lg">
           <h2 className="text-2xl font-bold text-gray-800 mb-6">Our Journal: The PIX3L Story</h2>
           
@@ -75,13 +80,17 @@ export default function AboutUs() {
               </div>
             </div>
             <p className="text-amber-800">
-              Every tool we build is crafted with the deep understanding that comes from five years of walking 
-              alongside Australian makers. We're not just building software – we're building the infrastructure 
+              Every tool we build is crafted with the deep understanding that comes from five years of walking
+              alongside Australian makers. We're not just building software – we're building the infrastructure
               for a thriving maker economy. Thank you for being part of this journey.
             </p>
           </div>
         </div>
-      </div>
+          </div>
+        </div>
+      </main>
+
+      <PublicFooter />
     </div>
   )
 }
