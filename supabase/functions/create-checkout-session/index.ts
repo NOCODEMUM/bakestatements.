@@ -1,6 +1,8 @@
+// Use Stripe server SDK via import map
+/// <reference path="../deno.d.ts" />
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
-import Stripe from "npm:stripe@14.21.0";
-import { createClient } from "npm:@supabase/supabase-js@2.39.0";
+import Stripe from "stripe";
+import { createClient } from "@supabase/supabase-js";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -49,7 +51,7 @@ Deno.serve(async (req: Request) => {
       );
     }
 
-    const { priceId, mode } = await req.json();
+    const { priceId, mode, returnUrl } = await req.json();
 
     if (!priceId) {
       return new Response(
@@ -86,6 +88,7 @@ Deno.serve(async (req: Request) => {
     }
 
     const frontendUrl = Deno.env.get("FRONTEND_URL") || "https://bakestatements.com";
+    const baseUrl = (returnUrl && typeof returnUrl === 'string' && returnUrl.startsWith('http')) ? returnUrl : frontendUrl;
 
     const session = await stripe.checkout.sessions.create({
       customer: customerId,
@@ -97,8 +100,8 @@ Deno.serve(async (req: Request) => {
         },
       ],
       mode: mode as "subscription" | "payment",
-      success_url: `${frontendUrl}/?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${frontendUrl}/pricing?cancelled=true`,
+      success_url: `${baseUrl}/?session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${baseUrl}/pricing?cancelled=true`,
       metadata: {
         user_id: user.id,
       },

@@ -1,6 +1,7 @@
+/// <reference path="../deno.d.ts" />
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
-import Stripe from "npm:stripe@14.21.0";
-import { createClient } from "npm:@supabase/supabase-js@2.39.0";
+import Stripe from "stripe";
+import { createClient } from "@supabase/supabase-js";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -39,7 +40,7 @@ Deno.serve(async (req: Request) => {
     }
 
     const body = await req.text();
-    let event: Stripe.Event;
+    let event: any;
 
     try {
       event = stripe.webhooks.constructEvent(body, signature, webhookSecret);
@@ -56,7 +57,7 @@ Deno.serve(async (req: Request) => {
 
     switch (event.type) {
       case "checkout.session.completed": {
-        const session = event.data.object as Stripe.Checkout.Session;
+        const session = event.data.object as any;
         const userId = session.metadata?.user_id;
 
         if (userId) {
@@ -67,11 +68,11 @@ Deno.serve(async (req: Request) => {
 
           if (session.mode === "subscription") {
             updateData.subscription_id = session.subscription;
-            
+
             const subscription = await stripe.subscriptions.retrieve(
               session.subscription as string
             );
-            
+
             const interval = subscription.items.data[0]?.price.recurring?.interval;
             updateData.subscription_tier = interval === "year" ? "annual" : "monthly";
           } else if (session.mode === "payment") {
@@ -92,7 +93,7 @@ Deno.serve(async (req: Request) => {
 
       case "customer.subscription.created":
       case "customer.subscription.updated": {
-        const subscription = event.data.object as Stripe.Subscription;
+        const subscription = event.data.object as any;
 
         let tier = "monthly";
         if (subscription.items.data[0]?.price.recurring?.interval === "year") {
@@ -113,7 +114,7 @@ Deno.serve(async (req: Request) => {
       }
 
       case "customer.subscription.deleted": {
-        const subscription = event.data.object as Stripe.Subscription;
+        const subscription = event.data.object as any;
 
         await supabase
           .from("profiles")
@@ -128,7 +129,7 @@ Deno.serve(async (req: Request) => {
       }
 
       case "invoice.payment_succeeded": {
-        const invoice = event.data.object as Stripe.Invoice;
+        const invoice = event.data.object as any;
 
         if (invoice.subscription) {
           await supabase
@@ -140,7 +141,7 @@ Deno.serve(async (req: Request) => {
       }
 
       case "invoice.payment_failed": {
-        const invoice = event.data.object as Stripe.Invoice;
+        const invoice = event.data.object as any;
 
         if (invoice.subscription) {
           await supabase

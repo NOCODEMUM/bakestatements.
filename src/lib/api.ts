@@ -429,6 +429,7 @@ export const api = {
       const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
       const { data: { session } } = await supabase.auth.getSession();
       const accessToken = session?.access_token;
+      const returnUrl = typeof window !== 'undefined' && window.location ? window.location.origin : undefined;
 
       const response = await fetch(`${supabaseUrl}/functions/v1/create-checkout-session`, {
         method: 'POST',
@@ -440,12 +441,13 @@ export const api = {
           priceId,
           mode,
           userId: user.id,
+          ...(returnUrl ? { returnUrl } : {}),
         }),
       });
 
       if (!response.ok) {
         const error = await response.json();
-        throw new Error(error.message || 'Failed to create checkout session');
+        throw new Error(error.error || error.message || 'Failed to create checkout session');
       }
 
       const data = await response.json();
