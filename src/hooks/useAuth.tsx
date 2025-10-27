@@ -39,29 +39,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const isReadOnlyMode = isTrialExpired && !hasActiveSubscription;
 
   const fetchUserProfile = async (userId: string) => {
-    try {
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', userId)
-        .maybeSingle();
+    const { data, error } = await supabase
+      .from('profiles')
+      .select('*')
+      .eq('id', userId)
+      .maybeSingle();
 
-      if (error) {
-        console.error('Error fetching profile:', error);
-        return null;
-      }
-
-      if (!data) {
-        console.warn('No profile found for user:', userId);
-        return null;
-      }
-
-      console.log('Profile fetched successfully:', { id: data.id, email: data.email });
-      return data;
-    } catch (err) {
-      console.error('Unexpected error fetching profile:', err);
+    if (error) {
+      console.error('Error fetching profile:', error);
       return null;
     }
+
+    return data;
   };
 
   const checkTrialStatus = (userData: UserProfile) => {
@@ -76,33 +65,25 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
-      console.log('Initial session check:', session ? 'Session exists' : 'No session');
       setSupabaseUser(session?.user ?? null);
       if (session?.user) {
         fetchUserProfile(session.user.id).then((profile) => {
           if (profile) {
             setUser(profile);
             checkTrialStatus(profile);
-          } else {
-            console.error('Failed to fetch profile for authenticated user:', session.user.id);
           }
-          setLoading(false);
         });
-      } else {
-        setLoading(false);
       }
+      setLoading(false);
     });
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      console.log('Auth state changed:', event, session ? 'Has session' : 'No session');
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       setSupabaseUser(session?.user ?? null);
       if (session?.user) {
         fetchUserProfile(session.user.id).then((profile) => {
           if (profile) {
             setUser(profile);
             checkTrialStatus(profile);
-          } else {
-            console.error('Failed to fetch profile after auth state change:', session.user.id);
           }
         });
       } else {
@@ -116,20 +97,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const signUp = async (email: string, password: string, businessName?: string) => {
-    console.log('Attempting sign up for:', email);
     const { data, error } = await supabase.auth.signUp({
       email,
       password,
     });
 
     if (error) {
-      console.error('Sign up error:', error);
       throw new Error(error.message);
     }
 
     if (data.user) {
       const needsConfirmation = !data.session;
-      console.log('User created, needs confirmation:', needsConfirmation);
 
       const { error: profileError } = await supabase
         .from('profiles')
@@ -141,20 +119,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       if (profileError) {
         console.error('Error creating profile:', profileError);
-        if (!profileError.message.includes('duplicate key')) {
-          throw new Error('Failed to create user profile. Please try again.');
-        }
-      } else {
-        console.log('Profile created successfully');
       }
 
       if (data.session) {
-        console.log('Session available, fetching profile...');
         const profile = await fetchUserProfile(data.user.id);
         if (profile) {
           setUser(profile);
           checkTrialStatus(profile);
-          console.log('Sign up complete, user logged in');
         }
       }
 
@@ -165,27 +136,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const signIn = async (email: string, password: string) => {
-    console.log('Attempting sign in for:', email);
     const { data, error } = await supabase.auth.signInWithPassword({
       email,
       password,
     });
 
     if (error) {
-      console.error('Sign in error:', error);
       throw new Error(error.message);
     }
 
-    console.log('Sign in successful, fetching profile...');
     if (data.user) {
       const profile = await fetchUserProfile(data.user.id);
       if (profile) {
         setUser(profile);
         checkTrialStatus(profile);
-        console.log('Login complete, user state updated');
-      } else {
-        console.error('Profile not found after successful authentication');
-        throw new Error('Profile not found. Please contact support.');
       }
     }
   };
