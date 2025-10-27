@@ -139,11 +139,9 @@ export default function LandingPage() {
         {/* Hero Section */}
         <section className="hero">
           <div className="hero__image-container">
-            <img 
-              src="/20250821_1326_Baking Koala_remix_01k35afawhfm8tcpx1kf95gj8h.png"
-              alt="Friendly koala baker with whisk and calculator - BakeStatements mascot"
-              className="hero__image"
-            />
+            <div className="hero__image flex items-center justify-center text-9xl bg-gradient-to-br from-amber-500 to-orange-600">
+              🧁
+            </div>
           </div>
           <div className="hero__overlay"></div>
           <div className="hero__fade-overlay"></div>

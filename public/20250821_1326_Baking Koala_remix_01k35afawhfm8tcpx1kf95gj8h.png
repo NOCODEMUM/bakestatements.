@@ -1,1 +1,5 @@
-https://stackblitz.com/storage/blobs/eyJfcmFpbHMiOnsibWVzc2FnZSI6IkJBaHBCR2NDcmdJPSIsImV4cCI6bnVsbCwicHVyIjoiYmxvYl9pZCJ9fQ==--2107448e1ded6a83dce331d8299b47b34056ac46//20250821_1326_Baking Koala_remix_01k35afawhfm8tcpx1kf95gj8h.png
+<svg width="200" height="200" xmlns="http://www.w3.org/2000/svg">
+  <rect width="200" height="200" fill="#F59E0B" rx="20"/>
+  <text x="100" y="100" font-family="Arial" font-size="80" text-anchor="middle" dominant-baseline="middle" fill="white">🧁</text>
+  <text x="100" y="160" font-family="Arial" font-size="20" font-weight="bold" text-anchor="middle" fill="white">BakeStatements</text>
+</svg>

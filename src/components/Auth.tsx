@@ -133,11 +133,9 @@ export default function Auth() {
         <div className="w-full max-w-md">
           {/* Koala Logo */}
           <div className="text-center mb-8">
-            <img
-              src="/20250821_1326_Baking Koala_remix_01k35afawhfm8tcpx1kf95gj8h.png"
-              alt="BakeStatements Koala Logo"
-              className="w-24 h-24 mx-auto mb-6"
-            />
+            <div className="w-24 h-24 mx-auto mb-6 bg-amber-500 rounded-full flex items-center justify-center text-5xl">
+              🧁
+            </div>
             
             <h1 className="text-2xl font-bold text-gray-800 mb-2">
               Welcome to BakeStatements
