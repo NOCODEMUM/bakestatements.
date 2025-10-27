@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { Link, useSearchParams } from 'react-router-dom'
+import { Link, useSearchParams, useNavigate } from 'react-router-dom'
 import { useAuth } from '../hooks/useAuth'
 import { ChefHat, Eye, EyeOff, Mail, Clock } from 'lucide-react'
 
@@ -15,8 +15,15 @@ export default function Auth() {
   const [pendingConfirmationEmail, setPendingConfirmationEmail] = useState('')
   const [resendCooldown, setResendCooldown] = useState(0)
   const [resendMessage, setResendMessage] = useState('')
-  const { signUp, signIn, resendConfirmationEmail } = useAuth()
+  const { user, signUp, signIn, resendConfirmationEmail } = useAuth()
   const [searchParams] = useSearchParams()
+  const navigate = useNavigate()
+
+  useEffect(() => {
+    if (user) {
+      navigate('/')
+    }
+  }, [user, navigate])
 
   useEffect(() => {
     const urlMessage = searchParams.get('message')
