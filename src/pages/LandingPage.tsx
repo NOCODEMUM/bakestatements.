@@ -1,230 +1,467 @@
-import { useState, useEffect } from 'react'
-import { useAuth } from '../hooks/useAuth'
-import { supabase } from '../lib/supabase'
-import { User, Building, Hash, Phone, Save, CheckCircle } from 'lucide-react'
+import React, { useState } from 'react'
+import { STRIPE_PRICES } from '../lib/stripe'
+import { Menu, X, ChefHat } from 'lucide-react'
+import PublicFooter from '../components/PublicFooter'
+import './LandingPage.css'
 
-interface ProfileData {
-  full_name: string | null
-  business_name: string | null
-  phone_number: string | null
-  abn: string | null
-}
+export default function LandingPage() {
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+  const [loading, setLoading] = useState<string | null>(null)
+  const [mailingEmail, setMailingEmail] = useState('')
+  const [mailingSubmitted, setMailingSubmitted] = useState(false)
 
-export default function Settings() {
-  const { user, isTrialExpired } = useAuth()
-  const [loading, setLoading] = useState(true)
-  const [saving, setSaving] = useState(false)
-  const [saved, setSaved] = useState(false)
-  const [profileData, setProfileData] = useState<ProfileData>({
-    full_name: '',
-    business_name: '',
-    phone_number: '',
-    abn: ''
-  })
-
-  useEffect(() => {
-    if (user) {
-      fetchProfile()
-    }
-  }, [user])
-
-  const fetchProfile = async () => {
-    try {
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('full_name, business_name, phone_number, abn')
-        .eq('id', user!.id)
-        .single()
-
-      if (error && error.code !== 'PGRST116') throw error // PGRST116 means no rows found
-      
-      if (data) {
-        setProfileData({
-          full_name: data.full_name || '',
-          business_name: data.business_name || '',
-          phone_number: data.phone_number || '',
-          abn: data.abn || ''
-        })
-      }
-    } catch (error) {
-      console.error('Error fetching profile:', error)
-    } finally {
-      setLoading(false)
+  const scrollToSection = (id: string) => {
+    const element = document.getElementById(id)
+    if (element) {
+      element.scrollIntoView({ behavior: 'smooth' })
+      setMobileMenuOpen(false)
     }
   }
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubscribe = async (priceId: string, mode: string = 'subscription') => {
+    window.location.href = '/auth';
+  }
+
+  const handleMailingSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    setSaving(true)
 
     try {
-      const { error } = await supabase
-        .from('profiles')
-        .update(profileData)
-        .eq('id', user!.id)
+      setMailingSubmitted(true)
+      setMailingEmail('')
 
-      if (error) throw error
-
-      setSaved(true)
-      setTimeout(() => setSaved(false), 3000)
+      // Reset after 3 seconds
+      setTimeout(() => {
+        setMailingSubmitted(false)
+      }, 3000)
     } catch (error) {
-      console.error('Error updating profile:', error)
-      alert('Error saving profile. Please try again.')
-    } finally {
-      setSaving(false)
+      console.error('Error submitting email:', error)
     }
-  }
-
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center h-64">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-amber-600"></div>
-      </div>
-    )
   }
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold text-gray-800 dark:text-gray-100">Settings</h1>
-        <p className="text-gray-600 dark:text-gray-300">Manage your business profile and account settings</p>
-      </div>
+    <div className="min-h-screen bg-gradient-to-br from-teal-50 to-amber-50">
+      {/* Navigation Header */}
+      <header className="fixed top-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-sm border-b border-gray-200 shadow-sm">
+        <nav className="max-w-7xl mx-auto px-4 md:px-6 lg:px-8 py-4 relative">
+          <div className="flex items-center justify-between">
+            {/* Logo */}
+            <div className="flex items-center space-x-2">
+              <ChefHat className="w-8 h-8 text-amber-600" />
+              <span className="text-xl font-bold text-gray-800">BakeStatements</span>
+            </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Profile Form */}
-        <div className="lg:col-span-2 bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-100 dark:border-gray-700">
-          <div className="p-6 border-b border-gray-100 dark:border-gray-700">
-            <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-100">Business Profile</h2>
-            <p className="text-sm text-gray-600 dark:text-gray-300">This information will appear on your invoices</p>
+            {/* Desktop CTA */}
+            <div className="hidden md:flex items-center space-x-4">
+              <a href="/auth" className="text-gray-600 hover:text-teal-600 font-medium transition-colors">
+                Sign In
+              </a>
+              <a
+                href="/auth"
+                className="bg-amber-500 text-white px-6 py-2 rounded-full font-bold hover:bg-amber-600 transition-colors shadow-lg"
+              >
+                Start Free Trial
+              </a>
+            </div>
+
+            {/* Mobile Menu Button */}
+            <button
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              className="md:hidden p-2 text-gray-600 hover:text-gray-800 focus:outline-none"
+            >
+              {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+            </button>
           </div>
-          
-          <form onSubmit={handleSubmit} className="p-6 space-y-6">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                <div className="flex items-center space-x-2">
-                  <User className="w-4 h-4" />
-                  <span>Email Address</span>
+
+          {/* Mobile Navigation Menu */}
+          {mobileMenuOpen && (
+            <div className="md:hidden absolute top-full left-0 right-0 bg-white border-b border-gray-200 shadow-lg">
+              <div className="px-4 py-6 space-y-4">
+                <button
+                  onClick={() => scrollToSection('features')}
+                  className="block w-full text-left py-2 text-gray-600 hover:text-teal-600 font-medium"
+                >
+                  Features
+                </button>
+                <button
+                  onClick={() => scrollToSection('pricing')}
+                  className="block w-full text-left py-2 text-gray-600 hover:text-teal-600 font-medium"
+                >
+                  Pricing
+                </button>
+                <a href="/about-us" className="block py-2 text-gray-600 hover:text-teal-600 font-medium">
+                  About
+                </a>
+                <button
+                  onClick={() => scrollToSection('contact')}
+                  className="block w-full text-left py-2 text-gray-600 hover:text-teal-600 font-medium"
+                >
+                  Contact
+                </button>
+                <div className="pt-4 border-t border-gray-200 space-y-3">
+                  <a href="/auth" className="block py-2 text-gray-600 hover:text-teal-600 font-medium">
+                    Login
+                  </a>
+                  <a
+                    href="/auth"
+                    className="block bg-amber-500 text-white text-center py-3 px-4 rounded-lg font-bold hover:bg-amber-600 transition-colors"
+                  >
+                    Start Free Trial
+                  </a>
                 </div>
-              </label>
+              </div>
+            </div>
+          )}
+        </nav>
+      </header>
+
+      <main className="pt-16 md:pt-20">
+        {/* Hero Section */}
+        <section className="hero">
+          <div className="hero__image-container">
+            <img
+              src="/20250821_1326_Baking Koala_remix_01k35afawhfm8tcpx1kf95gj8h.png"
+              alt="Friendly koala baker with whisk and calculator - BakeStatements mascot"
+              className="hero__image"
+            />
+          </div>
+          <div className="hero__overlay"></div>
+          <div className="hero__fade-overlay"></div>
+          <div className="hero__content">
+            <a className="btn-primary" href="/auth">Start Free Trial</a>
+          </div>
+        </section>
+
+        {/* Features Section */}
+        <section id="features" className="py-16 md:py-24 px-4 bg-white/50">
+          <div className="max-w-7xl mx-auto">
+            <div className="text-center mb-12 md:mb-20">
+              <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-gray-800 mb-4 md:mb-6">
+                Everything You Need to Scale Your Baking Passion
+              </h2>
+              <p className="text-lg md:text-xl text-gray-600 max-w-4xl mx-auto leading-relaxed">
+                Purpose-built tools for Australian bakers who want to turn their passion into profit.
+                We handle the complex business side so you can focus on what you love - creating delicious bakes.
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
+              {/* Order Management */}
+              <div className="bg-white/80 backdrop-blur-sm border border-gray-200 rounded-2xl p-6 md:p-8 text-center hover:shadow-xl transition-all duration-300 hover:scale-105">
+                <div className="w-16 h-16 md:w-20 md:h-20 bg-teal-100 rounded-2xl flex items-center justify-center mx-auto mb-6 text-2xl md:text-3xl">
+                  📋
+                </div>
+                <h3 className="text-xl md:text-2xl font-bold text-gray-800 mb-4">Smart Order Management</h3>
+                <p className="text-gray-600 mb-6 leading-relaxed">
+                  Keep track of every customer order from inquiry to delivery. Manage due dates,
+                  track progress, and never miss a deadline again.
+                </p>
+                <div className="bg-teal-50 border border-teal-200 rounded-lg p-4 text-teal-700 font-semibold text-sm">
+                  Perfect for managing multiple custom orders and catering jobs
+                </div>
+              </div>
+
+              {/* Expense Tracking */}
+              <div className="bg-white/80 backdrop-blur-sm border border-gray-200 rounded-2xl p-6 md:p-8 text-center hover:shadow-xl transition-all duration-300 hover:scale-105">
+                <div className="w-16 h-16 md:w-20 md:h-20 bg-amber-100 rounded-2xl flex items-center justify-center mx-auto mb-6 text-2xl md:text-3xl">
+                  💰
+                </div>
+                <h3 className="text-xl md:text-2xl font-bold text-gray-800 mb-4">ATO-Ready Expense Tracking</h3>
+                <p className="text-gray-600 mb-6 leading-relaxed">
+                  Automatically categorize your business expenses into ATO-friendly buckets.
+                  From ingredients to equipment, make tax time stress-free.
+                </p>
+                <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 text-amber-700 font-semibold text-sm">
+                  Save hours during tax season with pre-organized expense reports
+                </div>
+              </div>
+
+              {/* Recipe Costing */}
+              <div className="bg-white/80 backdrop-blur-sm border border-gray-200 rounded-2xl p-6 md:p-8 text-center hover:shadow-xl transition-all duration-300 hover:scale-105">
+                <div className="w-16 h-16 md:w-20 md:h-20 bg-pink-100 rounded-2xl flex items-center justify-center mx-auto mb-6 text-2xl md:text-3xl">
+                  🧮
+                </div>
+                <h3 className="text-xl md:text-2xl font-bold text-gray-800 mb-4">Recipe Costing Calculator</h3>
+                <p className="text-gray-600 mb-6 leading-relaxed">
+                  Know exactly what each recipe costs to make. Input your ingredients,
+                  get accurate pricing, and set profitable prices with confidence.
+                </p>
+                <div className="bg-pink-50 border border-pink-200 rounded-lg p-4 text-pink-700 font-semibold text-sm">
+                  Stop guessing and start pricing with precision for better profits
+                </div>
+              </div>
+
+              {/* Professional Invoicing */}
+              <div className="bg-white/80 backdrop-blur-sm border border-gray-200 rounded-2xl p-6 md:p-8 text-center hover:shadow-xl transition-all duration-300 hover:scale-105">
+                <div className="w-16 h-16 md:w-20 md:h-20 bg-blue-100 rounded-2xl flex items-center justify-center mx-auto mb-6 text-2xl md:text-3xl">
+                  📄
+                </div>
+                <h3 className="text-xl md:text-2xl font-bold text-gray-800 mb-4">Professional Invoicing</h3>
+                <p className="text-gray-600 mb-6 leading-relaxed">
+                  Generate branded, ATO-compliant invoices in seconds. Include your ABN,
+                  business details, and look professional to every client.
+                </p>
+                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 text-blue-700 font-semibold text-sm">
+                  Build trust with professional invoices that get paid faster
+                </div>
+              </div>
+
+              {/* Customer Enquiries */}
+              <div className="bg-white/80 backdrop-blur-sm border border-gray-200 rounded-2xl p-6 md:p-8 text-center hover:shadow-xl transition-all duration-300 hover:scale-105">
+                <div className="w-16 h-16 md:w-20 md:h-20 bg-purple-100 rounded-2xl flex items-center justify-center mx-auto mb-6 text-2xl md:text-3xl">
+                  ✉️
+                </div>
+                <h3 className="text-xl md:text-2xl font-bold text-gray-800 mb-4">Customer Enquiry Forms</h3>
+                <p className="text-gray-600 mb-6 leading-relaxed">
+                  Share your branded enquiry form and receive customer requests directly.
+                  No more missed emails or lost opportunities.
+                </p>
+                <div className="bg-purple-50 border border-purple-200 rounded-lg p-4 text-purple-700 font-semibold text-sm">
+                  Streamline customer communication and capture every opportunity
+                </div>
+              </div>
+
+              {/* Calendar View */}
+              <div className="bg-white/80 backdrop-blur-sm border border-gray-200 rounded-2xl p-6 md:p-8 text-center hover:shadow-xl transition-all duration-300 hover:scale-105">
+                <div className="w-16 h-16 md:w-20 md:h-20 bg-green-100 rounded-2xl flex items-center justify-center mx-auto mb-6 text-2xl md:text-3xl">
+                  📅
+                </div>
+                <h3 className="text-xl md:text-2xl font-bold text-gray-800 mb-4">Visual Calendar View</h3>
+                <p className="text-gray-600 mb-6 leading-relaxed">
+                  See your entire baking schedule at a glance. Plan ahead, avoid overbooking,
+                  and keep your kitchen organized.
+                </p>
+                <div className="bg-green-50 border border-green-200 rounded-lg p-4 text-green-700 font-semibold text-sm">
+                  Never double-book again with clear visual planning tools
+                </div>
+              </div>
+
+              {/* Equipment Management */}
+              <div className="bg-white/80 backdrop-blur-sm border border-gray-200 rounded-2xl p-6 md:p-8 text-center hover:shadow-xl transition-all duration-300 hover:scale-105">
+                <div className="w-16 h-16 md:w-20 md:h-20 bg-orange-100 rounded-2xl flex items-center justify-center mx-auto mb-6 text-2xl md:text-3xl">
+                  🔧
+                </div>
+                <h3 className="text-xl md:text-2xl font-bold text-gray-800 mb-4">Equipment Tracking</h3>
+                <p className="text-gray-600 mb-6 leading-relaxed">
+                  Track your baking equipment, maintenance schedules, and depreciation.
+                  Keep records of purchases for tax time and warranty management.
+                </p>
+                <div className="bg-orange-50 border border-orange-200 rounded-lg p-4 text-orange-700 font-semibold text-sm">
+                  Maximize tax deductions and stay organized with equipment records
+                </div>
+              </div>
+
+              {/* Live Landing Page */}
+              <div className="bg-white/80 backdrop-blur-sm border border-gray-200 rounded-2xl p-6 md:p-8 text-center hover:shadow-xl transition-all duration-300 hover:scale-105">
+                <div className="w-16 h-16 md:w-20 md:h-20 bg-rose-100 rounded-2xl flex items-center justify-center mx-auto mb-6 text-2xl md:text-3xl">
+                  🌐
+                </div>
+                <h3 className="text-xl md:text-2xl font-bold text-gray-800 mb-4">Your Live Bakery Site</h3>
+                <p className="text-gray-600 mb-6 leading-relaxed">
+                  Get your own custom landing page to showcase your bakery. Share it with customers
+                  and accept enquiries directly through your unique URL.
+                </p>
+                <div className="bg-rose-50 border border-rose-200 rounded-lg p-4 text-rose-700 font-semibold text-sm">
+                  Professional online presence without the complexity or cost
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Pricing Section */}
+        <section id="pricing" className="py-16 md:py-24 px-4 bg-gray-50">
+          <div className="max-w-6xl mx-auto">
+            <div className="text-center mb-12 md:mb-20">
+              <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-gray-800 mb-4 md:mb-6">
+                Simple Pricing for Growing Bakers
+              </h2>
+              <p className="text-lg md:text-xl text-gray-600 max-w-4xl mx-auto leading-relaxed">
+                Start with our 7-day free trial, then choose the plan that fits your baking journey.
+                All plans include every feature you need to succeed.
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8 mb-12">
+              {/* Monthly Plan */}
+              <div className="bg-white border border-gray-200 rounded-2xl p-6 md:p-8 shadow-lg hover:shadow-xl transition-all duration-300">
+                <div className="text-center mb-6">
+                  <h3 className="text-xl md:text-2xl font-bold text-gray-800 mb-2">Monthly</h3>
+                  <div className="text-3xl md:text-4xl font-bold text-amber-600 mb-2">
+                    $19<span className="text-lg text-gray-500">/month</span>
+                  </div>
+                  <p className="text-sm text-amber-600 font-semibold">Perfect for getting started</p>
+                </div>
+
+                <ul className="space-y-3 mb-8">
+                </ul>
+
+                <button
+                  onClick={() => handleSubscribe('price_1RyA4CHruLrtRCwiXi8uqRWn', 'subscription')}
+                  disabled={loading === STRIPE_PRICES.monthly}
+                  className="w-full bg-amber-500 text-white py-3 md:py-4 rounded-lg font-bold text-lg hover:bg-amber-600 transition-colors disabled:opacity-50"
+                >
+                  {loading === 'price_1RyA4CHruLrtRCwiXi8uqRWn' ? (
+                    <div className="flex items-center justify-center space-x-2">
+                      <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
+                      <span>Processing...</span>
+                    </div>
+                  ) : (
+                    'Start Monthly Plan'
+                  )}
+                </button>
+              </div>
+
+              {/* Annual Plan - Featured */}
+              <div className="bg-white border-2 border-teal-500 rounded-2xl p-6 md:p-8 shadow-xl relative md:scale-105 hover:shadow-2xl transition-all duration-300">
+                <div className="absolute -top-3 left-1/2 transform -translate-x-1/2 bg-teal-500 text-white px-4 py-1 rounded-full text-sm font-bold">
+                  MOST POPULAR
+                </div>
+
+                <div className="text-center mb-6 mt-2">
+                  <h3 className="text-xl md:text-2xl font-bold text-gray-800 mb-2">Annual</h3>
+                  <div className="text-3xl md:text-4xl font-bold text-teal-600 mb-2">
+                    $180<span className="text-lg text-gray-500">/year</span>
+                  </div>
+                  <p className="text-sm text-pink-600 font-semibold">Save $48 compared to monthly!</p>
+                </div>
+
+                <ul className="space-y-3 mb-8">
+                </ul>
+
+                <button
+                  onClick={() => handleSubscribe('price_1RyA4CHruLrtRCwiZJlqpEt1', 'subscription')}
+                  disabled={loading === STRIPE_PRICES.annual}
+                  className="w-full bg-teal-600 text-white py-3 md:py-4 rounded-lg font-bold text-lg hover:bg-teal-700 transition-colors disabled:opacity-50"
+                >
+                  {loading === 'price_1RyA4CHruLrtRCwiZJlqpEt1' ? (
+                    <div className="flex items-center justify-center space-x-2">
+                      <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
+                      <span>Processing...</span>
+                    </div>
+                  ) : (
+                    'Start Annual Plan'
+                  )}
+                </button>
+              </div>
+
+              {/* Lifetime Plan */}
+              <div className="bg-white border border-gray-200 rounded-2xl p-6 md:p-8 shadow-lg hover:shadow-xl transition-all duration-300">
+                <div className="text-center mb-6">
+                  <h3 className="text-xl md:text-2xl font-bold text-gray-800 mb-2">Founder's Lifetime</h3>
+                  <div className="text-3xl md:text-4xl font-bold text-pink-600 mb-2">
+                    $299<span className="text-lg text-gray-500"> once</span>
+                  </div>
+                  <p className="text-sm text-pink-600 font-semibold">Limited time - First 100 users only</p>
+                </div>
+
+                <ul className="space-y-3 mb-8">
+                </ul>
+
+                <button
+                  onClick={() => handleSubscribe('price_1RyA4CHruLrtRCwi7inxZ3l2', 'payment')}
+                  disabled={loading === STRIPE_PRICES.lifetime}
+                  className="w-full bg-pink-600 text-white py-3 md:py-4 rounded-lg font-bold text-lg hover:bg-pink-700 transition-colors disabled:opacity-50"
+                >
+                  {loading === 'price_1RyA4CHruLrtRCwi7inxZ3l2' ? (
+                    <div className="flex items-center justify-center space-x-2">
+                      <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
+                      <span>Processing...</span>
+                    </div>
+                  ) : (
+                    'Get Lifetime Access'
+                  )}
+                </button>
+              </div>
+            </div>
+
+            {/* Trial CTA */}
+            <div className="text-center mt-12 md:mt-20">
+              <div className="bg-white/80 backdrop-blur-sm border border-gray-200 rounded-2xl p-8 md:p-12 max-w-4xl mx-auto shadow-xl">
+                <h3 className="text-2xl md:text-3xl font-bold text-gray-800 mb-6">
+                  Join Australian Bakers Who've Gone Pro
+                </h3>
+
+                <div className="flex flex-col sm:flex-row items-center justify-center gap-4 md:gap-6 mb-6">
+                  <a
+                    href="/auth"
+                    className="w-full sm:w-auto bg-amber-500 text-white px-8 py-4 md:px-12 md:py-5 rounded-full text-lg md:text-xl font-bold hover:bg-amber-600 transition-all duration-300 shadow-lg hover:shadow-xl"
+                  >
+                    Start Your Free Trial Today
+                  </a>
+                  <button
+                    onClick={() => scrollToSection('pricing')}
+                    className="w-full sm:w-auto bg-white/80 backdrop-blur-sm text-teal-600 px-6 py-3 md:px-8 md:py-4 border-2 border-teal-600 rounded-full text-lg font-semibold hover:bg-teal-600 hover:text-white transition-all duration-300"
+                  >
+                    View Pricing Plans
+                  </button>
+                </div>
+
+                <div className="inline-flex items-center space-x-2 bg-green-100 text-green-800 px-6 py-3 rounded-full font-bold text-sm md:text-base mb-6">
+                  <span>✓</span>
+                  <span>No Credit Card Required • Cancel Anytime</span>
+                </div>
+
+                <p className="text-gray-600 leading-relaxed">
+                  Start managing orders, tracking expenses, and generating professional invoices in under 5 minutes.
+                  Risk-free trial with full access to all features – upgrade only when you're ready.
+                </p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Mailing List Section */}
+        <section id="contact" className="py-16 md:py-24 px-4 bg-gradient-to-r from-teal-600 to-teal-700 text-white">
+          <div className="max-w-4xl mx-auto text-center">
+            <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-4 md:mb-6">
+              Join the BakeStatements Community
+            </h2>
+            <p className="text-lg md:text-xl mb-8 md:mb-12 opacity-95 leading-relaxed">
+              Get exclusive baking business insights, early access to new features, and proven strategies
+              from successful Australian bakers delivered straight to your inbox.
+            </p>
+
+            <form onSubmit={handleMailingSubmit} className="flex flex-col sm:flex-row gap-4 max-w-2xl mx-auto mb-8 md:mb-12">
               <input
                 type="email"
-                value={user?.email || ''}
-                disabled
-                className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-700 text-gray-500 dark:text-gray-400 cursor-not-allowed"
+                value={mailingEmail}
+                onChange={(e) => setMailingEmail(e.target.value)}
+                placeholder="Enter your email address"
+                className="flex-1 px-6 py-4 rounded-full border-0 outline-none text-gray-800 placeholder-gray-500 focus:ring-2 focus:ring-amber-500"
+                required
               />
-              <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Email cannot be changed</p>
-            </div>
+              <button
+                type="submit"
+                className="bg-amber-500 text-white px-8 py-4 rounded-full font-bold text-lg hover:bg-amber-600 transition-colors shadow-lg disabled:opacity-50"
+                disabled={mailingSubmitted}
+              >
+                {mailingSubmitted ? 'Thanks! ✓' : 'Join Community'}
+              </button>
+            </form>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                <div className="flex items-center space-x-2">
-                  <Building className="w-4 h-4" />
-                  <span>Business Name</span>
-                </div>
-              </label>
-              <input
-                type="text"
-                value={profileData.business_name || ''}
-                onChange={(e) => setProfileData({ ...profileData, business_name: e.target.value })}
-                className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent dark:bg-gray-700 dark:text-gray-100 transition-colors"
-                placeholder="e.g., Sweet Treats Bakery"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                <div className="flex items-center space-x-2">
-                  <Hash className="w-4 h-4" />
-                  <span>ABN (Australian Business Number)</span>
-                </div>
-              </label>
-              <input
-                type="text"
-                value={profileData.abn || ''}
-                onChange={(e) => setProfileData({ ...profileData, abn: e.target.value })}
-                className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent dark:bg-gray-700 dark:text-gray-100 transition-colors"
-                placeholder="e.g., 12 345 678 901"
-                maxLength={14}
-              />
-              <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">This will appear on your invoices</p>
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                <div className="flex items-center space-x-2">
-                  <Phone className="w-4 h-4" />
-                  <span>Phone Number</span>
-                </div>
-              </label>
-              <input
-                type="tel"
-                value={profileData.phone_number || ''}
-                onChange={(e) => setProfileData({ ...profileData, phone_number: e.target.value })}
-                className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent dark:bg-gray-700 dark:text-gray-100 transition-colors"
-                placeholder="e.g., +61 2 1234 5678"
-              />
-            </div>
-
-            <button
-              type="submit"
-              disabled={saving}
-              className="w-full bg-amber-500 text-white py-3 px-6 rounded-lg hover:bg-amber-600 focus:ring-4 focus:ring-amber-300 font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-2"
-            >
-              {saving ? (
-                <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
-              ) : saved ? (
-                <>
-                  <CheckCircle className="w-5 h-5" />
-                  <span>Saved!</span>
-                </>
-              ) : (
-                <>
-                  <Save className="w-5 h-5" />
-                  <span>Save Changes</span>
-                </>
-              )}
-            </button>
-          </form>
-        </div>
-
-        {/* Account Information */}
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-100 dark:border-gray-700 h-fit">
-          <div className="p-6 border-b border-gray-100 dark:border-gray-700">
-            <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-100">Account Information</h2>
-          </div>
-          
-          <div className="p-6 space-y-4">
-            <div>
-              <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Account Status</h3>
-              {isTrialExpired ? (
-                <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200">
-                  Trial Expired
-                </span>
-              ) : (
-                <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">
-                  Active
-                </span>
-              )}
-            </div>
-
-            <div>
-              <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Subscription Plan</h3>
-              <p className="text-sm text-gray-600 dark:text-gray-400">
-                {isTrialExpired ? 'Upgrade Required' : '7-Day Free Trial'}
-              </p>
-            </div>
-
-            <div className="pt-4 border-t border-gray-100 dark:border-gray-700">
-              <p className="text-xs text-gray-500 dark:text-gray-400">
-                Need help? Contact support at{' '}
-                <a href="mailto:hello@pix3l.com.au" className="text-amber-600 hover:text-amber-700">
-                  hello@pix3l.com.au
-                </a>
-              </p>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 max-w-4xl mx-auto">
+              <div className="flex flex-col items-center space-y-2 bg-white/10 backdrop-blur-sm px-4 py-3 rounded-lg">
+                <span className="text-2xl">📧</span>
+                <span className="font-semibold text-sm">Join the PIX3L Crew</span>
+              </div>
+              <div className="flex flex-col items-center space-y-2 bg-white/10 backdrop-blur-sm px-4 py-3 rounded-lg">
+                <span className="text-2xl">🚀</span>
+                <span className="font-semibold text-sm">Early Feature Access</span>
+              </div>
+              <div className="flex flex-col items-center space-y-2 bg-white/10 backdrop-blur-sm px-4 py-3 rounded-lg">
+                <span className="text-2xl">🎁</span>
+                <span className="font-semibold text-sm">Member-Only Offers</span>
+              </div>
+              <div className="flex flex-col items-center space-y-2 bg-white/10 backdrop-blur-sm px-4 py-3 rounded-lg">
+                <span className="text-2xl">🔒</span>
+                <span className="font-semibold text-sm">No Spam Promise</span>
+              </div>
             </div>
           </div>
-        </div>
-      </div>
+        </section>
+      </main>
+
+      <PublicFooter />
     </div>
   )
 }

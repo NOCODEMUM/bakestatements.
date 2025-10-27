@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
+import { Link, useSearchParams, useNavigate } from 'react-router-dom'
 import { useAuth } from '../hooks/useAuth'
-import { useSearchParams, useNavigate } from 'react-router-dom'
-import { ChefHat, Eye, EyeOff, CheckCircle, AlertCircle, ArrowLeft } from 'lucide-react'
+import { ChefHat, Lock, Eye, EyeOff, CheckCircle, AlertCircle } from 'lucide-react'
 
 export default function ResetPassword() {
   const [searchParams] = useSearchParams()
@@ -9,15 +9,15 @@ export default function ResetPassword() {
   const [loading, setLoading] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
-  
+
   const [formData, setFormData] = useState({
     password: '',
     confirmPassword: ''
   })
-  
+
   const [message, setMessage] = useState('')
   const [messageType, setMessageType] = useState<'success' | 'error'>('error')
-  
+
   const { updateUserPassword } = useAuth()
 
   // Check if we have the required tokens from the URL
@@ -43,7 +43,7 @@ export default function ResetPassword() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    
+
     if (!accessToken || !refreshToken) {
       setMessage('Link expired, request a new one')
       setMessageType('error')
@@ -71,9 +71,9 @@ export default function ResetPassword() {
         }
         throw error
       }
-      
+
       // Success - redirect to login with success message
-      navigate('/auth?message=Password updated successfully&type=success')
+      navigate('/auth?message=password_updated')
     } catch (error: any) {
       setMessage(error.message)
       setMessageType('error')
@@ -83,42 +83,40 @@ export default function ResetPassword() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col">
-      {/* Header with Logo */}
+    <div className="min-h-screen bg-gradient-to-br from-teal-50 to-amber-50 flex flex-col">
+      {/* Header */}
       <div className="flex items-center justify-between p-6">
-        <div className="flex items-center space-x-2">
-          <img 
-            src="/bakestatements-logo.png" 
-            alt="BakeStatements Logo" 
-            className="w-8 h-8 rounded-full object-cover"
-          />
-          <span className="font-semibold text-gray-800">BakeStatements</span>
+        <Link to="/auth" className="text-sm text-gray-600 hover:text-gray-800 font-medium transition-colors">
+          Back to Sign In
+        </Link>
+        <div className="flex items-center space-x-4">
+          <Link to="/landing" className="text-sm text-gray-600 hover:text-teal-600 font-medium transition-colors">
+            Home
+          </Link>
+          <Link to="/landing" className="flex items-center space-x-2">
+            <ChefHat className="w-6 h-6 text-amber-500" />
+            <span className="font-semibold text-gray-800">BakeStatements</span>
+          </Link>
         </div>
-        <a href="/forgot-password" className="flex items-center space-x-2 text-gray-600 hover:text-gray-800 font-medium transition-colors">
-          <ArrowLeft className="w-4 h-4" />
-          <span>Back</span>
-        </a>
       </div>
 
       {/* Main Content */}
       <div className="flex-1 flex items-center justify-center px-4">
         <div className="w-full max-w-md">
-          {/* Icon and Title */}
           <div className="text-center mb-8">
-            <div className="w-16 h-16 bg-amber-100 rounded-full flex items-center justify-center mx-auto mb-6">
-              <ChefHat className="w-8 h-8 text-amber-600" />
+            <div className="w-16 h-16 bg-amber-100 rounded-2xl flex items-center justify-center mx-auto mb-6">
+              <Lock className="w-8 h-8 text-amber-600" />
             </div>
-            
-            <h1 className="text-2xl font-semibold text-gray-800 mb-2">
-              Set New Password
+
+            <h1 className="text-2xl md:text-3xl font-bold text-gray-800 mb-2">
+              Reset Your Password
             </h1>
-            <p className="text-gray-600 text-sm">
-              Choose a strong password for your BakeStatements account.
+            <p className="text-gray-600">
+              Enter your new password below. Make sure it's strong and secure.
             </p>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-6">
-            {/* New Password */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 New Password
@@ -140,24 +138,20 @@ export default function ResetPassword() {
                   {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                 </button>
               </div>
-              
+
               {/* Password Requirements */}
               {formData.password && (
                 <div className="mt-2 space-y-1">
-                  <div className={`flex items-center space-x-2 text-xs ${
-                    formData.password.length >= 8 ? 'text-green-600' : 'text-gray-500'
-                  }`}>
-                    <div className={`w-2 h-2 rounded-full ${
-                      formData.password.length >= 8 ? 'bg-green-500' : 'bg-gray-300'
-                    }`} />
+                  <div className={`flex items-center space-x-2 text-xs ${formData.password.length >= 8 ? 'text-green-600' : 'text-gray-500'
+                    }`}>
+                    <div className={`w-2 h-2 rounded-full ${formData.password.length >= 8 ? 'bg-green-500' : 'bg-gray-300'
+                      }`} />
                     <span>At least 8 characters</span>
                   </div>
-                  <div className={`flex items-center space-x-2 text-xs ${
-                    /[a-zA-Z]/.test(formData.password) && /\d/.test(formData.password) ? 'text-green-600' : 'text-gray-500'
-                  }`}>
-                    <div className={`w-2 h-2 rounded-full ${
-                      /[a-zA-Z]/.test(formData.password) && /\d/.test(formData.password) ? 'bg-green-500' : 'bg-gray-300'
-                    }`} />
+                  <div className={`flex items-center space-x-2 text-xs ${/[a-zA-Z]/.test(formData.password) && /\d/.test(formData.password) ? 'text-green-600' : 'text-gray-500'
+                    }`}>
+                    <div className={`w-2 h-2 rounded-full ${/[a-zA-Z]/.test(formData.password) && /\d/.test(formData.password) ? 'bg-green-500' : 'bg-gray-300'
+                      }`} />
                     <span>Include letters and numbers</span>
                   </div>
                 </div>
@@ -186,15 +180,13 @@ export default function ResetPassword() {
                   {showConfirmPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                 </button>
               </div>
-              
+
               {/* Password Match Indicator */}
               {formData.confirmPassword && (
-                <div className={`flex items-center space-x-2 text-xs mt-2 ${
-                  passwordsMatch ? 'text-green-600' : 'text-red-600'
-                }`}>
-                  <div className={`w-2 h-2 rounded-full ${
-                    passwordsMatch ? 'bg-green-500' : 'bg-red-500'
-                  }`} />
+                <div className={`flex items-center space-x-2 text-xs mt-2 ${passwordsMatch ? 'text-green-600' : 'text-red-600'
+                  }`}>
+                  <div className={`w-2 h-2 rounded-full ${passwordsMatch ? 'bg-green-500' : 'bg-red-500'
+                    }`} />
                   <span>{passwordsMatch ? 'Passwords match' : 'Passwords do not match'}</span>
                 </div>
               )}
@@ -211,54 +203,51 @@ export default function ResetPassword() {
 
           {/* Messages */}
           {message && (
-            <div className={`mt-6 p-4 rounded-lg text-sm border ${
-              messageType === 'success' 
-                ? 'bg-green-50 border-green-200 text-green-800' 
+            <div className={`mt-6 p-4 rounded-lg text-sm border ${messageType === 'success'
+                ? 'bg-green-50 border-green-200 text-green-800'
                 : 'bg-red-50 border-red-200 text-red-800'
-            }`}>
+              }`}>
               <div className="flex items-start space-x-2">
                 {messageType === 'success' ? (
                   <CheckCircle className="w-5 h-5 text-green-600 mt-0.5 flex-shrink-0" />
                 ) : (
                   <AlertCircle className="w-5 h-5 text-red-600 mt-0.5 flex-shrink-0" />
                 )}
-                <p>{message}</p>
+                <div className="flex-1">
+                  <p>{message}</p>
+                  {message.includes('Link expired') && (
+                    <div className="mt-3">
+                      <Link
+                        to="/forgot-password"
+                        className="inline-block bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition-colors text-sm font-medium"
+                      >
+                        Request New Reset Link
+                      </Link>
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
           )}
 
-          {/* Help Text */}
+          {/* Back to Login */}
           <div className="mt-8 text-center">
-            <p className="text-xs text-gray-500">
-              Need help?{' '}
-              <a href="/forgot-password" className="text-amber-600 hover:text-amber-700 font-medium">
-                Try again
-              </a>
-              {' or '}
-              <a href="/auth" className="text-amber-600 hover:text-amber-700 font-medium">
-                Back to Sign In
-              </a>
-            </p>
+            <Link to="/auth" className="text-gray-600 hover:text-gray-800 font-medium text-sm transition-colors">
+              Back to Sign In
+            </Link>
           </div>
         </div>
       </div>
 
       {/* Footer */}
-      <div className="p-6">
-        <div className="flex items-center justify-between max-w-md mx-auto">
-          <div className="flex items-center space-x-2 text-sm text-gray-600">
-            <img 
-              src="/bakestatements-logo.png" 
-              alt="BakeStatements Logo" 
-              className="w-6 h-6 rounded-full object-cover"
-            />
-            <span>BakeStatements</span>
-          </div>
-          <div className="flex items-center space-x-1 text-sm text-gray-600">
-            <span>made in</span>
-            <span className="text-base">🇦🇺</span>
-          </div>
+      <div className="p-6 text-center">
+        <div className="flex items-center justify-center space-x-2 text-sm text-gray-600 mb-2">
+          <ChefHat className="w-4 h-4" />
+          <span>BakeStatements by PIX3L</span>
         </div>
+        <p className="text-xs text-gray-500">
+          © 2025 BakeStatements by PIX3L. Made with ❤️ in Sydney, Australia. 🇦🇺
+        </p>
       </div>
     </div>
   )

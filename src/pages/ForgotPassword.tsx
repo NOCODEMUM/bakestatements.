@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { Link } from 'react-router-dom'
 import { useAuth } from '../hooks/useAuth'
 import { ChefHat, ArrowLeft, Mail, CheckCircle, AlertCircle } from 'lucide-react'
 
@@ -8,7 +9,7 @@ export default function ForgotPassword() {
   const [message, setMessage] = useState('')
   const [messageType, setMessageType] = useState<'success' | 'error'>('error')
   const [emailSent, setEmailSent] = useState(false)
-  
+
   const { resetPasswordForEmail } = useAuth()
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -19,7 +20,7 @@ export default function ForgotPassword() {
     try {
       const { error } = await resetPasswordForEmail(email)
       if (error) throw error
-      
+
       setEmailSent(true)
       setMessage('Password reset link sent! Check your email (including spam folder).')
       setMessageType('success')
@@ -32,36 +33,36 @@ export default function ForgotPassword() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col">
-      {/* Header with Logo */}
+    <div className="min-h-screen bg-gradient-to-br from-teal-50 to-amber-50 flex flex-col">
+      {/* Header */}
       <div className="flex items-center justify-between p-6">
-        <div className="flex items-center space-x-2">
-          <img 
-            src="/bakestatements-logo.png" 
-            alt="BakeStatements Logo" 
-            className="w-8 h-8 rounded-full object-cover"
-          />
-          <span className="font-semibold text-gray-800">BakeStatements</span>
-        </div>
-        <a href="/auth" className="flex items-center space-x-2 text-gray-600 hover:text-gray-800 font-medium transition-colors">
-          <ArrowLeft className="w-4 h-4" />
+        <Link to="/auth" className="flex items-center space-x-2 text-gray-600 hover:text-gray-800 transition-colors">
+          <ArrowLeft className="w-5 h-5" />
           <span>Back to Sign In</span>
-        </a>
+        </Link>
+        <div className="flex items-center space-x-4">
+          <Link to="/landing" className="text-sm text-gray-600 hover:text-teal-600 font-medium transition-colors">
+            Home
+          </Link>
+          <Link to="/landing" className="flex items-center space-x-2">
+            <ChefHat className="w-6 h-6 text-amber-500" />
+            <span className="font-semibold text-gray-800">BakeStatements</span>
+          </Link>
+        </div>
       </div>
 
       {/* Main Content */}
       <div className="flex-1 flex items-center justify-center px-4">
         <div className="w-full max-w-md">
-          {/* Icon and Title */}
           <div className="text-center mb-8">
-            <div className="w-16 h-16 bg-amber-100 rounded-full flex items-center justify-center mx-auto mb-6">
+            <div className="w-16 h-16 bg-amber-100 rounded-2xl flex items-center justify-center mx-auto mb-6">
               <Mail className="w-8 h-8 text-amber-600" />
             </div>
-            
-            <h1 className="text-2xl font-semibold text-gray-800 mb-2">
-              Reset Your Password
+
+            <h1 className="text-2xl md:text-3xl font-bold text-gray-800 mb-2">
+              Forgot Your Password?
             </h1>
-            <p className="text-gray-600 text-sm">
+            <p className="text-gray-600">
               Enter your email address and we'll send you a link to reset your password.
             </p>
           </div>
@@ -119,11 +120,10 @@ export default function ForgotPassword() {
 
           {/* Messages */}
           {message && (
-            <div className={`mt-4 p-4 rounded-lg text-sm border ${
-              messageType === 'success' 
-                ? 'bg-green-50 border-green-200 text-green-800' 
+            <div className={`mt-4 p-4 rounded-lg text-sm border ${messageType === 'success'
+                ? 'bg-green-50 border-green-200 text-green-800'
                 : 'bg-red-50 border-red-200 text-red-800'
-            }`}>
+              }`}>
               <div className="flex items-start space-x-2">
                 {messageType === 'success' ? (
                   <CheckCircle className="w-5 h-5 text-green-600 mt-0.5 flex-shrink-0" />
@@ -136,33 +136,26 @@ export default function ForgotPassword() {
           )}
 
           {/* Help Text */}
-          <div className="mt-8 text-center">
-            <p className="text-xs text-gray-500">
+          <div className="mt-8 text-center text-sm text-gray-500">
+            <p>
               Remember your password?{' '}
-              <a href="/auth" className="text-amber-600 hover:text-amber-700 font-medium">
-                Back to Sign In
-              </a>
+              <Link to="/auth" className="text-amber-600 hover:text-amber-700 font-medium">
+                Sign In
+              </Link>
             </p>
           </div>
         </div>
       </div>
 
       {/* Footer */}
-      <div className="p-6">
-        <div className="flex items-center justify-between max-w-md mx-auto">
-          <div className="flex items-center space-x-2 text-sm text-gray-600">
-            <img 
-              src="/bakestatements-logo.png" 
-              alt="BakeStatements Logo" 
-              className="w-6 h-6 rounded-full object-cover"
-            />
-            <span>BakeStatements</span>
-          </div>
-          <div className="flex items-center space-x-1 text-sm text-gray-600">
-            <span>made in</span>
-            <span className="text-base">🇦🇺</span>
-          </div>
+      <div className="p-6 text-center">
+        <div className="flex items-center justify-center space-x-2 text-sm text-gray-600 mb-2">
+          <ChefHat className="w-4 h-4" />
+          <span>BakeStatements by PIX3L</span>
         </div>
+        <p className="text-xs text-gray-500">
+          © 2025 BakeStatements by PIX3L. Made with ❤️ in Sydney, Australia. 🇦🇺
+        </p>
       </div>
     </div>
   )

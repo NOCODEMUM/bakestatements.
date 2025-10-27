@@ -1,6 +1,7 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import { Link, useSearchParams } from 'react-router-dom'
 import { useAuth } from '../hooks/useAuth'
-import { Eye, EyeOff, CheckCircle, AlertCircle } from 'lucide-react'
+import { Eye, EyeOff, CheckCircle, AlertCircle, ChefHat } from 'lucide-react'
 
 export default function Auth() {
   const [loading, setLoading] = useState(false)
@@ -8,7 +9,7 @@ export default function Auth() {
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
   const [resendingVerification, setResendingVerification] = useState(false)
-  
+
   const [formData, setFormData] = useState({
     fullName: '',
     email: '',
@@ -17,12 +18,13 @@ export default function Auth() {
     agreeToTerms: false,
     rememberMe: false
   })
-  
+
   const [message, setMessage] = useState('')
   const [messageType, setMessageType] = useState<'success' | 'error'>('error')
   const [showResendVerification, setShowResendVerification] = useState(false)
-  
-  const { signUp, signIn, resetPasswordForEmail, resendVerification } = useAuth()
+
+  const { signUp, signIn, resendVerification } = useAuth()
+  const [searchParams] = useSearchParams()
 
   // Password validation
   const isPasswordValid = (password: string) => {
@@ -33,6 +35,15 @@ export default function Auth() {
   }
 
   const passwordsMatch = formData.password === formData.confirmPassword
+
+  useEffect(() => {
+    const urlMessage = searchParams.get('message')
+    if (urlMessage === 'password_updated') {
+      setMessage('Password updated successfully! You can now sign in with your new password.')
+      setMessageType('success')
+      setIsSignUp(false)
+    }
+  }, [searchParams])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -64,7 +75,7 @@ export default function Auth() {
           }
           throw error
         }
-        
+
         setMessage('Success! Check your email for the verification link.')
         setMessageType('success')
       } else {
@@ -95,7 +106,7 @@ export default function Auth() {
     try {
       const { error } = await resendVerification(formData.email)
       if (error) throw error
-      
+
       setMessage('Verification email sent! Check your inbox.')
       setMessageType('success')
       setShowResendVerification(false)
@@ -126,41 +137,38 @@ export default function Auth() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col">
-      {/* Header with Logo */}
+    <div className="min-h-screen bg-gradient-to-br from-teal-50 to-amber-50 flex flex-col">
+      {/* Header */}
       <div className="flex items-center justify-between p-6">
-        <div className="flex items-center space-x-2">
-          <img 
-            src="/bakestatements-logo.png" 
-            alt="BakeStatements Logo" 
-            className="w-8 h-8 rounded-full object-cover"
-          />
-          <span className="font-semibold text-gray-800">BakeStatements</span>
-        </div>
-        <a href="/landing" className="text-gray-600 hover:text-gray-800 font-medium transition-colors">
+        <Link to="/landing" className="flex items-center space-x-2">
+          <ChefHat className="w-6 h-6 text-amber-600" />
+          <span className="text-lg font-semibold text-gray-800">BakeStatements</span>
+        </Link>
+        <Link
+          to="/landing"
+          className="text-sm text-gray-600 hover:text-gray-800 font-medium transition-colors"
+        >
           Back to Home
-        </a>
+        </Link>
       </div>
 
       {/* Main Content */}
       <div className="flex-1 flex items-center justify-center px-4">
         <div className="w-full max-w-md">
-          {/* Koala Mascot */}
+          {/* Koala Logo */}
           <div className="text-center mb-8">
-            <div className="inline-block mb-6">
-              <img 
-                src="/bakestatements-logo.png" 
-                alt="BakeStatements Koala Mascot" 
-                className="w-32 h-32 mx-auto mb-4 rounded-2xl shadow-lg object-cover"
-              />
-            </div>
-            
+            <img
+              src="/20250821_1326_Baking Koala_remix_01k35afawhfm8tcpx1kf95gj8h.png"
+              alt="BakeStatements Koala Logo"
+              className="w-24 h-24 mx-auto mb-6"
+            />
+
             <h1 className="text-2xl font-semibold text-gray-800 mb-2">
               {isSignUp ? 'Create Your Account' : 'Welcome Back'}
             </h1>
             <p className="text-gray-600 text-sm">
-              {isSignUp 
-                ? 'Start your 7-day free trial today' 
+              {isSignUp
+                ? 'Start your 7-day free trial today'
                 : 'Sign in to your BakeStatements account'
               }
             </p>
@@ -222,24 +230,20 @@ export default function Auth() {
                   {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                 </button>
               </div>
-              
+
               {/* Password Requirements - Sign Up Only */}
               {isSignUp && formData.password && (
                 <div className="mt-2 space-y-1">
-                  <div className={`flex items-center space-x-2 text-xs ${
-                    formData.password.length >= 8 ? 'text-green-600' : 'text-gray-500'
-                  }`}>
-                    <div className={`w-2 h-2 rounded-full ${
-                      formData.password.length >= 8 ? 'bg-green-500' : 'bg-gray-300'
-                    }`} />
+                  <div className={`flex items-center space-x-2 text-xs ${formData.password.length >= 8 ? 'text-green-600' : 'text-gray-500'
+                    }`}>
+                    <div className={`w-2 h-2 rounded-full ${formData.password.length >= 8 ? 'bg-green-500' : 'bg-gray-300'
+                      }`} />
                     <span>At least 8 characters</span>
                   </div>
-                  <div className={`flex items-center space-x-2 text-xs ${
-                    /[a-zA-Z]/.test(formData.password) && /\d/.test(formData.password) ? 'text-green-600' : 'text-gray-500'
-                  }`}>
-                    <div className={`w-2 h-2 rounded-full ${
-                      /[a-zA-Z]/.test(formData.password) && /\d/.test(formData.password) ? 'bg-green-500' : 'bg-gray-300'
-                    }`} />
+                  <div className={`flex items-center space-x-2 text-xs ${/[a-zA-Z]/.test(formData.password) && /\d/.test(formData.password) ? 'text-green-600' : 'text-gray-500'
+                    }`}>
+                    <div className={`w-2 h-2 rounded-full ${/[a-zA-Z]/.test(formData.password) && /\d/.test(formData.password) ? 'bg-green-500' : 'bg-gray-300'
+                      }`} />
                     <span>Include letters and numbers</span>
                   </div>
                 </div>
@@ -269,15 +273,13 @@ export default function Auth() {
                     {showConfirmPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                   </button>
                 </div>
-                
+
                 {/* Password Match Indicator */}
                 {formData.confirmPassword && (
-                  <div className={`flex items-center space-x-2 text-xs mt-2 ${
-                    passwordsMatch ? 'text-green-600' : 'text-red-600'
-                  }`}>
-                    <div className={`w-2 h-2 rounded-full ${
-                      passwordsMatch ? 'bg-green-500' : 'bg-red-500'
-                    }`} />
+                  <div className={`flex items-center space-x-2 text-xs mt-2 ${passwordsMatch ? 'text-green-600' : 'text-red-600'
+                    }`}>
+                    <div className={`w-2 h-2 rounded-full ${passwordsMatch ? 'bg-green-500' : 'bg-red-500'
+                      }`} />
                     <span>{passwordsMatch ? 'Passwords match' : 'Passwords do not match'}</span>
                   </div>
                 )}
@@ -325,7 +327,7 @@ export default function Auth() {
               disabled={loading || (isSignUp && (!isPasswordValid(formData.password) || !passwordsMatch || !formData.agreeToTerms))}
               className="w-full bg-gray-800 text-white py-3 px-4 rounded-lg hover:bg-gray-900 focus:ring-4 focus:ring-gray-300 font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {loading ? 'Loading...' : (isSignUp ? 'Start Free Trial' : 'Sign In')}
+              {loading ? 'Loading...' : (isSignUp ? 'Start Free Trial' : 'Login')}
             </button>
           </form>
 
@@ -339,22 +341,18 @@ export default function Auth() {
           )}
 
           {/* Trial Badge */}
-          {isSignUp && (
-            <div className="mt-6 text-center">
-              <div className="inline-flex items-center px-3 py-1 rounded-full text-sm bg-green-50 text-green-700 border border-green-200">
-                <span className="mr-1">🎉</span>
-                <strong>7-day free trial</strong> - No credit card required
-              </div>
+          <div className="mt-6 text-center">
+            <div className="inline-flex items-center px-4 py-2 rounded-full text-sm bg-green-50 text-green-700 border border-green-200">
+              <span className="mr-2">🎉</span>
+              <strong>7-day free trial</strong> - No credit card required
             </div>
-          )}
+          </div>
 
-          {/* Messages */}
           {message && (
-            <div className={`mt-4 p-4 rounded-lg text-sm border ${
-              messageType === 'success' 
-                ? 'bg-green-50 border-green-200 text-green-800' 
-                : 'bg-red-50 border-red-200 text-red-800'
-            }`}>
+            <div className={`mt-4 p-4 rounded-lg text-sm border ${messageType === 'success'
+              ? 'bg-green-50 border-green-200 text-green-800'
+              : 'bg-red-50 border-red-200 text-red-800'
+              }`}>
               <div className="flex items-start space-x-2">
                 {messageType === 'success' ? (
                   <CheckCircle className="w-5 h-5 text-green-600 mt-0.5 flex-shrink-0" />
@@ -387,30 +385,23 @@ export default function Auth() {
               {isSignUp ? 'Already have an account? Sign in' : 'Need an account? Start free trial'}
             </button>
           </div>
-
-          {/* Terms */}
-          <div className="mt-8 text-center text-xs text-gray-500">
-            {!isSignUp && (
-              <>
-                By continuing, you agree to our{' '}
-                <a href="/privacy-terms" className="text-gray-700 hover:underline">Terms of Service</a>{' '}
-                and{' '}
-                <a href="/privacy-terms" className="text-gray-700 hover:underline">Privacy Policy</a>
-              </>
-            )}
-          </div>
         </div>
       </div>
 
       {/* Footer */}
-      <div className="p-6">
+      <div className="p-6 space-y-4">
+        {/* Terms Text */}
+        <div className="text-center text-xs text-gray-500">
+          By continuing, you agree to our{' '}
+          <Link to="/privacy-terms" className="text-gray-700 hover:underline">Terms of Service</Link>
+          {' '}and{' '}
+          <Link to="/privacy-terms" className="text-gray-700 hover:underline">Privacy Policy</Link>
+        </div>
+
+        {/* Footer Brand */}
         <div className="flex items-center justify-between max-w-md mx-auto">
           <div className="flex items-center space-x-2 text-sm text-gray-600">
-            <img 
-              src="/bakestatements-logo.png" 
-              alt="BakeStatements Logo" 
-              className="w-6 h-6 rounded-full object-cover"
-            />
+            <ChefHat className="w-5 h-5 text-gray-500" />
             <span>BakeStatements</span>
           </div>
           <div className="flex items-center space-x-1 text-sm text-gray-600">

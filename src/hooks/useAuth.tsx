@@ -1,77 +1,100 @@
-import { createContext, useContext, useEffect, useState, ReactNode } from 'react'
-import { supabase } from '../lib/supabase'
-import { User, Session } from '@supabase/supabase-js'
+import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
+import { supabase } from '../lib/supabase';
+import type { User as SupabaseUser } from '@supabase/supabase-js';
 
-interface AuthContextType {
-  user: User | null
-  session: Session | null
-  loading: boolean
-  signUp: (email: string, password: string, fullName?: string) => Promise<any>
-  signIn: (email: string, password: string) => Promise<any>
-  signOut: () => Promise<any>
-  resetPasswordForEmail: (email: string) => Promise<any>
-  updateUserPassword: (password: string, accessToken: string, refreshToken: string) => Promise<any>
-  resendVerification: (email: string) => Promise<any>
-  isTrialExpired: boolean
-  hasActiveSubscription: boolean
+interface UserProfile {
+  id: string;
+  email: string;
+  business_name?: string;
+  phone_number?: string;
+  abn?: string;
+  trial_end_date: string;
+  subscription_status: string;
+  subscription_tier?: string;
+  full_name?: string;
 }
 
-const AuthContext = createContext<AuthContextType | undefined>(undefined)
+interface AuthContextType {
+  user: UserProfile | null;
+  supabaseUser: SupabaseUser | null;
+  loading: boolean;
+  signUp: (email: string, password: string, fullName?: string) => Promise<any>;
+  signIn: (email: string, password: string) => Promise<any>;
+  signOut: () => Promise<any>;
+  resetPasswordForEmail: (email: string) => Promise<any>;
+  updateUserPassword: (password: string, accessToken: string, refreshToken: string) => Promise<any>;
+  resendVerification: (email: string) => Promise<any>;
+  isTrialExpired: boolean;
+  hasActiveSubscription: boolean;
+  updateProfile: (data: any) => Promise<void>;
+}
+
+const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<User | null>(null)
-  const [session, setSession] = useState<Session | null>(null)
-  const [loading, setLoading] = useState(true)
-  const [isTrialExpired, setIsTrialExpired] = useState(false)
-  const [hasActiveSubscription, setHasActiveSubscription] = useState(false)
+  const [user, setUser] = useState<UserProfile | null>(null);
+  const [supabaseUser, setSupabaseUser] = useState<SupabaseUser | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [isTrialExpired, setIsTrialExpired] = useState(false);
+  const [hasActiveSubscription, setHasActiveSubscription] = useState(false);
+
+  const fetchUserProfile = async (userId: string) => {
+    const { data, error } = await supabase
+      .from('profiles')
+      .select('*')
+      .eq('id', userId)
+      .maybeSingle();
+
+    if (error) {
+      console.error('Error fetching profile:', error);
+      return null;
+    }
+
+    return data;
+  };
+
+  const checkTrialStatus = (userData: UserProfile) => {
+    const trialEnd = new Date(userData.trial_end_date);
+    const now = new Date();
+    const trialExpired = now > trialEnd;
+    const activeSubscription = userData.subscription_status === 'active' || userData.subscription_status === 'lifetime';
+
+    setIsTrialExpired(trialExpired && !activeSubscription);
+    setHasActiveSubscription(activeSubscription);
+  };
 
   useEffect(() => {
-    // Get initial session
     supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session)
-      setUser(session?.user ?? null)
-      setLoading(false)
-      
+      setSupabaseUser(session?.user ?? null);
       if (session?.user) {
-        checkTrialStatus(session.user.id)
+        fetchUserProfile(session.user.id).then((profile) => {
+          if (profile) {
+            setUser(profile);
+            checkTrialStatus(profile);
+          }
+        });
       }
-    })
+      setLoading(false);
+    });
 
-    // Listen for auth changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
-        setSession(session)
-        setUser(session?.user ?? null)
-        setLoading(false)
-        
-        if (session?.user) {
-          checkTrialStatus(session.user.id)
-        } else {
-          setIsTrialExpired(false)
-        }
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setSupabaseUser(session?.user ?? null);
+      if (session?.user) {
+        fetchUserProfile(session.user.id).then((profile) => {
+          if (profile) {
+            setUser(profile);
+            checkTrialStatus(profile);
+          }
+        });
+      } else {
+        setUser(null);
+        setIsTrialExpired(false);
+        setHasActiveSubscription(false);
       }
-    )
+    });
 
-    return () => subscription.unsubscribe()
-  }, [])
-
-  const checkTrialStatus = async (userId: string) => {
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('trial_end_date, subscription_status')
-      .eq('id', userId)
-      .single()
-    
-    if (profile) {
-      const trialEnd = new Date(profile.trial_end_date)
-      const now = new Date()
-      const trialExpired = now > trialEnd
-      const activeSubscription = profile.subscription_status === 'active'
-      
-      setIsTrialExpired(trialExpired && !activeSubscription)
-      setHasActiveSubscription(activeSubscription)
-    }
-  }
+    return () => subscription.unsubscribe();
+  }, []);
 
   const signUp = async (email: string, password: string, fullName?: string) => {
     const result = await supabase.auth.signUp({
@@ -83,7 +106,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         }
       }
     })
-    
+
     // If sign up successful and user created, update profile with full name
     if (result.data.user && fullName) {
       try {
@@ -95,22 +118,55 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         console.error('Error updating profile with full name:', error)
       }
     }
-    
+
     return result
   }
 
   const signIn = async (email: string, password: string) => {
-    const result = await supabase.auth.signInWithPassword({
+    const { data, error } = await supabase.auth.signInWithPassword({
       email,
       password,
-    })
-    return result
-  }
+    });
+
+    if (error) {
+      throw new Error(error.message);
+    }
+
+    if (data.user) {
+      const profile = await fetchUserProfile(data.user.id);
+      if (profile) {
+        setUser(profile);
+        checkTrialStatus(profile);
+      }
+    }
+  };
 
   const signOut = async () => {
-    const result = await supabase.auth.signOut()
-    return result
-  }
+    await supabase.auth.signOut();
+    setUser(null);
+    setSupabaseUser(null);
+    setIsTrialExpired(false);
+    setHasActiveSubscription(false);
+  };
+
+  const updateProfile = async (data: any) => {
+    if (!supabaseUser) throw new Error('Not authenticated');
+
+    const { error } = await supabase
+      .from('profiles')
+      .update(data)
+      .eq('id', supabaseUser.id);
+
+    if (error) {
+      throw new Error(error.message);
+    }
+
+    const profile = await fetchUserProfile(supabaseUser.id);
+    if (profile) {
+      setUser(profile);
+      checkTrialStatus(profile);
+    }
+  };
 
   const resetPasswordForEmail = async (email: string) => {
     const result = await supabase.auth.resetPasswordForEmail(email, {
@@ -125,17 +181,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       access_token: accessToken,
       refresh_token: refreshToken
     })
-    
+
     if (sessionError) throw sessionError
-    
+
     // Update the password
     const result = await supabase.auth.updateUser({
       password: password
     })
-    
+
     // Sign out after password update to force fresh login
     await supabase.auth.signOut()
-    
+
     return result
   }
 
@@ -147,28 +203,31 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return result
   }
   return (
-    <AuthContext.Provider value={{
-      user,
-      session,
-      loading,
-      signUp,
-      signIn,
-      signOut,
-      resetPasswordForEmail,
-      updateUserPassword,
-      resendVerification,
-      isTrialExpired,
-      hasActiveSubscription
-    }}>
+    <AuthContext.Provider
+      value={{
+        user,
+        supabaseUser,
+        loading,
+        signUp,
+        signIn,
+        signOut,
+        resetPasswordForEmail,
+        updateUserPassword,
+        resendVerification,
+        isTrialExpired,
+        hasActiveSubscription,
+        updateProfile,
+      }}
+    >
       {children}
     </AuthContext.Provider>
-  )
+  );
 }
 
 export function useAuth() {
-  const context = useContext(AuthContext)
+  const context = useContext(AuthContext);
   if (context === undefined) {
-    throw new Error('useAuth must be used within an AuthProvider')
+    throw new Error('useAuth must be used within an AuthProvider');
   }
-  return context
+  return context;
 }
