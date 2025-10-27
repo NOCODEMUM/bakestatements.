@@ -22,6 +22,7 @@ interface AuthContextType {
   signOut: () => Promise<void>;
   isTrialExpired: boolean;
   hasActiveSubscription: boolean;
+  isReadOnlyMode: boolean;
   updateProfile: (data: any) => Promise<void>;
 }
 
@@ -33,6 +34,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
   const [isTrialExpired, setIsTrialExpired] = useState(false);
   const [hasActiveSubscription, setHasActiveSubscription] = useState(false);
+
+  const isReadOnlyMode = isTrialExpired && !hasActiveSubscription;
 
   const fetchUserProfile = async (userId: string) => {
     const { data, error } = await supabase
@@ -180,6 +183,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         signOut,
         isTrialExpired,
         hasActiveSubscription,
+        isReadOnlyMode,
         updateProfile,
       }}
     >
