@@ -17,9 +17,10 @@ interface AuthContextType {
   user: UserProfile | null;
   supabaseUser: SupabaseUser | null;
   loading: boolean;
-  signUp: (email: string, password: string, businessName?: string) => Promise<void>;
+  signUp: (email: string, password: string, businessName?: string) => Promise<{ needsConfirmation: boolean }>;
   signIn: (email: string, password: string) => Promise<void>;
   signOut: () => Promise<void>;
+  resendConfirmationEmail: (email: string) => Promise<void>;
   isTrialExpired: boolean;
   hasActiveSubscription: boolean;
   isReadOnlyMode: boolean;
@@ -106,6 +107,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
 
     if (data.user) {
+      const needsConfirmation = !data.session;
+
       const { error: profileError } = await supabase
         .from('profiles')
         .insert({
@@ -118,12 +121,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         console.error('Error creating profile:', profileError);
       }
 
-      const profile = await fetchUserProfile(data.user.id);
-      if (profile) {
-        setUser(profile);
-        checkTrialStatus(profile);
+      if (data.session) {
+        const profile = await fetchUserProfile(data.user.id);
+        if (profile) {
+          setUser(profile);
+          checkTrialStatus(profile);
+        }
       }
+
+      return { needsConfirmation };
     }
+
+    return { needsConfirmation: false };
   };
 
   const signIn = async (email: string, password: string) => {
@@ -172,6 +181,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
+  const resendConfirmationEmail = async (email: string) => {
+    const { error } = await supabase.auth.resend({
+      type: 'signup',
+      email: email,
+    });
+
+    if (error) {
+      throw new Error(error.message);
+    }
+  };
+
   return (
     <AuthContext.Provider
       value={{
@@ -181,6 +201,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         signUp,
         signIn,
         signOut,
+        resendConfirmationEmail,
         isTrialExpired,
         hasActiveSubscription,
         isReadOnlyMode,
