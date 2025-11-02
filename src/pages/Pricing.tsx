@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Check, ArrowLeft } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
 import { api } from '../lib/api';
-import { STRIPE_PRICES } from '../lib/stripe';
+import { STRIPE_PLANS } from '../lib/stripe';
 import PublicHeader from '../components/PublicHeader';
 import PublicFooter from '../components/PublicFooter';
 
@@ -12,16 +12,16 @@ export default function Pricing() {
   const { user } = useAuth();
   const [loading, setLoading] = useState<string | null>(null);
 
-  const handleSubscribe = async (priceId: string, mode: string = 'subscription') => {
+  const handleSubscribe = async (plan: string, mode: string = 'subscription') => {
     if (!user) {
       navigate('/auth');
       return;
     }
 
-    setLoading(priceId);
+    setLoading(plan);
 
     try {
-      const { url }: any = await api.stripe.createCheckout('', priceId, mode);
+      const { url }: any = await api.stripe.createCheckout('', plan, mode);
 
       if (url) {
         window.location.href = url;
@@ -90,11 +90,11 @@ export default function Pricing() {
             </ul>
 
             <button
-              onClick={() => handleSubscribe(STRIPE_PRICES.monthly, 'subscription')}
-              disabled={loading === STRIPE_PRICES.monthly}
+              onClick={() => handleSubscribe(STRIPE_PLANS.monthly, 'subscription')}
+              disabled={loading === STRIPE_PLANS.monthly}
               className="w-full bg-amber-500 text-white py-3 px-6 rounded-lg hover:bg-amber-600 transition-colors font-semibold disabled:opacity-50"
             >
-              {loading === STRIPE_PRICES.monthly ? (
+              {loading === STRIPE_PLANS.monthly ? (
                 <div className="flex items-center justify-center space-x-2">
                   <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
                   <span>Processing...</span>
@@ -132,11 +132,11 @@ export default function Pricing() {
             </ul>
 
             <button
-              onClick={() => handleSubscribe(STRIPE_PRICES.annual, 'subscription')}
-              disabled={loading === STRIPE_PRICES.annual}
+              onClick={() => handleSubscribe(STRIPE_PLANS.annual, 'subscription')}
+              disabled={loading === STRIPE_PLANS.annual}
               className="w-full bg-teal-600 text-white py-3 px-6 rounded-lg hover:bg-teal-700 transition-colors font-semibold disabled:opacity-50"
             >
-              {loading === STRIPE_PRICES.annual ? (
+              {loading === STRIPE_PLANS.annual ? (
                 <div className="flex items-center justify-center space-x-2">
                   <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
                   <span>Processing...</span>
@@ -173,11 +173,11 @@ export default function Pricing() {
             </ul>
 
             <button
-              onClick={() => handleSubscribe(STRIPE_PRICES.lifetime, 'payment')}
-              disabled={loading === STRIPE_PRICES.lifetime}
+              onClick={() => handleSubscribe(STRIPE_PLANS.lifetime, 'payment')}
+              disabled={loading === STRIPE_PLANS.lifetime}
               className="w-full bg-pink-600 text-white py-3 px-6 rounded-lg hover:bg-pink-700 transition-colors font-semibold disabled:opacity-50"
             >
-              {loading === STRIPE_PRICES.lifetime ? (
+              {loading === STRIPE_PLANS.lifetime ? (
                 <div className="flex items-center justify-center space-x-2">
                   <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
                   <span>Processing...</span>

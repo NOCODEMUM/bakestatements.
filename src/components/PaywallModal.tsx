@@ -1,7 +1,7 @@
 import { X, Crown, Check } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
 import { api } from '../lib/api';
-import { STRIPE_PRICES } from '../lib/stripe';
+import { STRIPE_PLANS } from '../lib/stripe';
 import { useState } from 'react';
 
 interface PaywallModalProps {
@@ -13,13 +13,13 @@ export default function PaywallModal({ isOpen, onClose }: PaywallModalProps) {
   const { user } = useAuth();
   const [loading, setLoading] = useState<string | null>(null);
 
-  const handleSubscribe = async (priceId: string, mode: string = 'subscription') => {
+  const handleSubscribe = async (plan: string, mode: string = 'subscription') => {
     if (!user) return;
 
-    setLoading(priceId);
+    setLoading(plan);
 
     try {
-      const { url }: any = await api.stripe.createCheckout('', priceId, mode);
+      const { url }: any = await api.stripe.createCheckout('', plan, mode);
 
       if (url) {
         window.location.href = url;
@@ -80,11 +80,11 @@ export default function PaywallModal({ isOpen, onClose }: PaywallModalProps) {
               ))}
             </ul>
             <button
-              onClick={() => handleSubscribe(STRIPE_PRICES.monthly, 'subscription')}
-              disabled={loading === STRIPE_PRICES.monthly}
+              onClick={() => handleSubscribe(STRIPE_PLANS.monthly, 'subscription')}
+              disabled={loading === STRIPE_PLANS.monthly}
               className="w-full bg-amber-500 text-white py-2 px-4 rounded-lg hover:bg-amber-600 transition-colors mt-4 font-medium disabled:opacity-50"
             >
-              {loading === STRIPE_PRICES.monthly ? (
+              {loading === STRIPE_PLANS.monthly ? (
                 <div className="flex items-center justify-center space-x-2">
                   <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
                   <span>Processing...</span>
@@ -108,11 +108,11 @@ export default function PaywallModal({ isOpen, onClose }: PaywallModalProps) {
             </div>
             <p className="text-sm text-gray-600 mb-3">AUD per year (Save $48!)</p>
             <button
-              onClick={() => handleSubscribe(STRIPE_PRICES.annual, 'subscription')}
-              disabled={loading === STRIPE_PRICES.annual}
+              onClick={() => handleSubscribe(STRIPE_PLANS.annual, 'subscription')}
+              disabled={loading === STRIPE_PLANS.annual}
               className="w-full bg-emerald-600 text-white py-2 px-4 rounded-lg hover:bg-emerald-700 transition-colors font-medium disabled:opacity-50"
             >
-              {loading === STRIPE_PRICES.annual ? (
+              {loading === STRIPE_PLANS.annual ? (
                 <div className="flex items-center justify-center space-x-2">
                   <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
                   <span>Processing...</span>
@@ -133,11 +133,11 @@ export default function PaywallModal({ isOpen, onClose }: PaywallModalProps) {
             </div>
             <p className="text-sm text-gray-600 mb-3">One-time payment • First 50 users only</p>
             <button
-              onClick={() => handleSubscribe(STRIPE_PRICES.lifetime, 'payment')}
-              disabled={loading === STRIPE_PRICES.lifetime}
+              onClick={() => handleSubscribe(STRIPE_PLANS.lifetime, 'payment')}
+              disabled={loading === STRIPE_PLANS.lifetime}
               className="w-full bg-purple-500 text-white py-2 px-4 rounded-lg hover:bg-purple-600 transition-colors font-medium disabled:opacity-50"
             >
-              {loading === STRIPE_PRICES.lifetime ? (
+              {loading === STRIPE_PLANS.lifetime ? (
                 <div className="flex items-center justify-center space-x-2">
                   <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
                   <span>Processing...</span>

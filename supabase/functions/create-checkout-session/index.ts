@@ -77,7 +77,19 @@ Deno.serve(async (req: Request) => {
       }
     }
 
-    const { priceId, mode, returnUrl } = await req.json();
+    const body = await req.json();
+    const plan = (body.plan || '').toLowerCase();
+    const returnUrl = body.returnUrl;
+
+    // Map plan -> price id from Supabase secrets; allow explicit priceId for backward compatibility
+    const planToPrice: Record<string, string> = {
+      monthly: Deno.env.get("STRIPE_PRICE_MONTHLY") || "",
+      annual: Deno.env.get("STRIPE_PRICE_ANNUAL") || "",
+      lifetime: Deno.env.get("STRIPE_PRICE_LIFETIME") || "",
+    };
+
+    const priceId = body.priceId || planToPrice[plan];
+    const mode = body.mode || (plan === "lifetime" ? "payment" : "subscription");
 
     if (!priceId) {
       return new Response(

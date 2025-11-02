@@ -422,7 +422,7 @@ export const api = {
   },
 
   stripe: {
-    createCheckout: async (_token: string, priceId: string, mode: string = 'subscription') => {
+    createCheckout: async (_token: string, plan: string, mode: string = 'subscription') => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('Not authenticated');
 
@@ -439,7 +439,7 @@ export const api = {
           apikey: import.meta.env.VITE_SUPABASE_ANON_KEY,
         },
         body: JSON.stringify({
-          priceId,
+          plan,
           mode,
           userId: user.id,
           ...(returnUrl ? { returnUrl } : {}),

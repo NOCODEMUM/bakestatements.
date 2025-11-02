@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { STRIPE_PRICES } from '../lib/stripe'
+import { STRIPE_PLANS } from '../lib/stripe'
 import PublicFooter from '../components/PublicFooter'
 import PublicHeader from '../components/PublicHeader'
 import './LandingPage.css'
@@ -16,7 +16,7 @@ export default function LandingPage() {
     }
   }
 
-  const handleSubscribe = async (priceId: string, mode: string = 'subscription') => {
+  const handleSubscribe = async (plan: string, mode: string = 'subscription') => {
     window.location.href = '/auth';
   }
 
@@ -222,11 +222,11 @@ export default function LandingPage() {
                 </ul>
 
                 <button
-                  onClick={() => handleSubscribe('price_1RyA4CHruLrtRCwiXi8uqRWn', 'subscription')}
-                  disabled={loading === STRIPE_PRICES.monthly}
+                  onClick={() => handleSubscribe(STRIPE_PLANS.monthly, 'subscription')}
+                  disabled={loading === STRIPE_PLANS.monthly}
                   className="w-full bg-amber-500 text-white py-3 md:py-4 rounded-lg font-bold text-lg hover:bg-amber-600 transition-colors disabled:opacity-50"
                 >
-                  {loading === 'price_1RyA4CHruLrtRCwiXi8uqRWn' ? (
+                  {loading === STRIPE_PLANS.monthly ? (
                     <div className="flex items-center justify-center space-x-2">
                       <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
                       <span>Processing...</span>
@@ -255,11 +255,11 @@ export default function LandingPage() {
                 </ul>
 
                 <button
-                  onClick={() => handleSubscribe('price_1RyA4CHruLrtRCwiZJlqpEt1', 'subscription')}
-                  disabled={loading === STRIPE_PRICES.annual}
+                  onClick={() => handleSubscribe(STRIPE_PLANS.annual, 'subscription')}
+                  disabled={loading === STRIPE_PLANS.annual}
                   className="w-full bg-teal-600 text-white py-3 md:py-4 rounded-lg font-bold text-lg hover:bg-teal-700 transition-colors disabled:opacity-50"
                 >
-                  {loading === 'price_1RyA4CHruLrtRCwiZJlqpEt1' ? (
+                  {loading === STRIPE_PLANS.annual ? (
                     <div className="flex items-center justify-center space-x-2">
                       <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
                       <span>Processing...</span>
@@ -284,11 +284,11 @@ export default function LandingPage() {
                 </ul>
 
                 <button
-                  onClick={() => handleSubscribe('price_1RyA4CHruLrtRCwi7inxZ3l2', 'payment')}
-                  disabled={loading === STRIPE_PRICES.lifetime}
+                  onClick={() => handleSubscribe(STRIPE_PLANS.lifetime, 'payment')}
+                  disabled={loading === STRIPE_PLANS.lifetime}
                   className="w-full bg-pink-600 text-white py-3 md:py-4 rounded-lg font-bold text-lg hover:bg-pink-700 transition-colors disabled:opacity-50"
                 >
-                  {loading === 'price_1RyA4CHruLrtRCwi7inxZ3l2' ? (
+                  {loading === STRIPE_PLANS.lifetime ? (
                     <div className="flex items-center justify-center space-x-2">
                       <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
                       <span>Processing...</span>
