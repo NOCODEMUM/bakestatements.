@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useEffect, useState } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { Check, ArrowLeft } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
 import { api } from '../lib/api';
@@ -9,8 +9,10 @@ import PublicFooter from '../components/PublicFooter';
 
 export default function Pricing() {
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const location = useLocation();
+  const { user, refreshProfile } = useAuth();
   const [loading, setLoading] = useState<string | null>(null);
+  const [checkoutUpdating, setCheckoutUpdating] = useState(false);
 
   const handleSubscribe = async (plan: string, mode: string = 'subscription') => {
     if (!user) {
@@ -46,6 +48,48 @@ export default function Pricing() {
     'CSV/PDF exports',
     'Email support'
   ];
+
+  // Handle Stripe redirect back to this page, confirm session, then redirect to settings
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const isSuccess = params.get('checkout') === 'success';
+    const sessionId = params.get('session_id') || '';
+    if (isSuccess && sessionId && !checkoutUpdating) {
+      setCheckoutUpdating(true);
+      (async () => {
+        try {
+          await api.stripe.confirmCheckout(sessionId);
+        } catch (e) {
+          console.error('confirmCheckout failed', e);
+        } finally {
+          try {
+            await refreshProfile();
+          } catch {}
+          navigate('/settings');
+        }
+      })();
+    }
+  }, [location.search]);
+
+  if (checkoutUpdating) {
+    return (
+      <div className="min-h-screen bg-gradient-to-b from-orange-50 to-white flex items-center justify-center px-4">
+        <div className="bg-white rounded-2xl shadow-xl border-2 border-amber-200 p-8 max-w-md w-full text-center">
+          <div className="mx-auto mb-6 w-20 h-20 rounded-full bg-amber-100 flex items-center justify-center">
+            <div className="h-10 w-10 border-4 border-amber-400 border-t-transparent rounded-full animate-spin"></div>
+          </div>
+          <h2 className="text-2xl font-bold text-gray-900 mb-2">Updating your subscription...</h2>
+          <p className="text-gray-600 mb-6">We're confirming your payment and baking your new plan into your account.</p>
+          <div className="flex items-center justify-center space-x-2 text-amber-600">
+            <span className="animate-bounce">🥐</span>
+            <span className="animate-bounce [animation-delay:150ms]">🍞</span>
+            <span className="animate-bounce [animation-delay:300ms]">🧁</span>
+          </div>
+          <p className="text-xs text-gray-500 mt-6">This usually takes a few seconds.</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-orange-50 to-white">

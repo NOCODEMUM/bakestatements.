@@ -430,6 +430,8 @@ export const api = {
       const { data: { session } } = await supabase.auth.getSession();
       const accessToken = session?.access_token;
       const returnUrl = typeof window !== 'undefined' && window.location ? window.location.origin : undefined;
+      const successPath = typeof window !== 'undefined' && window.location ? window.location.pathname : '/pricing';
+      const cancelPath = successPath;
 
       const response = await fetch(`${supabaseUrl}/functions/v1/create-checkout-session`, {
         method: 'POST',
@@ -443,6 +445,8 @@ export const api = {
           mode,
           userId: user.id,
           ...(returnUrl ? { returnUrl } : {}),
+          successPath,
+          cancelPath,
         }),
       });
 

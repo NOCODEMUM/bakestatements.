@@ -80,6 +80,8 @@ Deno.serve(async (req: Request) => {
     const body = await req.json();
     const plan = (body.plan || '').toLowerCase();
     const returnUrl = body.returnUrl;
+    const successPath = body.successPath;
+    const cancelPath = body.cancelPath;
 
     // Map plan -> price id from Supabase secrets; allow explicit priceId for backward compatibility
     const planToPrice: Record<string, string> = {
@@ -129,6 +131,8 @@ Deno.serve(async (req: Request) => {
     console.log("frontendUrl", frontendUrl);
     // const frontendUrl = Deno.env.get("FRONTEND_URL") || "https://bakestatements.com";
     const baseUrl = (returnUrl && typeof returnUrl === 'string' && returnUrl.startsWith('http')) ? returnUrl : frontendUrl;
+    const safeSuccessPath = (typeof successPath === 'string' && successPath.startsWith('/')) ? successPath : '/settings';
+    const safeCancelPath = (typeof cancelPath === 'string' && cancelPath.startsWith('/')) ? cancelPath : '/pricing';
 
     const session = await stripe.checkout.sessions.create({
       customer: customerId,
@@ -140,8 +144,8 @@ Deno.serve(async (req: Request) => {
         },
       ],
       mode: mode as "subscription" | "payment",
-      success_url: `${baseUrl}/settings?checkout=success&session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${baseUrl}/pricing?cancelled=true`,
+      success_url: `${baseUrl}${safeSuccessPath}?checkout=success&session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${baseUrl}${safeCancelPath}?cancelled=true`,
       metadata: {
         user_id: user!.id,
       },
