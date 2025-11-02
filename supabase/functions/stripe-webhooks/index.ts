@@ -6,14 +6,16 @@ import { createClient } from "@supabase/supabase-js";
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Methods": "POST, OPTIONS",
-  "Access-Control-Allow-Headers": "Content-Type, Authorization, X-Client-Info, Apikey, stripe-signature",
+  "Access-Control-Allow-Headers": "Content-Type, Authorization, X-Client-Info, Apikey, apikey, stripe-signature",
 };
+
+const FUNCTION_VERSION = "stripe-webhooks@2025-11-02-1";
 
 Deno.serve(async (req: Request) => {
   if (req.method === "OPTIONS") {
     return new Response(null, {
       status: 200,
-      headers: corsHeaders,
+      headers: { ...corsHeaders, "X-Function-Version": FUNCTION_VERSION },
     });
   }
 
@@ -34,7 +36,7 @@ Deno.serve(async (req: Request) => {
         JSON.stringify({ error: "No signature provided" }),
         {
           status: 400,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
+          headers: { ...corsHeaders, "Content-Type": "application/json", "X-Function-Version": FUNCTION_VERSION },
         }
       );
     }
@@ -50,7 +52,7 @@ Deno.serve(async (req: Request) => {
         JSON.stringify({ error: `Webhook Error: ${err.message}` }),
         {
           status: 400,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
+          headers: { ...corsHeaders, "Content-Type": "application/json", "X-Function-Version": FUNCTION_VERSION },
         }
       );
     }
@@ -60,33 +62,44 @@ Deno.serve(async (req: Request) => {
         const session = event.data.object as any;
         const userId = session.metadata?.user_id;
 
+        const updateData: any = {
+          subscription_status: "active",
+          stripe_customer_id: session.customer,
+        };
+
+        if (session.mode === "subscription") {
+          updateData.subscription_id = session.subscription;
+
+          const subscription = await stripe.subscriptions.retrieve(
+            session.subscription as string
+          );
+
+          const interval = subscription.items.data[0]?.price.recurring?.interval;
+          updateData.subscription_tier = interval === "year" ? "annual" : "monthly";
+        } else if (session.mode === "payment") {
+          updateData.subscription_status = "lifetime";
+          updateData.subscription_tier = "lifetime";
+          updateData.subscription_id = null;
+        }
+
         if (userId) {
-          const updateData: any = {
-            subscription_status: "active",
-            stripe_customer_id: session.customer,
-          };
-
-          if (session.mode === "subscription") {
-            updateData.subscription_id = session.subscription;
-
-            const subscription = await stripe.subscriptions.retrieve(
-              session.subscription as string
-            );
-
-            const interval = subscription.items.data[0]?.price.recurring?.interval;
-            updateData.subscription_tier = interval === "year" ? "annual" : "monthly";
-          } else if (session.mode === "payment") {
-            updateData.subscription_status = "lifetime";
-            updateData.subscription_tier = "lifetime";
-            updateData.subscription_id = null;
-          }
-
           await supabase
             .from("profiles")
             .update(updateData)
             .eq("id", userId);
-
-          console.log("Successfully updated profile for checkout session:", session.id);
+          console.log("Updated profile by user id for checkout session:", session.id);
+        } else {
+          // Fallback: try match by email if metadata missing
+          const email = session.customer_details?.email;
+          if (email) {
+            await supabase
+              .from("profiles")
+              .update(updateData)
+              .eq("email", email);
+            console.log("Updated profile by email for checkout session:", session.id, email);
+          } else {
+            console.warn("checkout.session.completed without user_id and email", session.id);
+          }
         }
         break;
       }
@@ -100,16 +113,39 @@ Deno.serve(async (req: Request) => {
           tier = "annual";
         }
 
-        await supabase
-          .from("profiles")
-          .update({
-            subscription_status: subscription.status,
-            subscription_tier: tier,
-            subscription_id: subscription.id,
-          })
-          .eq("stripe_customer_id", subscription.customer as string);
+        const updatePayload = {
+          subscription_status: subscription.status,
+          subscription_tier: tier,
+          subscription_id: subscription.id,
+        } as any;
 
-        console.log("Successfully updated subscription:", subscription.id);
+        // Try update by stripe_customer_id
+        const { data: byCustomer, error: byCustomerErr } = await supabase
+          .from("profiles")
+          .update(updatePayload)
+          .eq("stripe_customer_id", subscription.customer as string)
+          .select("id");
+
+        if (!byCustomerErr && (!byCustomer || byCustomer.length === 0)) {
+          // Fallback: update by email and set stripe_customer_id
+          try {
+            const customer = await stripe.customers.retrieve(subscription.customer as string) as any;
+            const email = customer?.email;
+            if (email) {
+              await supabase
+                .from("profiles")
+                .update({ ...updatePayload, stripe_customer_id: subscription.customer as string })
+                .eq("email", email);
+              console.log("Updated profile by email for subscription:", subscription.id, email);
+            } else {
+              console.warn("No email on customer for subscription:", subscription.id);
+            }
+          } catch (e) {
+            console.error("Failed retrieving customer for subscription fallback:", subscription.id, e);
+          }
+        } else {
+          console.log("Updated profile by customer id for subscription:", subscription.id);
+        }
         break;
       }
 
@@ -162,6 +198,7 @@ Deno.serve(async (req: Request) => {
         headers: {
           ...corsHeaders,
           "Content-Type": "application/json",
+          "X-Function-Version": FUNCTION_VERSION,
         },
       }
     );
@@ -171,7 +208,7 @@ Deno.serve(async (req: Request) => {
       JSON.stringify({ error: "Webhook processing failed" }),
       {
         status: 500,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        headers: { ...corsHeaders, "Content-Type": "application/json", "X-Function-Version": FUNCTION_VERSION },
       }
     );
   }

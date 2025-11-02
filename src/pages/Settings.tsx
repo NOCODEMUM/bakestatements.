@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useLocation } from 'react-router-dom'
 import { useAuth } from '../hooks/useAuth'
 import { User, Building, Hash, Phone, Save, CheckCircle, Crown, ArrowUpRight } from 'lucide-react'
 
@@ -11,10 +11,12 @@ interface ProfileData {
 
 export default function Settings() {
   const navigate = useNavigate()
-  const { user, isTrialExpired, updateProfile } = useAuth()
+  const location = useLocation()
+  const { user, isTrialExpired, updateProfile, refreshProfile } = useAuth()
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [saved, setSaved] = useState(false)
+  const [checkoutSuccess, setCheckoutSuccess] = useState(false)
   const [profileData, setProfileData] = useState<ProfileData>({
     business_name: '',
     phone_number: '',
@@ -31,6 +33,24 @@ export default function Settings() {
       setLoading(false)
     }
   }, [user])
+
+  // Detect checkout success redirect and refresh profile from DB
+  useEffect(() => {
+    const params = new URLSearchParams(location.search)
+    if (params.get('checkout') === 'success') {
+      setCheckoutSuccess(true)
+      // Refresh profile to pull latest subscription status set by webhook
+      refreshProfile()
+      // Optionally clean up the query string after a short delay
+      const timeout = setTimeout(() => {
+        const url = new URL(window.location.href)
+        url.searchParams.delete('checkout')
+        url.searchParams.delete('session_id')
+        window.history.replaceState({}, '', url.toString())
+      }, 3000)
+      return () => clearTimeout(timeout)
+    }
+  }, [location.search, refreshProfile])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -59,6 +79,11 @@ export default function Settings() {
 
   return (
     <div className="space-y-6">
+      {checkoutSuccess && (
+        <div className="p-4 rounded-lg bg-green-50 border border-green-200 text-green-800">
+          Payment successful! Your plan has been updated.
+        </div>
+      )}
       <div>
         <h1 className="text-3xl font-bold text-gray-800 dark:text-gray-100">Settings</h1>
         <p className="text-gray-600 dark:text-gray-300">Manage your business profile and account settings</p>

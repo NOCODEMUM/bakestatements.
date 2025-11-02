@@ -27,6 +27,7 @@ interface AuthContextType {
   isTrialExpired: boolean;
   hasActiveSubscription: boolean;
   updateProfile: (data: any) => Promise<void>;
+  refreshProfile: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -64,17 +65,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    supabase.auth.getSession().then(async ({ data: { session } }) => {
       setSupabaseUser(session?.user ?? null);
       if (session?.user) {
-        fetchUserProfile(session.user.id).then((profile) => {
-          if (profile) {
-            setUser(profile);
-            checkTrialStatus(profile);
-          }
-        });
+        const profile = await fetchUserProfile(session.user.id);
+        if (profile) {
+          setUser(profile);
+          checkTrialStatus(profile);
+        }
+        setLoading(false);
+      } else {
+        setLoading(false);
       }
-      setLoading(false);
     });
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
@@ -168,6 +170,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
+  const refreshProfile = async () => {
+    if (!supabaseUser) return;
+    const profile = await fetchUserProfile(supabaseUser.id);
+    if (profile) {
+      setUser(profile);
+      checkTrialStatus(profile);
+    }
+  };
+
   const resetPasswordForEmail = async (email: string) => {
     const result = await supabase.auth.resetPasswordForEmail(email, {
       redirectTo: `${window.location.origin}/reset-password`
@@ -217,6 +228,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         isTrialExpired,
         hasActiveSubscription,
         updateProfile,
+        refreshProfile,
       }}
     >
       {children}

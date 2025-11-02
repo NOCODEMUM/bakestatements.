@@ -17,7 +17,8 @@ declare module "stripe" {
             };
         };
         customers: {
-            create(params: Record<string, unknown>): Promise<{ id: string }>;
+            create(params: Record<string, unknown>): Promise<{ id: string }>; 
+            retrieve(id: string): Promise<{ id: string; email?: string | null }>; 
         };
     }
 

@@ -1,11 +1,10 @@
 import React, { useState } from 'react'
 import { STRIPE_PRICES } from '../lib/stripe'
-import { Menu, X, ChefHat } from 'lucide-react'
 import PublicFooter from '../components/PublicFooter'
+import PublicHeader from '../components/PublicHeader'
 import './LandingPage.css'
 
 export default function LandingPage() {
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [loading, setLoading] = useState<string | null>(null)
   const [mailingEmail, setMailingEmail] = useState('')
   const [mailingSubmitted, setMailingSubmitted] = useState(false)
@@ -14,7 +13,6 @@ export default function LandingPage() {
     const element = document.getElementById(id)
     if (element) {
       element.scrollIntoView({ behavior: 'smooth' })
-      setMobileMenuOpen(false)
     }
   }
 
@@ -40,81 +38,9 @@ export default function LandingPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-teal-50 to-amber-50">
-      {/* Navigation Header */}
-      <header className="fixed top-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-sm border-b border-gray-200 shadow-sm">
-        <nav className="max-w-7xl mx-auto px-4 md:px-6 lg:px-8 py-4 relative">
-          <div className="flex items-center justify-between">
-            {/* Logo */}
-            <div className="flex items-center space-x-2">
-              <ChefHat className="w-8 h-8 text-amber-600" />
-              <span className="text-xl font-bold text-gray-800">BakeStatements</span>
-            </div>
+      <PublicHeader />
 
-            {/* Desktop CTA */}
-            <div className="hidden md:flex items-center space-x-4">
-              <a href="/auth" className="text-gray-600 hover:text-teal-600 font-medium transition-colors">
-                Sign In
-              </a>
-              <a
-                href="/auth"
-                className="bg-amber-500 text-white px-6 py-2 rounded-full font-bold hover:bg-amber-600 transition-colors shadow-lg"
-              >
-                Start Free Trial
-              </a>
-            </div>
-
-            {/* Mobile Menu Button */}
-            <button
-              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="md:hidden p-2 text-gray-600 hover:text-gray-800 focus:outline-none"
-            >
-              {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
-            </button>
-          </div>
-
-          {/* Mobile Navigation Menu */}
-          {mobileMenuOpen && (
-            <div className="md:hidden absolute top-full left-0 right-0 bg-white border-b border-gray-200 shadow-lg">
-              <div className="px-4 py-6 space-y-4">
-                <button
-                  onClick={() => scrollToSection('features')}
-                  className="block w-full text-left py-2 text-gray-600 hover:text-teal-600 font-medium"
-                >
-                  Features
-                </button>
-                <button
-                  onClick={() => scrollToSection('pricing')}
-                  className="block w-full text-left py-2 text-gray-600 hover:text-teal-600 font-medium"
-                >
-                  Pricing
-                </button>
-                <a href="/about-us" className="block py-2 text-gray-600 hover:text-teal-600 font-medium">
-                  About
-                </a>
-                <button
-                  onClick={() => scrollToSection('contact')}
-                  className="block w-full text-left py-2 text-gray-600 hover:text-teal-600 font-medium"
-                >
-                  Contact
-                </button>
-                <div className="pt-4 border-t border-gray-200 space-y-3">
-                  <a href="/auth" className="block py-2 text-gray-600 hover:text-teal-600 font-medium">
-                    Login
-                  </a>
-                  <a
-                    href="/auth"
-                    className="block bg-amber-500 text-white text-center py-3 px-4 rounded-lg font-bold hover:bg-amber-600 transition-colors"
-                  >
-                    Start Free Trial
-                  </a>
-                </div>
-              </div>
-            </div>
-          )}
-        </nav>
-      </header>
-
-      <main className="pt-16 md:pt-20">
+      <main className="pt-16 md:pt-0">
         {/* Hero Section */}
         <section className="hero">
           <div className="hero__image-container">
