@@ -10,10 +10,12 @@ declare module "stripe" {
         };
         subscriptions: {
             retrieve(id: string): Promise<Stripe.Subscription>;
+            list(params: { customer?: string; status?: string; limit?: number }): Promise<{ data: Stripe.Subscription[] }>;
         };
         checkout: {
             sessions: {
                 create(params: Record<string, unknown>): Promise<{ id: string; url: string | null }>;
+                retrieve(id: string, params?: { expand?: string[] }): Promise<Stripe.Checkout.Session | (Stripe.Checkout.Session & { subscription?: Stripe.Subscription | string | null })>;
             };
         };
         customers: {
@@ -37,6 +39,7 @@ declare module "stripe" {
                 subscription?: string | null;
                 customer?: string | null;
                 metadata?: Record<string, string> | null;
+                customer_details?: { email?: string | null } | null;
             }
         }
 

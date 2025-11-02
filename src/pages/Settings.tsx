@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { useAuth } from '../hooks/useAuth'
+import { api } from '../lib/api'
 import { User, Building, Hash, Phone, Save, CheckCircle, Crown, ArrowUpRight } from 'lucide-react'
 
 interface ProfileData {
@@ -39,11 +40,22 @@ export default function Settings() {
   useEffect(() => {
     const params = new URLSearchParams(location.search)
     const isCheckoutSuccess = params.get('checkout') === 'success'
+    const sessionId = params.get('session_id') || ''
     if (isCheckoutSuccess && !hasRefreshedAfterCheckout.current) {
       hasRefreshedAfterCheckout.current = true
       setCheckoutSuccess(true)
-      // Refresh profile to pull latest subscription status set by webhook
-      refreshProfile()
+      // Apply checkout session manually, then refresh profile
+      ;(async () => {
+        try {
+          if (sessionId) {
+            await api.stripe.confirmCheckout(sessionId)
+          }
+        } catch (e) {
+          console.error('confirmCheckout failed', e)
+        } finally {
+          await refreshProfile()
+        }
+      })()
       // Clean up the query string after a short delay
       const timeout = setTimeout(() => {
         const url = new URL(window.location.href)

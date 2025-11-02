@@ -468,6 +468,32 @@ export const api = {
       if (error) throw error;
       return data;
     },
+
+    confirmCheckout: async (sessionId: string) => {
+      const { data: { session } } = await supabase.auth.getSession();
+      const accessToken = session?.access_token;
+      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+
+      if (!accessToken) throw new Error('Not authenticated');
+      if (!sessionId) throw new Error('sessionId is required');
+
+      const response = await fetch(`${supabaseUrl}/functions/v1/confirm-checkout-session`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(accessToken ? { 'Authorization': `Bearer ${accessToken}` } : {}),
+          apikey: import.meta.env.VITE_SUPABASE_ANON_KEY,
+        },
+        body: JSON.stringify({ sessionId }),
+      });
+
+      if (!response.ok) {
+        const error = await response.json().catch(() => ({}));
+        throw new Error(error.error || 'Failed to confirm checkout');
+      }
+
+      return await response.json();
+    },
   },
 
   enquiries: {
