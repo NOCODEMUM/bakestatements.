@@ -125,22 +125,42 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }
 
   const signIn = async (email: string, password: string) => {
-    const { data, error } = await supabase.auth.signInWithPassword({
+    const result = await supabase.auth.signInWithPassword({
       email,
       password,
     });
 
-    if (error) {
-      throw new Error(error.message);
+    // Return early on auth error to match caller expectations (they destructure { error })
+    if (result.error) {
+      return result;
     }
 
-    if (data.user) {
-      const profile = await fetchUserProfile(data.user.id);
+    // If authenticated, ensure a profile row exists and hydrate local state
+    const authUser = result.data.user;
+    if (authUser) {
+      let profile = await fetchUserProfile(authUser.id);
+
+      // If no profile, create a minimal one so the app can proceed
+      if (!profile) {
+        await supabase
+          .from('profiles')
+          .insert({
+            id: authUser.id,
+            email: authUser.email || '',
+            full_name: (authUser.user_metadata as any)?.full_name ?? null,
+            subscription_status: 'trial',
+          });
+
+        profile = await fetchUserProfile(authUser.id);
+      }
+
       if (profile) {
         setUser(profile);
         checkTrialStatus(profile);
       }
     }
+
+    return result;
   };
 
   const signOut = async () => {
