@@ -35,11 +35,11 @@ export default function PublicHeader({ showAuth = true }: PublicHeaderProps) {
             </Link>
             {showAuth && (
               <>
-                <Link to="/auth" className="text-gray-600 hover:text-teal-600 font-medium transition-colors">
+                <Link to="/auth?mode=signin" className="text-gray-600 hover:text-teal-600 font-medium transition-colors">
                   Sign In
                 </Link>
                 <Link
-                  to="/auth"
+                  to="/auth?mode=signup"
                   className="bg-amber-500 text-white px-4 py-2 md:px-6 md:py-2 rounded-full font-bold hover:bg-amber-600 transition-colors shadow-lg"
                 >
                   Start Free Trial
@@ -90,14 +90,14 @@ export default function PublicHeader({ showAuth = true }: PublicHeaderProps) {
               {showAuth && (
                 <div className="pt-4 border-t border-gray-200 space-y-3">
                   <Link
-                    to="/auth"
+                    to="/auth?mode=signin"
                     onClick={() => setMobileMenuOpen(false)}
                     className="block py-2 text-gray-600 hover:text-teal-600 font-medium"
                   >
                     Sign In
                   </Link>
                   <Link
-                    to="/auth"
+                    to="/auth?mode=signup"
                     onClick={() => setMobileMenuOpen(false)}
                     className="block bg-amber-500 text-white text-center py-3 px-4 rounded-lg font-bold hover:bg-amber-600 transition-colors"
                   >

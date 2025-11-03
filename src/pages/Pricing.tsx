@@ -16,7 +16,7 @@ export default function Pricing() {
 
   const handleSubscribe = async (plan: string, mode: string = 'subscription') => {
     if (!user) {
-      navigate('/auth');
+      navigate('/auth?mode=signup');
       return;
     }
 

@@ -42,7 +42,7 @@ export default function PublicFooter() {
                   </Link>
                 </li>
                 <li>
-                  <Link to="/auth" className="text-gray-300 hover:text-white transition-colors">
+                  <Link to="/auth?mode=signup" className="text-gray-300 hover:text-white transition-colors">
                     Sign Up
                   </Link>
                 </li>

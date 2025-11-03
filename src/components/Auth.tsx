@@ -42,6 +42,14 @@ export default function Auth() {
       setMessage('Password updated successfully! You can now sign in with your new password.')
       setMessageType('success')
       setIsSignUp(false)
+      return
+    }
+
+    const mode = searchParams.get('mode')
+    if (mode === 'signin') {
+      setIsSignUp(false)
+    } else if (mode === 'signup') {
+      setIsSignUp(true)
     }
   }, [searchParams])
 

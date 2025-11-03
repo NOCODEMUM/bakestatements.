@@ -17,7 +17,7 @@ export default function LandingPage() {
   }
 
   const handleSubscribe = async (plan: string, mode: string = 'subscription') => {
-    window.location.href = '/auth';
+    window.location.href = '/auth?mode=signup';
   }
 
   const handleMailingSubmit = async (e: React.FormEvent) => {
@@ -53,7 +53,7 @@ export default function LandingPage() {
           <div className="hero__overlay"></div>
           <div className="hero__fade-overlay"></div>
           <div className="hero__content">
-            <a className="btn-primary" href="/auth">Start Free Trial</a>
+            <a className="btn-primary" href="/auth?mode=signup">Start Free Trial</a>
           </div>
         </section>
 
