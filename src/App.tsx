@@ -20,6 +20,7 @@ import Enquiries from './pages/Enquiries'
 import EnquiryForm from './pages/EnquiryForm'
 import ForgotPassword from './pages/ForgotPassword'
 import ResetPassword from './pages/ResetPassword'
+import AuthCallback from './pages/AuthCallback'
 import MyLandingPage from './pages/MyLandingPage'
 import BakerLandingPage from './pages/BakerLandingPage'
 import { useState } from 'react'
@@ -61,6 +62,9 @@ function AppContent() {
         {/* Password Reset Flow - accessible to everyone */}
         <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/reset-password" element={<ResetPassword />} />
+
+        {/* Auth Callback - handles authentication redirects */}
+        <Route path="/auth/callback" element={<AuthCallback />} />
 
         {/* Auth Page - for non-authenticated users */}
         <Route path="/auth" element={!user ? <Auth /> : <Navigate to="/" replace />} />

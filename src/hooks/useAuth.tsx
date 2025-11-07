@@ -99,13 +99,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const signUp = async (email: string, password: string, fullName?: string) => {
+    const frontendUrl = import.meta.env.VITE_FRONTEND_URL || window.location.origin
+
     const result = await supabase.auth.signUp({
       email,
       password,
       options: {
         data: {
           full_name: fullName
-        }
+        },
+        emailRedirectTo: `${frontendUrl}/auth/callback`
       }
     })
 
@@ -200,8 +203,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const resetPasswordForEmail = async (email: string) => {
+    const frontendUrl = import.meta.env.VITE_FRONTEND_URL || window.location.origin
+
     const result = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: `${window.location.origin}/reset-password`
+      redirectTo: `${frontendUrl}/reset-password`
     })
     return result
   }
@@ -227,9 +232,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }
 
   const resendVerification = async (email: string) => {
+    const frontendUrl = import.meta.env.VITE_FRONTEND_URL || window.location.origin
+
     const result = await supabase.auth.resend({
       type: 'signup',
-      email: email
+      email: email,
+      options: {
+        emailRedirectTo: `${frontendUrl}/auth/callback`
+      }
     })
     return result
   }
